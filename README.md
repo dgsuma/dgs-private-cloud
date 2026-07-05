@@ -1,3 +1,11 @@
+## Licence
+
+Copyright © 2026 Duminda Sumanasinghe. All rights reserved.
+
+This is a private and proprietary repository. Its contents may not be
+copied, distributed, disclosed, modified, or reused without prior
+written permission. See [LICENSE](LICENSE) for details.
+
 # Proxmox VE Installation Plan — Beelink GTi12
 
 This private repository documents the complete process for converting a **Beelink GTi12 mini PC** into a Proxmox VE virtualization host.
