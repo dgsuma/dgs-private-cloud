@@ -4,7 +4,7 @@ Copyright © 2026 Duminda Sumanasinghe. All rights reserved.
 
 This is a private and proprietary repository. Its contents may not be
 copied, distributed, disclosed, modified, or reused without prior
-written permission. See [LICENSE.md](LICENSE.md) for details.
+written permission. See [LICENSE](LICENSE.md) for details.
 
 # Proxmox VE Installation Plan — Beelink GTi12
 
