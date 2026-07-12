@@ -1,0 +1,24 @@
+host:
+  node_name: pve01
+  fqdn: pve01.home.arpa
+  platform: Beelink GTi12
+  cpu: Intel Core i9-12900H
+  memory_gib: 64
+  hypervisor:
+    product: Proxmox VE
+    version: "9.2.0"
+    manager_version: "9.2.4"
+    running_kernel: 7.0.14-4-pve
+  state:
+    failed_systemd_units: 0
+    vm_count: 0
+    container_count: 0
+    headless: true
+  bios:
+    vmx: enabled
+    vt_d: enabled
+    hyper_threading: enabled
+    secure_boot: disabled
+    boot_mode: UEFI
+    fast_boot: disabled
+    state_after_g3: S0

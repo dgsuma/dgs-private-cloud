@@ -1,0 +1,19 @@
+network:
+  lan_cidr: 192.168.1.0/24
+  router:
+    model: TP-Link Archer NX200
+    lan_address: 192.168.1.1
+    mobile_profile: Vodafone-IPv4
+    pdp_type: IPv4
+    apn: live.vodafone.com
+    authentication: NONE
+  proxmox:
+    management_address: 192.168.1.201/24
+    gateway: 192.168.1.1
+    dns: 192.168.1.1
+    bridge: vmbr0
+    bridge_port: nic0
+    mac_address: B0:41:6F:12:9A:69
+  admin_workstation:
+    device: LG Gram
+    observed_address: 192.168.1.2

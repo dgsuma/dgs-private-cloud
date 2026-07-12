@@ -1,0 +1,36 @@
+storage:
+  physical_disks:
+    - device: /dev/nvme1n1
+      model: CT1000P3PSSD8
+      vendor: Crucial
+      nominal_capacity_tb: 1
+      role: proxmox_system
+      destructive_operations_allowed: false
+    - device: /dev/nvme0n1
+      model: Samsung SSD 990 PRO 2TB
+      vendor: Samsung
+      nominal_capacity_tb: 2
+      role: primary_guest_storage
+      volume_group: vg_vmdata
+      thin_pool: thin_vmdata
+      proxmox_storage_id: vmdata
+  proxmox_storage:
+    - id: local
+      type: directory
+      purpose:
+        - iso
+        - templates
+        - snippets
+        - temporary_backups
+    - id: local-lvm
+      type: lvmthin
+      purpose:
+        - secondary_guest_disks
+    - id: vmdata
+      type: lvmthin
+      approximate_usable_tib: 1.73
+      metadata_gib: 1.11
+      monitored: true
+      purpose:
+        - primary_vm_disks
+        - primary_lxc_root_filesystems
