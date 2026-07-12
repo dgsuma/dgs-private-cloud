@@ -67,3 +67,4 @@ Never generate a command that wipes `/dev/nvme1n1`.
 - Include expected output or success criteria.
 - Separate verified current state from future design.
 - Use Australian English where natural.
+ - Use Australian English where appropriate.

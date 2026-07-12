@@ -1,11 +1,11 @@
 # Scripts
 
-Run these scripts on the Proxmox host as `root`.
+Run these scripts on the Proxmox host as root.
 
 They are read-only unless explicitly stated otherwise.
 
 ```bash
-chmod +x scripts/*.sh
+chmod +x ./scripts/*.sh
 ```
 
 ## Scripts

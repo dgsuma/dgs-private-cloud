@@ -142,8 +142,8 @@ TCP 3128  SPICE proxy
 
 Do not commit passwords, private keys, tokens, VPN profiles, SIM identifiers, public-IP screenshots, unredacted configuration exports, or backup archives.
 
-## Licence
+## License
 
 Copyright © 2026 Duminda Sumanasinghe. All rights reserved.
 
-This is a private and proprietary repository. See [LICENSE.md](LICENSE.md).
+This is a private and proprietary repository. See [LICENSE](LICENSE.md).
