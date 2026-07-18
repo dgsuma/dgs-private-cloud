@@ -2,6 +2,33 @@
 
 All notable documentation and infrastructure-state changes are recorded here.
 
+## [0.3.0] - 2026-07-18
+
+### Added
+
+- Temporary ASUS Proxmox node documentation.
+- ADR for the short-lived two-node experiment.
+- Safe temporary-node removal runbook for the later Linux Mint reinstall.
+- UPS hardware inventory and updated two-host topology.
+- Sanitised pre-cluster hostname and connectivity evidence.
+
+### Completed infrastructure
+
+- Installed Proxmox VE on the ASUS 240GB ADATA SSD while preserving the WDC 1TB HDD.
+- Assigned `asus-pve.home.arpa` the static management address `192.168.1.203/24`.
+- Configured the Proxmox no-subscription repository policy on the ASUS node.
+- Updated both nodes to PVE Manager `9.2.4`.
+- Verified bidirectional wired connectivity with zero packet loss.
+- Verified NTP synchronisation and the `Australia/Melbourne` time zone on both nodes.
+- Confirmed the Archer LAN 3/WAN port is functioning as a LAN connection for the ASUS node.
+- Connected the router, Beelink, and ASUS laptop to the Eaton UPS.
+
+### Pending
+
+- Cross-node hostname resolution is not yet configured.
+- The Proxmox cluster has not yet been created.
+- UPS monitoring and automated shutdown are not yet configured.
+
 ## [0.2.0] - 2026-07-12
 
 ### Added

@@ -7,13 +7,35 @@ network:
     pdp_type: IPv4
     apn: live.vodafone.com
     authentication: NONE
+    ports:
+      asus_connection: LAN_3_WAN_configured_as_LAN
   proxmox:
-    management_address: 192.168.1.201/24
-    gateway: 192.168.1.1
-    dns: 192.168.1.1
-    bridge: vmbr0
-    bridge_port: nic0
-    mac_address: B0:41:6F:12:9A:69
+    main_node:
+      node_name: pve01
+      management_address: 192.168.1.201/24
+      fqdn: pve01.home.arpa
+      gateway: 192.168.1.1
+      dns: 192.168.1.1
+      bridge: vmbr0
+      bridge_port: nic0
+      mac_address_recorded_privately: true
+    temporary_node:
+      node_name: asus-pve
+      management_address: 192.168.1.203/24
+      fqdn: asus-pve.home.arpa
+      gateway: 192.168.1.1
+      dns: 192.168.1.1
+      connection: wired_cat5e
+      router_port: LAN_3
+  validation:
+    pve01_to_asus_pve:
+      packet_loss_percent: 0
+      observed_latency: below_1_ms
+    asus_pve_to_pve01:
+      packet_loss_percent: 0
+      observed_latency: below_1_ms
+    peer_hostname_resolution: pending
+    ntp_synchronised_on_both_nodes: true
   admin_workstation:
     device: LG Gram
     observed_address: 192.168.1.2

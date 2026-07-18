@@ -1,0 +1,32 @@
+DGS private cloud pre-cluster validation
+Date: 2026-07-18
+
+pve01
+- hostname: pve01
+- FQDN: pve01.home.arpa
+- management address: 192.168.1.201/24
+- PVE Manager: 9.2.4
+- ping to 192.168.1.203: 4/4 replies, 0% loss
+- time zone: Australia/Melbourne
+- system clock synchronised: yes
+- NTP service: active
+- self hostname resolution: successful
+- asus-pve hostname resolution: no result; pending /etc/hosts update
+
+asus-pve
+- hostname: asus-pve
+- FQDN: asus-pve.home.arpa
+- management address: 192.168.1.203/24
+- PVE Manager: 9.2.4
+- ping to 192.168.1.201: 4/4 replies, 0% loss
+- time zone: Australia/Melbourne
+- system clock synchronised: yes
+- NTP service: active
+- self hostname resolution: successful
+- pve01 hostname resolution: no result; pending /etc/hosts update
+
+Cluster state
+- cluster not created
+- both hosts standalone
+- no guests on the temporary node
+- next action: add both host mappings to /etc/hosts on both nodes
