@@ -71,42 +71,42 @@ flowchart LR
 
 ```text
 dgs-private-cloud/
-â”œâ”€â”€ README.md
-â”œâ”€â”€ LICENSE.md
-â”œâ”€â”€ AGENTS.md
-â”œâ”€â”€ CHANGELOG.md
-â”œâ”€â”€ ROADMAP.md
-â”œâ”€â”€ SECURITY.md
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ docs/
-â”‚   â”œâ”€â”€ 00-project-overview.md
-â”‚   â”œâ”€â”€ 01-current-state.md
-â”‚   â”œâ”€â”€ 02-hardware-and-bios.md
-â”‚   â”œâ”€â”€ 03-proxmox-installation.md
-â”‚   â”œâ”€â”€ 04-networking.md
-â”‚   â”œâ”€â”€ 05-router-ipv4-recovery.md
-â”‚   â”œâ”€â”€ 06-repositories-and-updates.md
-â”‚   â”œâ”€â”€ 07-storage-configuration.md
-â”‚   â”œâ”€â”€ 08-validation.md
-â”‚   â”œâ”€â”€ 09-operations.md
-â”‚   â”œâ”€â”€ 10-next-steps.md
-â”‚   â”œâ”€â”€ 11-temporary-asus-node.md
-â”‚   â”œâ”€â”€ 12-first-ubuntu-vm.md
-â”‚   â”œâ”€â”€ diagrams/
-â”‚   â”œâ”€â”€ decisions/
-â”‚   â”‚   â”œâ”€â”€ ADR-004-temporary-two-node-cluster.md
-â”‚   â”‚   â””â”€â”€ ADR-005-single-node-first-guest-validation.md
-â”‚   â””â”€â”€ runbooks/
-â”‚       â””â”€â”€ remove-temporary-asus-node.md
-â”œâ”€â”€ inventory/
-â”‚   â”œâ”€â”€ host.yaml
-â”‚   â”œâ”€â”€ network.yaml
-â”‚   â”œâ”€â”€ power.yaml
-â”‚   â”œâ”€â”€ storage.yaml
-â”‚   â””â”€â”€ guests.yaml
-â”œâ”€â”€ scripts/
-â”œâ”€â”€ evidence/
-â””â”€â”€ .github/
+├── README.md
+├── LICENSE.md
+├── AGENTS.md
+├── CHANGELOG.md
+├── ROADMAP.md
+├── SECURITY.md
+├── .gitignore
+├── docs/
+│   ├── 00-project-overview.md
+│   ├── 01-current-state.md
+│   ├── 02-hardware-and-bios.md
+│   ├── 03-proxmox-installation.md
+│   ├── 04-networking.md
+│   ├── 05-router-ipv4-recovery.md
+│   ├── 06-repositories-and-updates.md
+│   ├── 07-storage-configuration.md
+│   ├── 08-validation.md
+│   ├── 09-operations.md
+│   ├── 10-next-steps.md
+│   ├── 11-temporary-asus-node.md
+│   ├── 12-first-ubuntu-vm.md
+│   ├── diagrams/
+│   ├── decisions/
+│   │   ├── ADR-004-temporary-two-node-cluster.md
+│   │   └── ADR-005-single-node-first-guest-validation.md
+│   └── runbooks/
+│       └── remove-temporary-asus-node.md
+├── inventory/
+│   ├── host.yaml
+│   ├── network.yaml
+│   ├── power.yaml
+│   ├── storage.yaml
+│   └── guests.yaml
+├── scripts/
+├── evidence/
+└── .github/
 ```
 
 ## Completed work
@@ -195,6 +195,6 @@ Do not commit passwords, private keys, tokens, VPN profiles, SIM identifiers, pu
 
 ## Licence
 
-Copyright Â© 2026 Duminda Sumanasinghe. All rights reserved.
+Copyright © 2026 Duminda Sumanasinghe. All rights reserved.
 
 This repository is publicly visible for reference but remains proprietary. See [LICENSE](LICENSE.md).

@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 0 â€” Main host foundation
+## Phase 0 — Main host foundation
 
 Status: **Complete**
 
@@ -13,7 +13,7 @@ Status: **Complete**
 - [x] Validate host health.
 - [x] Confirm safe headless operation.
 
-## Phase 1 â€” Temporary ASUS experiment
+## Phase 1 — Temporary ASUS experiment
 
 Status: **Closed without cluster formation**
 
@@ -38,7 +38,7 @@ Cancelled scope:
 - Two-node quorum exercises.
 - HA and Ceph were never planned for this temporary design.
 
-## Phase 2 â€” First guest validation
+## Phase 2 — First guest validation
 
 Status: **Core validation complete**
 
@@ -56,7 +56,7 @@ Status: **Core validation complete**
 - [ ] Validate snapshot rollback.
 - [ ] Decide whether to retain the VM, convert it to a template source, or rebuild from cloud-init.
 
-## Phase 3 â€” Backup and resilience
+## Phase 3 — Backup and resilience
 
 - [ ] Select an external backup destination.
 - [ ] Configure scheduled Proxmox backups.
@@ -67,7 +67,7 @@ Status: **Core validation complete**
 - [ ] Configure graceful shutdown on extended power loss.
 - [ ] Export and protect host configuration.
 
-## Phase 4 â€” Security hardening
+## Phase 4 — Security hardening
 
 - [ ] Create a named administrator account.
 - [ ] Enable two-factor authentication.
@@ -77,7 +77,7 @@ Status: **Core validation complete**
 - [ ] Document private remote access through Tailscale or WireGuard.
 - [ ] Keep TCP 8006 private.
 
-## Phase 5 â€” Permanent multi-node private cloud
+## Phase 5 — Permanent multi-node private cloud
 
 - [ ] Select permanent second and third Proxmox nodes.
 - [ ] Standardise hostnames and addressing.
@@ -85,7 +85,7 @@ Status: **Core validation complete**
 - [ ] Define shared backup/storage strategy.
 - [ ] Test migration and node-failure procedures.
 
-## Phase 6 â€” Kubernetes platform
+## Phase 6 — Kubernetes platform
 
 - [ ] Define staging cluster VM sizes.
 - [ ] Define production-like cluster VM sizes.
