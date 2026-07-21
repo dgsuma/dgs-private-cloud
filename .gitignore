@@ -54,6 +54,9 @@ proxmox-export*
 sim-*
 wan-*
 
+# Local operator notes
+/git-commands-local.txt
+
 # IDE and OS
 .vscode/
 .idea/

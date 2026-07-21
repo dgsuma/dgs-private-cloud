@@ -5,17 +5,21 @@ host:
   platform: Beelink GTi12
   cpu: Intel Core i9-12900H
   memory_gib: 64
+
   hypervisor:
     product: Proxmox VE
     version: "9.2.0"
     manager_version: "9.2.4"
     running_kernel: 7.0.14-4-pve
+
   state:
-    failed_systemd_units: 0
-    vm_count: 0
-    container_count: 0
+    failed_systemd_units_last_recorded: 0
+    provisioned_vm_count: 1
+    provisioned_container_count: 0
     headless: true
     cluster_membership: standalone
+    cluster_created: false
+
   bios:
     vmx: enabled
     vt_d: enabled
@@ -25,27 +29,11 @@ host:
     fast_boot: disabled
     state_after_g3: S0
 
-temporary_nodes:
-  - node_name: asus-pve
-    fqdn: asus-pve.home.arpa
-    role: temporary_experimental_node
-    platform: ASUS legacy laptop
-    hypervisor:
-      product: Proxmox VE
-      major_minor_version: "9.2"
-      manager_version: "9.2.4"
-      running_kernel: not_recorded
-    state:
-      vm_count: 0
-      container_count: 0
-      cluster_membership: standalone_join_pending
-      lifecycle: reinstall_linux_mint_after_experiment
-    storage:
-      system_disk: ADATA 240GB SSD
-      preserved_disk: WDC 1TB HDD
-    validation:
-      wired_connectivity: verified
-      time_zone: Australia/Melbourne
-      ntp_synchronised: true
-      peer_hostname_resolution: pending
-    last_verified: 2026-07-18
+  retired_experiments:
+    - node_name: asus-pve
+      platform: ASUS legacy laptop
+      outcome: experiment_ended_before_cluster_creation
+      current_os: Zorin OS
+      active_private_cloud_member: false
+
+  last_verified: 2026-07-21

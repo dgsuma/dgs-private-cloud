@@ -1,31 +1,52 @@
 # Current State
 
-Verified on **2026-07-18** after preparing the ASUS laptop as a temporary second Proxmox host.
+Verified on **2026-07-21** after completing the first Ubuntu VM and Nginx validation.
 
-## Cluster state
+## Proxmox topology
 
 | Property | Value |
 |---|---|
 | Cluster created | No |
-| Current topology | Two standalone Proxmox hosts |
+| Current topology | One standalone Proxmox host |
 | Main operational node | `pve01` |
-| Temporary candidate node | `asus-pve` |
-| Cross-node IP connectivity | Verified in both directions |
-| Time synchronisation | Active on both nodes |
-| Cross-node hostname resolution | Not yet configured |
-| Guests | None on either node |
+| Active temporary node | None |
+| Provisioned VMs | 1 |
+| Provisioned containers | 0 |
 
-## Proxmox hosts
+## Proxmox host
 
-| Property | `pve01` | `asus-pve` |
-|---|---|---|
-| Platform | Beelink GTi12 | ASUS legacy laptop |
-| FQDN | `pve01.home.arpa` | `asus-pve.home.arpa` |
-| Web URL | `https://192.168.1.201:8006` | `https://192.168.1.203:8006` |
-| PVE Manager | `9.2.4` | `9.2.4` |
-| Running kernel | `7.0.14-4-pve` from previous validation | Not recorded in this update |
-| Administration mode | Headless | Temporary laptop server |
-| Cluster membership | Standalone | Standalone; join pending |
+| Property | `pve01` |
+|---|---|
+| Platform | Beelink GTi12 |
+| FQDN | `pve01.home.arpa` |
+| Web URL | `https://192.168.1.201:8006` |
+| Management address | `192.168.1.201/24` |
+| PVE Manager | `9.2.4` |
+| Running kernel | `7.0.14-4-pve` from the latest recorded validation |
+| Administration mode | Headless |
+| Cluster membership | Standalone |
+| Guest count | One VM, no containers |
+
+## First guest
+
+| Property | Value |
+|---|---|
+| VM ID | `100` |
+| Proxmox name | `ubuntu-web-test` |
+| Guest hostname | `web-test01` |
+| OS | Ubuntu Server 26.04 LTS |
+| vCPU | 2 |
+| Memory | 4GiB |
+| Disk | 32GiB on `vmdata` |
+| Bridge | `vmbr0` |
+| Reserved IPv4 address | `192.168.1.205` |
+| Address method | DHCP with router reservation |
+| QEMU Guest Agent | Installed and active |
+| OpenSSH | Installed and active |
+| Nginx | Installed and active |
+| Test content | `/var/www/html/index.html` |
+| Validation URL | `http://192.168.1.205` |
+| Autostart | Disabled |
 
 ## Network
 
@@ -36,45 +57,12 @@ Verified on **2026-07-18** after preparing the ASUS laptop as a temporary second
 | Gateway | `192.168.1.1` |
 | DNS | `192.168.1.1` |
 | `pve01` address | `192.168.1.201/24` |
-| `asus-pve` address | `192.168.1.203/24` |
-| Connection type | Wired Cat 5e Ethernet |
-| ASUS router port | LAN 3/WAN port operating as LAN |
-| `pve01` to `asus-pve` ping | 4 transmitted, 4 received, 0% loss |
-| `asus-pve` to `pve01` ping | 4 transmitted, 4 received, 0% loss |
-| Observed LAN latency | Below 1 ms in the recorded checks |
+| `web-test01` address | `192.168.1.205/24` |
+| Connection type | Wired Ethernet for `pve01`; bridged virtual NIC for the VM |
+| Proxmox bridge | `vmbr0` |
+| Guest address reservation | Active on the Archer NX200 |
 
-## Hostname validation
-
-Verified:
-
-```text
-pve01 hostname:       pve01
-pve01 hostname -f:    pve01.home.arpa
-asus-pve hostname:    asus-pve
-asus-pve hostname -f: asus-pve.home.arpa
-```
-
-Current limitation:
-
-- `pve01` resolves its own hostname but did not return a result for `asus-pve`.
-- `asus-pve` resolves its own hostname but did not return a result for `pve01`.
-- Both peer mappings must be added to `/etc/hosts` on both nodes before cluster creation.
-
-Required mappings:
-
-```text
-192.168.1.201  pve01.home.arpa     pve01
-192.168.1.203  asus-pve.home.arpa  asus-pve
-```
-
-## Time
-
-| Property | `pve01` | `asus-pve` |
-|---|---|---|
-| Time zone | `Australia/Melbourne` | `Australia/Melbourne` |
-| System clock synchronised | Yes | Yes |
-| NTP service | Active | Active |
-| RTC in local time | No | No |
+The router sees `pve01` and `web-test01` as separate wired clients because the VM has its own virtual NIC and MAC address behind the Proxmox bridge.
 
 ## Storage
 
@@ -82,24 +70,35 @@ Required mappings:
 |---|---|---|
 | `pve01` | Crucial 1TB | Proxmox system disk, `local`, and `local-lvm` |
 | `pve01` | Samsung 990 PRO 2TB | Primary guest LVM-thin storage ID `vmdata` |
-| `asus-pve` | ADATA 240GB SSD | Temporary Proxmox system disk |
-| `asus-pve` | WDC 1TB HDD | Preserved and not configured for Proxmox |
+| VM `100` | 32GiB virtual disk | Thin-provisioned on `vmdata` |
+| `local` | Directory storage | Ubuntu ISO and supported file content |
 
 ## Power protection
 
 | Property | Value |
 |---|---|
 | UPS vendor | Eaton |
-| Connected devices | Archer router, Beelink `pve01`, ASUS `asus-pve` |
+| Connected devices | Archer router and Beelink `pve01` |
 | Hardware power protection | Active |
 | UPS monitoring | Not configured |
 | Automated graceful shutdown | Not configured |
 
-## Guest state
+## Historical ASUS experiment
 
-```text
-pve01 VMs:        0
-pve01 containers: 0
-asus-pve VMs:     0
-asus-pve containers: 0
-```
+The ASUS laptop was evaluated as `asus-pve` at `192.168.1.203`. It was never joined to a Proxmox cluster. The experiment was ended after unreliable behaviour was observed, so no cluster-node removal command was required. The laptop now runs Zorin OS and is not part of the private-cloud topology.
+
+## Validation summary
+
+Verified:
+
+- Proxmox VM creation on `vmdata`,
+- Ubuntu installation and console access,
+- DHCP networking through `vmbr0`,
+- router reservation at `192.168.1.205`,
+- DNS and outbound package access,
+- QEMU Guest Agent communication,
+- SSH and SCP from Windows,
+- Nginx local response through `curl`,
+- browser access from the LAN,
+- clean guest shutdown and restart,
+- safe Proxmox host shutdown after the guest was stopped.

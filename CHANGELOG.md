@@ -2,13 +2,49 @@
 
 All notable documentation and infrastructure-state changes are recorded here.
 
+## [0.4.0] - 2026-07-21
+
+### Added
+
+- First Ubuntu Server VM validation document.
+- Guest inventory for VM `100`.
+- ADR for performing first-guest validation on the standalone Beelink node.
+- Local Git command reference exclusion through `.gitignore`.
+
+### Completed infrastructure
+
+- Ended the temporary ASUS Proxmox experiment without creating a cluster.
+- Returned the ASUS laptop to desktop use with Zorin OS.
+- Uploaded Ubuntu Server 26.04 LTS installation media to `local`.
+- Created VM `100` named `ubuntu-web-test`.
+- Allocated 2 vCPU, 4GiB RAM, and a 32GiB thin-provisioned disk on `vmdata`.
+- Installed Ubuntu Server with guest hostname `web-test01`.
+- Installed and validated OpenSSH, Nginx, curl, and QEMU Guest Agent.
+- Created `/var/www/html/index.html` and verified Nginx locally and over the LAN.
+- Reserved `192.168.1.205` for the VM through the Archer NX200.
+- Verified SSH/SCP access, clean VM shutdown/restart, and safe Proxmox host shutdown.
+
+### Changed
+
+- Reframed the current environment as one standalone Proxmox node.
+- Marked the ASUS cluster ADR and supporting documentation as historical.
+- Updated networking, operations, roadmap, inventories, and next steps.
+
+### Pending
+
+- Snapshot and rollback validation.
+- Scheduled backup and restore validation.
+- UPS monitoring and automated graceful shutdown.
+- Reusable Ubuntu template creation.
+- Permanent multi-node design.
+
 ## [0.3.0] - 2026-07-18
 
 ### Added
 
 - Temporary ASUS Proxmox node documentation.
 - ADR for the short-lived two-node experiment.
-- Safe temporary-node removal runbook for the later Linux Mint reinstall.
+- Safe temporary-node removal runbook for the later Linux reinstall.
 - UPS hardware inventory and updated two-host topology.
 - Sanitised pre-cluster hostname and connectivity evidence.
 
@@ -25,9 +61,9 @@ All notable documentation and infrastructure-state changes are recorded here.
 
 ### Pending
 
-- Cross-node hostname resolution is not yet configured.
-- The Proxmox cluster has not yet been created.
-- UPS monitoring and automated shutdown are not yet configured.
+- Cross-node hostname resolution was not configured.
+- The Proxmox cluster was not created.
+- UPS monitoring and automated shutdown were not configured.
 
 ## [0.2.0] - 2026-07-12
 

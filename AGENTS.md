@@ -6,29 +6,29 @@ These instructions apply to Codex and other automated coding assistants working 
 
 This repository records the design, installation, validation, operation, and future build-out of the DGS private cloud.
 
-The currently verified hosts are:
+## Current verified infrastructure
 
 ```text
-Main node
-Node:              pve01
-FQDN:              pve01.home.arpa
-Management IP:     192.168.1.201/24
-Hypervisor:        Proxmox VE 9.2
-PVE Manager:       9.2.4
-Primary VM store:  vmdata
+Active Proxmox node
+Node: pve01
+FQDN: pve01.home.arpa
+Management IP: 192.168.1.201/24
+Hypervisor: Proxmox VE 9.2
+PVE Manager: 9.2.4
+Primary VM store: vmdata
+Cluster state: Standalone; no cluster created
 
-Temporary node
-Node:              asus-pve
-FQDN:              asus-pve.home.arpa
-Management IP:     192.168.1.203/24
-Hypervisor:        Proxmox VE 9.2
-PVE Manager:       9.2.4
-System disk:       ADATA 240GB SSD
-Preserved disk:    WDC 1TB HDD
-Cluster state:     Not yet joined
+First guest
+VM ID: 100
+Proxmox name: ubuntu-web-test
+Guest hostname: web-test01
+OS: Ubuntu Server 26.04 LTS
+Reserved IP: 192.168.1.205
+Disk: 32GiB on vmdata
+Services validated: QEMU Guest Agent, OpenSSH, Nginx
 ```
 
-Both nodes use gateway and DNS address `192.168.1.1`.
+The legacy ASUS laptop is no longer an active Proxmox node. Its short experiment ended without cluster formation, and it now runs Zorin OS. Historical ASUS documentation must be clearly labelled as retired or historical.
 
 ## Editing rules
 
@@ -62,22 +62,25 @@ set -euo pipefail
     - VM disk images,
     - Terraform state,
     - uniquely identifying hardware details unless required and intentionally sanitised.
-11. Do not describe the Beelink as a technical cluster master. `pve01` is the operational main node; Proxmox cluster members are peers.
-12. Until cluster creation is verified, document both hosts as standalone and do not invent quorum output.
+11. Do not describe the Beelink as a technical cluster master. `pve01` is the operational main node; future Proxmox cluster members will be peers.
+12. Until cluster creation is verified, document the environment as standalone and do not invent quorum output.
+13. Treat `git-commands-local.txt` as local operator notes. It is ignored and must not be committed.
 
 ## Current storage facts
 
 ```text
 pve01
-/dev/nvme1n1  Crucial CT1000P3PSSD8 1TB  Proxmox system disk
-/dev/nvme0n1  Samsung SSD 990 PRO 2TB    vg_vmdata / thin_vmdata / vmdata
+/dev/nvme1n1  Crucial CT1000P3PSSD8 1TB
+               Proxmox system disk
 
-asus-pve
-ADATA 240GB SSD  Proxmox system disk
-WDC 1TB HDD      Preserved and not configured for Proxmox
+/dev/nvme0n1  Samsung SSD 990 PRO 2TB
+               vg_vmdata / thin_vmdata / vmdata
+
+VM 100
+32GiB thin-provisioned virtual disk on vmdata
 ```
 
-Never generate a command that wipes the Beelink Crucial system disk or the ASUS WDC 1TB HDD.
+Never generate a command that wipes the Beelink Crucial system disk.
 
 ## Documentation style
 

@@ -1,6 +1,6 @@
-# Management Networking
+# Management and Guest Networking
 
-## Final configuration
+## Proxmox host configuration
 
 ```text
 auto lo
@@ -28,44 +28,80 @@ source /etc/network/interfaces.d/*
 flowchart LR
     Vodafone["Vodafone 5G WAN"]
     Router["Archer NX200<br/>LAN: 192.168.1.1/24"]
-    Laptop["LG Gram<br/>192.168.1.2"]
+    Laptop["LG Gram<br/>Admin workstation"]
+    NIC["Beelink physical NIC"]
     Bridge["vmbr0<br/>192.168.1.201/24"]
-    NIC["nic0<br/>B0:41:6F:12:9A:69"]
     Host["pve01"]
-    Guests["Future guests"]
+    VMNIC["VM 100 VirtIO NIC"]
+    Guest["web-test01<br/>192.168.1.205"]
 
     Vodafone --> Router
     Router --> Laptop
     Router --> NIC
     NIC --> Bridge
     Bridge --> Host
-    Bridge -.-> Guests
+    Bridge --> VMNIC
+    VMNIC --> Guest
 ```
 
-## Address reservation
+## Address reservations
 
-The Archer NX200 reserves:
+The Archer NX200 provides stable LAN addressing through DHCP reservations:
 
-```text
-MAC: B0:41:6F:12:9A:69
-IP:  192.168.1.201
-```
+| Device | Address | Reservation |
+|---|---|---|
+| `pve01` | `192.168.1.201` | Host management reservation |
+| `web-test01` | `192.168.1.205` | VM reservation using its virtual NIC |
 
-The old DHCP lease `192.168.1.3` was stale and was removed by refreshing/rebooting the router.
+The exact MAC addresses are intentionally not published in the repository. They are visible in the router and Proxmox configuration when maintenance is required.
+
+Ubuntu remains configured for DHCP. The router consistently assigns `192.168.1.205` to the VM, avoiding a duplicate static configuration inside the guest.
+
+## Why the router shows two wired clients
+
+`pve01` and `web-test01` share one physical Ethernet cable, but Proxmox `vmbr0` is a Layer-2 bridge. The VM has its own virtual MAC address and therefore appears to the router as a separate LAN client.
 
 ## Verification commands
+
+On `pve01`:
 
 ```bash
 ip -br address
 ip route
 cat /etc/network/interfaces
 ping -c 4 192.168.1.1
-curl -4 --connect-timeout 10 -I https://deb.debian.org
+```
+
+Inside `web-test01`:
+
+```bash
+hostname -I
+ip -br address
+ip route
+ping -c 4 192.168.1.1
+curl -I http://localhost
+```
+
+From Windows PowerShell:
+
+```powershell
+ping 192.168.1.205
+ssh duminda@192.168.1.205
+curl http://192.168.1.205
 ```
 
 ## Expected routing
 
+Host:
+
 ```text
 default via 192.168.1.1 dev vmbr0
 192.168.1.0/24 dev vmbr0 proto kernel scope link src 192.168.1.201
+```
+
+Guest:
+
+```text
+default via 192.168.1.1
+192.168.1.0/24 directly connected through the VirtIO interface
 ```

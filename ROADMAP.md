@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 0 — Main host foundation
+## Phase 0 â€” Main host foundation
 
 Status: **Complete**
 
@@ -13,9 +13,9 @@ Status: **Complete**
 - [x] Validate host health.
 - [x] Confirm safe headless operation.
 
-## Phase 1 — Temporary second-node experiment
+## Phase 1 â€” Temporary ASUS experiment
 
-Status: **In progress**
+Status: **Closed without cluster formation**
 
 - [x] Install Proxmox VE on the ASUS ADATA 240GB SSD.
 - [x] Preserve the ASUS WDC 1TB HDD.
@@ -23,31 +23,40 @@ Status: **In progress**
 - [x] Configure no-subscription repositories and update the node.
 - [x] Verify bidirectional wired connectivity.
 - [x] Verify time zone and NTP synchronisation.
-- [x] Connect the router and both Proxmox hosts to the Eaton UPS.
-- [ ] Add peer mappings to `/etc/hosts` on both nodes.
-- [ ] Verify cross-node hostname and FQDN resolution.
-- [ ] Create the cluster on `pve01`.
-- [ ] Join `asus-pve` as a temporary node.
-- [ ] Disable laptop sleep, hibernation, and lid-triggered suspend.
-- [ ] Record the two-node quorum operating procedure.
-- [ ] Test a disposable VM or LXC on `asus-pve`.
-- [ ] Test migration without introducing HA or Ceph.
-- [ ] Remove `asus-pve` cleanly after the experiment.
-- [ ] Reinstall Linux Mint on the ASUS ADATA SSD.
+- [x] Connect the router and both systems to the Eaton UPS.
+- [x] Evaluate the laptop as a possible temporary node.
+- [x] End the experiment after instability and unreliable operation were observed.
+- [x] Confirm that no Proxmox cluster had been created and no cluster-node removal was required.
+- [x] Return the ASUS laptop to desktop use with Zorin OS.
 
-## Phase 2 — First guest validation
+Cancelled scope:
 
-Status: **After temporary cluster formation**
+- Cross-node hostname configuration.
+- Cluster creation.
+- Cluster join.
+- Migration tests.
+- Two-node quorum exercises.
+- HA and Ceph were never planned for this temporary design.
 
-- [ ] Upload an Ubuntu Server ISO or cloud image to `local`.
-- [ ] Create a small test VM on `vmdata`.
-- [ ] Verify VM networking through `vmbr0`.
-- [ ] Verify DNS and outbound internet access.
-- [ ] Test guest-agent reporting.
-- [ ] Test snapshot and rollback.
-- [ ] Delete the test VM after validation or retain it as a template source.
+## Phase 2 â€” First guest validation
 
-## Phase 3 — Backup and resilience
+Status: **Core validation complete**
+
+- [x] Upload an Ubuntu Server ISO to `local`.
+- [x] Create a small test VM on `vmdata`.
+- [x] Allocate 2 vCPU, 4GiB RAM, and a 32GiB virtual disk.
+- [x] Verify VM networking through `vmbr0`.
+- [x] Verify DNS and outbound internet access.
+- [x] Install and validate QEMU Guest Agent.
+- [x] Install and validate OpenSSH and Nginx.
+- [x] Create and serve a static test page.
+- [x] Reserve `192.168.1.205` for `web-test01`.
+- [x] Verify clean shutdown and restart.
+- [ ] Create a snapshot.
+- [ ] Validate snapshot rollback.
+- [ ] Decide whether to retain the VM, convert it to a template source, or rebuild from cloud-init.
+
+## Phase 3 â€” Backup and resilience
 
 - [ ] Select an external backup destination.
 - [ ] Configure scheduled Proxmox backups.
@@ -58,7 +67,7 @@ Status: **After temporary cluster formation**
 - [ ] Configure graceful shutdown on extended power loss.
 - [ ] Export and protect host configuration.
 
-## Phase 4 — Security hardening
+## Phase 4 â€” Security hardening
 
 - [ ] Create a named administrator account.
 - [ ] Enable two-factor authentication.
@@ -68,7 +77,7 @@ Status: **After temporary cluster formation**
 - [ ] Document private remote access through Tailscale or WireGuard.
 - [ ] Keep TCP 8006 private.
 
-## Phase 5 — Permanent multi-node private cloud
+## Phase 5 â€” Permanent multi-node private cloud
 
 - [ ] Select permanent second and third Proxmox nodes.
 - [ ] Standardise hostnames and addressing.
@@ -76,7 +85,7 @@ Status: **After temporary cluster formation**
 - [ ] Define shared backup/storage strategy.
 - [ ] Test migration and node-failure procedures.
 
-## Phase 6 — Kubernetes platform
+## Phase 6 â€” Kubernetes platform
 
 - [ ] Define staging cluster VM sizes.
 - [ ] Define production-like cluster VM sizes.

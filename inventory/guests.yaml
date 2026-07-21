@@ -1,0 +1,45 @@
+guests:
+  - vm_id: 100
+    proxmox_name: ubuntu-web-test
+    guest_hostname: web-test01
+    type: qemu_vm
+    purpose: first_guest_and_nginx_validation
+
+    operating_system:
+      distribution: Ubuntu Server
+      version: 26.04 LTS
+      architecture: amd64
+
+    resources:
+      vcpu: 2
+      memory_gib: 4
+      disk_gib: 32
+      disk_storage: vmdata
+      bridge: vmbr0
+      virtual_nic_model: VirtIO
+
+    network:
+      ipv4_address: 192.168.1.205
+      assignment: dhcp_reservation
+      gateway: 192.168.1.1
+      dns: 192.168.1.1
+
+    integration:
+      qemu_guest_agent: active
+      openssh_server: active
+
+    services:
+      nginx:
+        state: active_when_vm_running
+        document_root: /var/www/html
+        test_page: /var/www/html/index.html
+        lan_url: http://192.168.1.205
+
+    lifecycle:
+      retained: true
+      autostart: false
+      snapshot_tested: false
+      backup_restore_tested: false
+      template_source_decision: pending
+
+    last_verified: 2026-07-21

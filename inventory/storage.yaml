@@ -6,6 +6,7 @@ storage:
       nominal_capacity_tb: 1
       role: proxmox_system
       destructive_operations_allowed: false
+
     - device: /dev/nvme0n1
       model: Samsung SSD 990 PRO 2TB
       vendor: Samsung
@@ -14,6 +15,7 @@ storage:
       volume_group: vg_vmdata
       thin_pool: thin_vmdata
       proxmox_storage_id: vmdata
+
   proxmox_storage:
     - id: local
       type: directory
@@ -22,10 +24,14 @@ storage:
         - templates
         - snippets
         - temporary_backups
+      current_content:
+        - Ubuntu Server 26.04 LTS ISO
+
     - id: local-lvm
       type: lvmthin
       purpose:
         - secondary_guest_disks
+
     - id: vmdata
       type: lvmthin
       approximate_usable_tib: 1.73
@@ -34,3 +40,13 @@ storage:
       purpose:
         - primary_vm_disks
         - primary_lxc_root_filesystems
+
+  guest_volumes:
+    - vm_id: 100
+      guest_name: ubuntu-web-test
+      storage_id: vmdata
+      allocated_gib: 32
+      provisioning: thin
+      role: ubuntu_system_disk
+
+  last_verified: 2026-07-21

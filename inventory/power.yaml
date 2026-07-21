@@ -6,8 +6,7 @@ power:
     connected_devices:
       - TP-Link Archer NX200 router
       - pve01 Beelink GTi12
-      - asus-pve ASUS laptop
     hardware_protection: active
     telemetry: not_configured
     graceful_shutdown_automation: not_configured
-    last_verified: 2026-07-18
+    last_verified: 2026-07-21

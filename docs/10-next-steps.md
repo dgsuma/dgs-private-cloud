@@ -1,138 +1,87 @@
 # Next Steps
 
-## Immediate next task: complete peer hostname resolution
+## Immediate next task: snapshot and rollback validation
 
-The current `/etc/hosts` files contain only each node's own management mapping. Add both mappings on **both** nodes.
+VM `100` is the first validated guest. The next controlled exercise should test a snapshot before adding more infrastructure.
 
-Edit on `pve01` and `asus-pve`:
+Suggested sequence:
 
-```bash
-nano /etc/hosts
-```
+1. Start VM `100`.
+2. Confirm the website and guest agent are healthy.
+3. Create a snapshot named `before-change`.
+4. Modify the test page.
+5. Confirm the change in the browser.
+6. Shut down the VM if required by the selected snapshot mode.
+7. Roll back to `before-change`.
+8. Confirm the original page and services return.
+9. Record storage use before and after the test.
 
-Ensure these lines are present exactly once:
+Do not use snapshots as a replacement for backups.
 
-```text
-192.168.1.201  pve01.home.arpa     pve01
-192.168.1.203  asus-pve.home.arpa  asus-pve
-```
+## Backup and restore
 
-Keep the existing localhost and IPv6 entries.
+After snapshot validation:
 
-Validate on both nodes:
+- select an external backup destination,
+- create a scheduled Proxmox backup job,
+- produce a backup of VM `100`,
+- verify backup integrity,
+- restore to a different test VM ID,
+- start the restored VM on an isolated or carefully controlled network,
+- confirm that Nginx and the guest agent work.
 
-```bash
-getent hosts pve01
-getent hosts pve01.home.arpa
-getent hosts asus-pve
-getent hosts asus-pve.home.arpa
-ping -c 4 pve01
-ping -c 4 asus-pve
-```
+## Reusable Ubuntu template
 
-Expected result:
+Choose one of these approaches:
 
-```text
-pve01 and pve01.home.arpa         -> 192.168.1.201
-asus-pve and asus-pve.home.arpa   -> 192.168.1.203
-```
+- retain VM `100` as a manual learning VM,
+- clone VM `100` and sanitise it before conversion to a template,
+- build a new cloud-init Ubuntu template.
 
-Do not create the cluster until all six validation commands succeed on both nodes.
+A template should not contain reused SSH host keys, temporary passwords, shell history, or application-specific test data.
 
-## Create the temporary cluster
+## UPS integration
 
-On `pve01`:
+- Record the exact Eaton model and USB/network capabilities.
+- Connect UPS telemetry to an appropriate system.
+- Configure alerts.
+- Define the guest-shutdown order.
+- Configure a delayed graceful shutdown for `pve01`.
+- Test without risking filesystem corruption.
 
-1. Open **Datacenter → Cluster**.
-2. Select **Create Cluster**.
-3. Use a cluster name such as `homelab`.
-4. Select `192.168.1.201` for Link 0.
-5. Verify:
+## Security hardening
 
-```bash
-pvecm status
-pvecm nodes
-```
+- Create a named Proxmox administrator account.
+- Enable two-factor authentication.
+- Configure SSH keys.
+- Review root password-based SSH.
+- Define Proxmox firewall policy.
+- Keep TCP 8006 private.
+- Document Tailscale or WireGuard remote administration.
 
-At this point only `pve01` should be listed and it should be quorate.
+## Permanent multi-node planning
 
-## Join the ASUS node
+The ASUS laptop is no longer a Proxmox candidate. Future clustering work requires permanent hardware.
 
-Confirm `asus-pve` has no VMs or containers. Then:
+Planned decisions:
 
-1. On `pve01`, open **Datacenter → Cluster → Join Information**.
-2. Copy the join information.
-3. On `asus-pve`, open **Datacenter → Cluster → Join Cluster**.
-4. Paste the join information.
-5. Enter the `pve01` root password.
-6. Select `192.168.1.203` for the ASUS cluster link.
-7. Wait for the ASUS interface to reconnect.
-
-Verify from either node:
-
-```bash
-pvecm status
-pvecm nodes
-```
-
-Expected important values:
-
-```text
-Nodes:          2
-Expected votes: 2
-Total votes:    2
-Quorate:        Yes
-```
-
-## Post-join configuration
-
-- Disable sleep, hibernation, and lid-triggered suspend on the ASUS laptop.
-- Do not enable HA or Ceph.
-- Keep both nodes online during cluster administration.
-- Use disposable test workloads on `asus-pve`.
-- Document every migration or failure test.
-
-## First guest validation
-
-After the cluster is healthy, create a small Ubuntu test VM:
-
-```text
-Name:     ubuntu-test
-vCPU:     2
-RAM:      4GB
-Disk:     32GB
-Storage:  vmdata or disposable ASUS local-lvm
-Bridge:   vmbr0
-```
-
-Validate:
-
-- VM creation,
-- console access,
-- DHCP or static addressing,
-- DNS,
-- outbound internet,
-- clean shutdown and restart,
-- guest agent,
-- snapshot and rollback,
-- manual migration behaviour.
-
-## End of temporary experiment
-
-Before reinstalling Linux Mint, follow [the temporary-node removal runbook](runbooks/remove-temporary-asus-node.md). Never erase the ASUS Proxmox installation while `asus-pve` is still registered as a cluster member.
+- select permanent `pve02` and `pve03`,
+- standardise CPU, RAM, storage, and NIC capabilities,
+- allocate stable management addresses,
+- define an odd-vote quorum strategy,
+- choose backup and shared-storage architecture,
+- test migration only after backups exist.
 
 ## Long-term target
 
 ```mermaid
 flowchart LR
     PVE1["pve01<br/>Beelink GTi12<br/>permanent"]
-    ASUS["asus-pve<br/>temporary experiment<br/>later Linux Mint"]
-    PVE2["future permanent pve02<br/>planned"]
-    PVE3["future permanent pve03<br/>planned"]
+    PVE2["future pve02<br/>planned"]
+    PVE3["future pve03<br/>planned"]
     Backup["NAS / Proxmox Backup Server<br/>planned"]
     K8s["Staging and production-like Kubernetes<br/>planned"]
 
-    PVE1 -. temporary cluster .- ASUS
     PVE1 -. future cluster .- PVE2
     PVE2 -. future cluster .- PVE3
     PVE1 -. backups .-> Backup
