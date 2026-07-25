@@ -3,10 +3,15 @@ power:
     vendor: Eaton
     model: not_yet_recorded
     installed: true
-    connected_devices:
+
+    active_connected_devices:
       - TP-Link Archer NX200 router
       - pve01 Beelink GTi12
+
+    retired_or_not_active:
+      - asus-pve ASUS laptop
+
     hardware_protection: active
     telemetry: not_configured
     graceful_shutdown_automation: not_configured
-    last_verified: 2026-07-21
+    last_verified: 2026-07-25

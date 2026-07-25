@@ -1,50 +1,56 @@
-# Temporary ASUS Proxmox Experiment
+# Retired ASUS Proxmox Experiment
 
-> **Status: Retired.** This page is retained as historical documentation. The ASUS laptop is not an active Proxmox node.
+## Status
 
-## Original purpose
+**Retired from the active design.**
 
-The ASUS laptop was evaluated as a short-term Proxmox VE node for learning and possible controlled clustering experiments. The Beelink `pve01` remained the main operational host.
+The ASUS laptop was temporarily prepared as `asus-pve` for a possible two-node Proxmox learning experiment. The old hardware later showed instability, including unreliable web-session behaviour and unusable monitoring data. The experiment was stopped before a Proxmox cluster was formed.
 
-## Verified temporary configuration
+## Historical configuration
 
 | Property | Historical value |
 |---|---|
 | Node name | `asus-pve` |
 | FQDN | `asus-pve.home.arpa` |
 | Management address | `192.168.1.203/24` |
-| Gateway / DNS | `192.168.1.1` |
 | Connection | Wired Cat 5e Ethernet |
 | PVE Manager | `9.2.4` |
-| System disk | ADATA 240GB SSD |
-| Preserved disk | WDC 1TB HDD |
-| Repository | `pve-no-subscription` |
-| Time zone | `Australia/Melbourne` |
-| NTP | Active and synchronised |
-| Cluster membership | Never joined |
+| System disk | ADATA 240 GB SSD |
+| Preserved disk | WDC 1 TB HDD |
+| Cluster membership | Standalone; never joined |
 | Guests | None |
 
-## Outcome
+## Completed experiment
 
-The laptop showed unreliable behaviour during the evaluation, including repeated web-session problems and incomplete monitoring data. The user decided not to continue using the old hardware as a Proxmox node.
+- Installed Proxmox VE on the ADATA SSD.
+- Preserved the WDC HDD.
+- Configured a static management address.
+- Enabled the no-subscription repository policy.
+- Verified bidirectional network connectivity.
+- Verified NTP synchronisation.
+- Connected the laptop to UPS-protected power.
 
-The experiment ended before:
+## Reason for retirement
 
-- peer hostname configuration,
-- cluster creation,
-- cluster join,
-- quorum testing,
-- VM migration,
-- HA or Ceph deployment.
+The old laptop was not considered reliable enough for continued Proxmox or Kubernetes use.
 
-Because no cluster was created, `pvecm delnode` was not required.
+The active project therefore returned to:
 
-## Current ASUS state
+```text
+pve01 as the only Proxmox host
+Talos VMs hosted on pve01 for Phase 1
+Permanent second and third nodes deferred
+```
 
-The ADATA SSD was reused for Zorin OS. The laptop now serves as a desktop Linux system and is outside the private-cloud topology.
+## Important clarification
 
-The previous address `192.168.1.203` is no longer reserved for an active Proxmox node and may be reused only after confirming the router configuration.
+No Proxmox cluster was created. Therefore:
 
-## Historical safety boundary
+- no Corosync membership removal was required,
+- no quorum repair was required,
+- no guest migration was required,
+- no HA or Ceph configuration existed.
 
-During the temporary installation, the ADATA 240GB SSD was the Proxmox target and the WDC 1TB HDD was preserved. This note remains useful when reviewing the experiment, but no current Proxmox operation should target the ASUS disks.
+## Future use
+
+The laptop may be reinstalled with a desktop Linux distribution if it is reused. Its WDC 1 TB HDD must remain protected unless a later task explicitly identifies and verifies it.

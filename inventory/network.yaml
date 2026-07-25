@@ -11,35 +11,44 @@ network:
       authentication: NONE
 
   proxmox:
-    main_node:
-      node_name: pve01
-      management_address: 192.168.1.201/24
-      fqdn: pve01.home.arpa
-      gateway: 192.168.1.1
-      dns: 192.168.1.1
-      bridge: vmbr0
-      bridge_port: nic0
-      address_assignment: router_reservation
-      mac_address_recorded_privately: true
+    node_name: pve01
+    management_address: 192.168.1.201/24
+    fqdn: pve01.home.arpa
+    gateway: 192.168.1.1
+    dns: 192.168.1.1
+    bridge: vmbr0
+    bridge_port: nic0
+    mac_address_recorded_privately: true
 
-  guests:
-    - vm_id: 100
-      proxmox_name: ubuntu-web-test
-      guest_hostname: web-test01
-      address: 192.168.1.205/24
-      assignment: dhcp_reservation
-      router_reservation_active: true
-      bridge: vmbr0
-      virtual_nic_model: VirtIO
+  talos:
+    control_plane:
+      vm_id: 210
+      name: talos-cp-01
+      address: 192.168.1.210/24
+      dhcp_reservation: active
       mac_address_recorded_privately: true
+      talos_api_port: 50000
+      kubernetes_api_port: 6443
+      connectivity_verified: true
 
-  retired_addresses:
-    - address: 192.168.1.203/24
-      previous_node: asus-pve
-      current_status: no_active_proxmox_node
+    planned_workers:
+      - vm_id: 211
+        name: talos-wk-01
+        address: 192.168.1.211/24
+      - vm_id: 212
+        name: talos-wk-02
+        address: 192.168.1.212/24
+
+    future_api_vip:
+      address: 192.168.1.220
+      state: reserved_not_configured
+
+  retired:
+    asus_pve:
+      address: 192.168.1.203/24
+      active: false
+      cluster_joined: false
 
   admin_workstation:
     device: LG Gram
-    address_assignment: DHCP
-
-  last_verified: 2026-07-21
+    network_path: LAN_or_WiFi

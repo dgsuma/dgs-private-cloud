@@ -1,45 +1,43 @@
-# ADR-005: Single-Node First Guest Validation
+# ADR-005: Disposable First-Guest Validation
 
-- Status: Accepted
-- Date: 2026-07-21
+- **Status:** Accepted and completed
+- **Decision date:** 2026-07-21
+- **Retirement verified:** 2026-07-25
 
 ## Context
 
-The temporary ASUS Proxmox experiment ended without cluster formation. The Beelink `pve01` remained healthy, standalone, and had dedicated `vmdata` storage available.
+Before building Kubernetes, `pve01` needed a simple disposable guest to prove that:
 
-Waiting for permanent cluster hardware would delay practical VM learning. A small disposable guest could validate the essential Proxmox workflow without changing the standalone topology.
+- VM creation worked,
+- `vmdata` stored guest disks correctly,
+- `vmbr0` provided LAN connectivity,
+- DNS and outbound internet worked,
+- QEMU Guest Agent worked,
+- a basic service could run.
 
 ## Decision
 
-Create the first test VM on `pve01` with:
+Create Ubuntu VM `100` as `ubuntu-web-test`, validate the platform, and retire the VM when it no longer provides value.
 
-```text
-VM ID: 100
-Name: ubuntu-web-test
-OS: Ubuntu Server 26.04 LTS
-vCPU: 2
-RAM: 4GiB
-Disk: 32GiB on vmdata
-Bridge: vmbr0
-Guest IP: 192.168.1.205 through router DHCP reservation
-```
+## Outcome
 
-Install QEMU Guest Agent, OpenSSH, curl, and Nginx. Validate local and LAN web access, SSH/SCP, clean shutdown, restart, and safe host shutdown.
+The VM validated the required Proxmox guest functions and Nginx workload.
 
-Keep guest autostart disabled during the learning phase.
-
-## Rationale
-
-- Uses the dedicated Samsung guest-storage pool.
-- Exercises the core VM lifecycle without requiring a cluster.
-- Provides a simple observable service through Nginx.
-- Uses router-managed address reservation to avoid duplicate static network configuration.
-- Keeps the workload small and reversible.
+It was later shut down and deleted with its owned disks.
 
 ## Consequences
 
-- The repository now records one provisioned VM.
-- The guest address remains stable while its virtual MAC remains unchanged.
-- Rebuilding the VM with a new virtual NIC requires updating the router reservation.
-- Snapshots and backups remain separate follow-up tasks.
-- The test VM must not be treated as a production workload.
+### Positive
+
+- Proxmox guest provisioning was proven before Kubernetes work.
+- The test left no long-term resource consumption.
+- `vmdata` was verified both before and after deletion.
+
+### Negative
+
+- The VM was not retained as a template.
+- A new Ubuntu template will need to be built later if required.
+
+## Current rule
+
+Documentation must treat VM `100` as historical and deleted.

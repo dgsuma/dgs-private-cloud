@@ -24,8 +24,6 @@ storage:
         - templates
         - snippets
         - temporary_backups
-      current_content:
-        - Ubuntu Server 26.04 LTS ISO
 
     - id: local-lvm
       type: lvmthin
@@ -35,18 +33,33 @@ storage:
     - id: vmdata
       type: lvmthin
       approximate_usable_tib: 1.73
-      metadata_gib: 1.11
       monitored: true
       purpose:
         - primary_vm_disks
         - primary_lxc_root_filesystems
 
-  guest_volumes:
-    - vm_id: 100
-      guest_name: ubuntu-web-test
+  active_allocations:
+    - vm_id: 210
+      name: talos-cp-01
+      system_disk_gib: 64
       storage_id: vmdata
-      allocated_gib: 32
-      provisioning: thin
-      role: ubuntu_system_disk
+      talos_device: /dev/sda
 
-  last_verified: 2026-07-21
+  planned_allocations:
+    - vm_id: 211
+      name: talos-wk-01
+      system_disk_gib: 64
+      data_disk_gib: 300
+      storage_id: vmdata
+
+    - vm_id: 212
+      name: talos-wk-02
+      system_disk_gib: 64
+      data_disk_gib: 300
+      storage_id: vmdata
+
+  retired_allocations:
+    - vm_id: 100
+      name: ubuntu-web-test
+      state: deleted
+      remaining_volumes: none_verified

@@ -2,41 +2,52 @@
 
 All notable documentation and infrastructure-state changes are recorded here.
 
-## [0.4.0] - 2026-07-21
+## [0.4.0] - 2026-07-25
 
 ### Added
 
-- First Ubuntu Server VM validation document.
-- Guest inventory for VM `100`.
-- ADR for performing first-guest validation on the standalone Beelink node.
-- Local Git command reference exclusion through `.gitignore`.
+- Phase 1 GitOps repository structure for Talos, Kubernetes infrastructure, applications, and the home cluster.
+- Workstation verification script for Git, GitHub CLI, kubectl, talosctl, Flux, SOPS, and age.
+- Talos Image Factory schematic using `siderolabs/qemu-guest-agent`.
+- Talos Kubernetes Phase 1 implementation record.
+- ADR for the disposable first-guest validation.
+- ADR for the initial Talos Kubernetes architecture.
+- Worker-creation and Kubernetes-bootstrap runbook.
 
 ### Completed infrastructure
 
-- Ended the temporary ASUS Proxmox experiment without creating a cluster.
-- Returned the ASUS laptop to desktop use with Zorin OS.
-- Uploaded Ubuntu Server 26.04 LTS installation media to `local`.
-- Created VM `100` named `ubuntu-web-test`.
-- Allocated 2 vCPU, 4GiB RAM, and a 32GiB thin-provisioned disk on `vmdata`.
-- Installed Ubuntu Server with guest hostname `web-test01`.
-- Installed and validated OpenSSH, Nginx, curl, and QEMU Guest Agent.
-- Created `/var/www/html/index.html` and verified Nginx locally and over the LAN.
-- Reserved `192.168.1.205` for the VM through the Archer NX200.
-- Verified SSH/SCP access, clean VM shutdown/restart, and safe Proxmox host shutdown.
+- Removed obsolete Ubuntu validation VM `100` and confirmed no `vm-100-*` disks remained.
+- Confirmed `vmdata` remained active and healthy after VM deletion.
+- Updated the administration workstation toolset:
+  - GitHub CLI `2.96.0`,
+  - kubectl `1.36.3`,
+  - Flux CLI `2.9.3`,
+  - talosctl `1.13.6`,
+  - SOPS `3.13.2`,
+  - age `1.3.1`.
+- Generated Talos `v1.13.6` custom ISO with QEMU guest-agent support.
+- Verified the ISO’s SHA-256 remained identical after upload to `pve01`.
+- Created control-plane VM `210` as `talos-cp-01`.
+- Reserved `192.168.1.210`.
+- Booted Talos into maintenance mode.
+- Verified Talos API connectivity on TCP `50000`.
+- Confirmed `/dev/sda` is the 64 GiB installation disk.
 
-### Changed
+### Architecture changes
 
-- Reframed the current environment as one standalone Proxmox node.
-- Marked the ASUS cluster ADR and supporting documentation as historical.
-- Updated networking, operations, roadmap, inventories, and next steps.
+- Retired the temporary ASUS node from the active topology.
+- Confirmed the ASUS experiment ended without forming a Proxmox cluster.
+- Changed the immediate platform direction from a temporary two-host Proxmox experiment to a three-VM Talos Kubernetes cluster on standalone `pve01`.
+- Reserved `192.168.1.220` for a future highly available Kubernetes API endpoint; it is not currently used.
 
 ### Pending
 
-- Snapshot and rollback validation.
-- Scheduled backup and restore validation.
-- UPS monitoring and automated graceful shutdown.
-- Reusable Ubuntu template creation.
-- Permanent multi-node design.
+- Create workers VM `211` and VM `212`.
+- Generate and apply Talos machine configurations.
+- Bootstrap Kubernetes.
+- Bootstrap Flux.
+- Configure SOPS with age.
+- Deploy Tailscale Operator, observability, logging, and Homepage.
 
 ## [0.3.0] - 2026-07-18
 
@@ -50,7 +61,7 @@ All notable documentation and infrastructure-state changes are recorded here.
 
 ### Completed infrastructure
 
-- Installed Proxmox VE on the ASUS 240GB ADATA SSD while preserving the WDC 1TB HDD.
+- Installed Proxmox VE on the ASUS 240 GB ADATA SSD while preserving the WDC 1 TB HDD.
 - Assigned `asus-pve.home.arpa` the static management address `192.168.1.203/24`.
 - Configured the Proxmox no-subscription repository policy on the ASUS node.
 - Updated both nodes to PVE Manager `9.2.4`.
@@ -59,11 +70,11 @@ All notable documentation and infrastructure-state changes are recorded here.
 - Confirmed the Archer LAN 3/WAN port is functioning as a LAN connection for the ASUS node.
 - Connected the router, Beelink, and ASUS laptop to the Eaton UPS.
 
-### Pending
+### Outcome recorded later
 
-- Cross-node hostname resolution was not configured.
-- The Proxmox cluster was not created.
-- UPS monitoring and automated shutdown were not configured.
+- The temporary ASUS experiment was abandoned because the old hardware was unstable.
+- The ASUS node was shut down.
+- No Proxmox cluster was formed.
 
 ## [0.2.0] - 2026-07-12
 
@@ -79,9 +90,9 @@ All notable documentation and infrastructure-state changes are recorded here.
 
 ### Documented
 
-- Proxmox VE 9.2 installation on the Crucial 1TB SSD.
+- Proxmox VE installation on the Crucial 1 TB SSD.
 - Archer NX200 IPv4 recovery through a custom Vodafone IPv4 profile.
-- Samsung 990 PRO 2TB LVM-thin configuration.
+- Samsung 990 PRO 2 TB LVM-thin configuration.
 - Thin metadata extension and monitoring.
 - Final validation state with zero failed systemd units.
 

@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
 Write-Host "Checking Phase 1 workstation tools..." -ForegroundColor Cyan
 

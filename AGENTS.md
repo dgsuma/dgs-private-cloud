@@ -4,80 +4,104 @@ These instructions apply to Codex and other automated coding assistants working 
 
 ## Repository purpose
 
-This repository records the design, installation, validation, operation, and future build-out of the DGS private cloud.
+This repository records the design, installation, validation, operation, GitOps configuration, and future build-out of the DGS private cloud and Home Lab IoT platform.
 
-## Current verified infrastructure
+## Current verified platform
 
 ```text
-Active Proxmox node
+Active hypervisor
 Node: pve01
 FQDN: pve01.home.arpa
 Management IP: 192.168.1.201/24
-Hypervisor: Proxmox VE 9.2
-PVE Manager: 9.2.4
+Platform: Beelink GTi12
+Proxmox VE Manager: 9.2.5 observed
 Primary VM store: vmdata
-Cluster state: Standalone; no cluster created
+Cluster membership: standalone
 
-First guest
-VM ID: 100
-Proxmox name: ubuntu-web-test
-Guest hostname: web-test01
-OS: Ubuntu Server 26.04 LTS
-Reserved IP: 192.168.1.205
-Disk: 32GiB on vmdata
-Services validated: QEMU Guest Agent, OpenSSH, Nginx
+Talos control plane
+VM ID: 210
+Name: talos-cp-01
+Address: 192.168.1.210
+Talos version: v1.13.6
+State: maintenance mode
+Installation target: /dev/sda
+Kubernetes: not bootstrapped
+
+Retired items
+asus-pve: temporary experiment ended; not an active node
+VM 100 ubuntu-web-test: deleted with its disks
 ```
 
-The legacy ASUS laptop is no longer an active Proxmox node. Its short experiment ended without cluster formation, and it now runs Zorin OS. Historical ASUS documentation must be clearly labelled as retired or historical.
+## Planned Talos workers
+
+```text
+VM 211 talos-wk-01 192.168.1.211
+VM 212 talos-wk-02 192.168.1.212
+```
 
 ## Editing rules
 
 1. Preserve verified facts unless newer command output is supplied.
 2. Mark planned or unverified work explicitly as `Planned`, `Proposed`, or `Not yet implemented`.
 3. Never invent completed infrastructure.
-4. Keep documentation ordered by lifecycle: design, installation, networking, storage, validation, operations, next steps.
-5. Use Mermaid for diagrams so GitHub renders them natively.
-6. Record major design changes as Architecture Decision Records under `docs/decisions/`.
+4. Keep current state separate from future design.
+5. Use Mermaid for diagrams that GitHub can render natively.
+6. Record major design changes as ADRs under `docs/decisions/`.
 7. Do not add destructive commands without:
    - a warning,
-   - the exact target device,
+   - the exact target,
    - a verification command,
-   - and a recovery note.
+   - and a recovery or rollback note.
 8. Shell scripts must use:
 
-```bash
-set -euo pipefail
-```
+   ```bash
+   set -euo pipefail
+   ```
 
-9. Scripts must avoid printing secrets.
-10. Do not commit:
-    - passwords,
-    - private keys,
-    - API tokens,
-    - Tailscale/WireGuard keys,
-    - SIM IMSI/ICCID/MSISDN,
-    - public WAN addresses,
-    - unredacted router screenshots,
-    - Proxmox backup archives,
-    - VM disk images,
-    - Terraform state,
-    - uniquely identifying hardware details unless required and intentionally sanitised.
-11. Do not describe the Beelink as a technical cluster master. `pve01` is the operational main node; future Proxmox cluster members will be peers.
-12. Until cluster creation is verified, document the environment as standalone and do not invent quorum output.
-13. Treat `git-commands-local.txt` as local operator notes. It is ignored and must not be committed.
+9. PowerShell scripts must use:
+
+   ```powershell
+   $ErrorActionPreference = "Stop"
+   Set-StrictMode -Version Latest
+   ```
+
+10. Scripts must avoid printing secrets.
+11. Do not describe `pve01` as a Kubernetes control-plane node. It is the Proxmox host. `talos-cp-01` is the Kubernetes control-plane VM.
+12. Do not describe `pve01` as a Proxmox cluster master. Proxmox members are peers; `pve01` is currently standalone.
+13. Do not describe `asus-pve` as active.
+14. Do not describe VM `100` as existing.
+15. Do not claim Kubernetes, Flux, Tailscale Operator, monitoring, logging, or Homepage is deployed until command output proves it.
+
+## Secret-handling rules
+
+Never commit:
+
+- generated Talos `controlplane.yaml` or `worker.yaml`,
+- Talos secrets,
+- `talosconfig`,
+- kubeconfig,
+- age private identities,
+- decrypted SOPS content,
+- GitHub tokens,
+- Tailscale OAuth clients or auth keys,
+- passwords, private keys, VPN profiles,
+- Terraform state,
+- Proxmox backups or virtual disks,
+- ISO images,
+- unredacted router exports.
+
+SOPS-encrypted Kubernetes Secret manifests may be committed only after `.sops.yaml` and Flux decryption are configured.
 
 ## Current storage facts
 
 ```text
 pve01
-/dev/nvme1n1  Crucial CT1000P3PSSD8 1TB
-               Proxmox system disk
+/dev/nvme1n1  Crucial CT1000P3PSSD8 1 TB  Proxmox system disk
+/dev/nvme0n1  Samsung SSD 990 PRO 2 TB     vg_vmdata / thin_vmdata / vmdata
 
-/dev/nvme0n1  Samsung SSD 990 PRO 2TB
-               vg_vmdata / thin_vmdata / vmdata
-
-VM 100
-32GiB thin-provisioned virtual disk on vmdata
+VM 210
+64 GiB SCSI system disk on vmdata
+Talos sees the installation target as /dev/sda
 ```
 
 Never generate a command that wipes the Beelink Crucial system disk.
@@ -86,7 +110,7 @@ Never generate a command that wipes the Beelink Crucial system disk.
 
 - Use precise headings.
 - Prefer tables for configuration state.
-- Place commands in fenced code blocks.
+- Put commands in fenced code blocks.
 - Include expected output or success criteria.
-- Separate verified current state from future design.
 - Use Australian English where natural.
+- Keep IP addresses, names, VM IDs, dates, and versions consistent.

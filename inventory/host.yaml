@@ -1,24 +1,22 @@
 host:
   node_name: pve01
   fqdn: pve01.home.arpa
-  role: main_operational_node
+  role: active_proxmox_host
   platform: Beelink GTi12
   cpu: Intel Core i9-12900H
   memory_gib: 64
 
   hypervisor:
     product: Proxmox VE
-    version: "9.2.0"
-    manager_version: "9.2.4"
-    running_kernel: 7.0.14-4-pve
+    major_minor_version: "9.2"
+    manager_version_observed: "9.2.5"
+    cluster_membership: standalone
 
   state:
-    failed_systemd_units_last_recorded: 0
-    provisioned_vm_count: 1
-    provisioned_container_count: 0
     headless: true
-    cluster_membership: standalone
-    cluster_created: false
+    active_vm_count_verified: 1
+    active_container_count_verified: 0
+    last_verified: 2026-07-25
 
   bios:
     vmx: enabled
@@ -29,11 +27,23 @@ host:
     fast_boot: disabled
     state_after_g3: S0
 
-  retired_experiments:
-    - node_name: asus-pve
-      platform: ASUS legacy laptop
-      outcome: experiment_ended_before_cluster_creation
-      current_os: Zorin OS
-      active_private_cloud_member: false
+  active_vms:
+    - vm_id: 210
+      name: talos-cp-01
+      role: talos_kubernetes_control_plane
+      address: 192.168.1.210
+      state: maintenance_mode
+      talos_version: v1.13.6
+      install_disk: /dev/sda
+      kubernetes_bootstrapped: false
 
-  last_verified: 2026-07-21
+  retired_items:
+    - name: asus-pve
+      type: temporary_proxmox_node
+      outcome: retired_without_cluster_formation
+      active: false
+    - name: ubuntu-web-test
+      vm_id: 100
+      type: disposable_validation_vm
+      outcome: deleted_with_virtual_disks
+      active: false

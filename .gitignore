@@ -1,16 +1,35 @@
 # Secrets and credentials
 .env
 .env.*
+!.env.example
 *.key
 *.pem
 *.p12
 *.pfx
-*.kubeconfig
 credentials*
 secrets*
 private*
 *token*
 *password*
+
+# Talos-generated credentials and machine configurations
+/talos/generated/*
+!/talos/generated/.gitkeep
+/talosconfig
+/kubeconfig
+*.talosconfig
+*.kubeconfig
+controlplane.yaml
+worker.yaml
+secrets.yaml
+
+# SOPS and age private material
+*.agekey
+keys.txt
+/sops-age-key.txt
+*.decrypted.yaml
+*.plain.yaml
+*.unencrypted.yaml
 
 # Proxmox and infrastructure exports
 /etc/pve/priv/
@@ -47,6 +66,9 @@ vault-password*
 reports/*.txt
 reports/*.log
 
+# Local documentation/update backups
+.local-backups/
+
 # Sensitive screenshots and exports
 evidence/private/
 router-export*
@@ -54,41 +76,12 @@ proxmox-export*
 sim-*
 wan-*
 
-# Local operator notes
-/git-commands-local.txt
-
-# IDE and OS
+# IDE and operating system
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
-
-# Talos-generated machine configurations and credentials
-/talos/generated/*
-!/talos/generated/.gitkeep
-/talosconfig
-/kubeconfig
-
-# SOPS and age private keys
-*.agekey
-keys.txt
-/sops-age-key.txt
-
-# Decrypted secret files
-*.decrypted.yaml
-*.plain.yaml
-*.unencrypted.yaml
-
-# Temporary files
-*.tmp
-*.bak
-*.log
-
-# Local environment variables
-.env
-.env.*
-!.env.example
-
-# Windows
-Thumbs.db
 Desktop.ini
+
+# Local operator notes
+/git-commands-local.txt

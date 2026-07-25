@@ -1,157 +1,118 @@
 # Operations
 
-## Normal administration
+## Active administration endpoints
 
-Use the private management URL:
-
-```text
-pve01: https://192.168.1.201:8006
-```
-
-The environment is a standalone Proxmox node. VM `100` is retained as a test workload and does not start automatically.
-
-## First VM access
+Use only the private LAN or a future authenticated private-access path.
 
 ```text
-Web page: http://192.168.1.205
-SSH:      duminda@192.168.1.205
+Proxmox pve01: https://192.168.1.201:8006
+Talos control plane: 192.168.1.210 TCP 50000
+Future Kubernetes API: https://192.168.1.210:6443
 ```
 
-Quick checks inside the VM:
+Do not expose these services through router port forwarding.
 
-```bash
-hostname -I
-systemctl is-active nginx
-systemctl is-active qemu-guest-agent
-curl -I http://localhost
-```
+## Current VM operations
 
-## Start VM 100
-
-From the Proxmox GUI:
-
-1. Select `100 (ubuntu-web-test)`.
-2. Select **Start**.
-3. Wait for QEMU Guest Agent and the guest IP to appear.
-
-From the Proxmox shell:
-
-```bash
-qm start 100
-qm status 100
-```
-
-## Safe guest shutdown
-
-Preferred from inside Ubuntu:
-
-```bash
-sudo shutdown -h now
-```
-
-Or from the Proxmox GUI, select VM `100` and choose **Shutdown**.
-
-From the Proxmox shell:
-
-```bash
-qm shutdown 100
-```
-
-Use **Stop** only for an unresponsive guest because it is comparable to cutting power.
-
-## Safe host shutdown
-
-Before shutting down `pve01`, confirm that VM `100` and any future guests are stopped or safely shut down:
+List VMs:
 
 ```bash
 qm list
 ```
 
-From the web interface, select `pve01` and choose **Shutdown**.
+Inspect the Talos control-plane VM:
 
-From the shell:
+```bash
+qm config 210
+qm status 210
+```
+
+Start or stop VM `210`:
+
+```bash
+qm start 210
+qm shutdown 210
+```
+
+Use `qm stop 210` only when graceful shutdown cannot complete.
+
+## Talos maintenance-mode checks
+
+From the LG Gram:
+
+```powershell
+Test-Connection 192.168.1.210 -Count 4
+Test-NetConnection 192.168.1.210 -Port 50000
+
+talosctl get disks `
+  --insecure `
+  --nodes 192.168.1.210
+```
+
+Expected important disk mapping:
+
+```text
+sda  QEMU HARDDISK  writable  Talos installation target
+sr0  QEMU DVD-ROM   read-only Talos boot ISO
+```
+
+Never select `/dev/sr0` as the installation target.
+
+## Safe shutdown
+
+From the Proxmox web interface, select the guest or node and choose **Shutdown**.
+
+For the Proxmox host:
 
 ```bash
 shutdown -h now
 ```
 
-or:
-
-```bash
-poweroff
-```
-
-The Proxmox web interface becoming unreachable is expected during host shutdown.
-
-## Nginx content
-
-The test page is stored at:
-
-```text
-/var/www/html/index.html
-```
-
-Nginx serves static file changes immediately; a restart is normally unnecessary.
-
-Validate:
-
-```bash
-sudo nginx -t
-curl http://localhost
-curl -I http://localhost
-```
-
-## Windows-to-VM file copy
-
-Example:
-
-```powershell
-scp "$HOME\Downloads\index.html" duminda@192.168.1.205:/home/duminda/index.html
-```
-
-Then inside Ubuntu:
-
-```bash
-sudo install -m 644 /home/duminda/index.html /var/www/html/index.html
-```
-
-If an SSH host-key warning appears after rebuilding a guest at the same IP, verify the new fingerprint in the console before removing the old Windows entry:
-
-```powershell
-ssh-keygen -R 192.168.1.205
-```
+Before shutting down `pve01`, gracefully stop all VMs.
 
 ## Eaton UPS state
 
-The Eaton UPS currently supplies:
+The UPS actively protects:
 
-- the TP-Link Archer NX200 router,
+- the TP-Link Archer NX200,
 - the Beelink `pve01`.
 
-This provides hardware ride-through and surge protection, but no USB/network monitoring or automatic shutdown has been configured. A power-loss test must not be treated as complete until UPS telemetry and graceful shutdown have been implemented and verified.
+The ASUS laptop is no longer part of the active server topology.
 
-## Routine health check
+UPS telemetry and automatic extended-outage shutdown are not configured.
+
+## Routine Proxmox health check
 
 ```bash
 pveversion -v
 systemctl --failed
 pvesm status
 qm list
-qm status 100
 ip -br address
 ip route
 hostname -f
 timedatectl
 ```
 
-## Monitoring thresholds
+## Storage thresholds
 
 Investigate before:
 
-- thin-pool data approaches 80%,
-- thin-pool metadata approaches 70%,
+- LVM-thin data usage approaches 80%,
+- LVM-thin metadata usage approaches 70%,
 - a root filesystem approaches 80%,
-- SMART reports media errors or critical warnings,
-- a guest repeatedly fails clean shutdown,
-- QEMU Guest Agent stops reporting,
-- the reserved guest IP is assigned to another device.
+- SMART/NVMe reports media errors or critical warnings,
+- backup space becomes insufficient.
+
+## Secret safety
+
+Generated Talos configurations contain cluster certificates and keys. Keep them under `talos/generated/`, which is ignored by Git.
+
+Do not paste or commit:
+
+- Talos secrets,
+- kubeconfig,
+- `talosconfig`,
+- SOPS age private keys,
+- GitHub tokens,
+- Tailscale credentials.

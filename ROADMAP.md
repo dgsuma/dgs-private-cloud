@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 0 — Main host foundation
+## Phase 0 — Proxmox foundation
 
 Status: **Complete**
 
@@ -12,84 +12,96 @@ Status: **Complete**
 - [x] Configure Samsung `vmdata` LVM-thin storage.
 - [x] Validate host health.
 - [x] Confirm safe headless operation.
+- [x] Add UPS hardware protection.
 
-## Phase 1 — Temporary ASUS experiment
+## Retired experiment — ASUS temporary node
 
 Status: **Closed without cluster formation**
 
-- [x] Install Proxmox VE on the ASUS ADATA 240GB SSD.
-- [x] Preserve the ASUS WDC 1TB HDD.
-- [x] Assign `asus-pve.home.arpa` to `192.168.1.203/24`.
-- [x] Configure no-subscription repositories and update the node.
-- [x] Verify bidirectional wired connectivity.
-- [x] Verify time zone and NTP synchronisation.
-- [x] Connect the router and both systems to the Eaton UPS.
-- [x] Evaluate the laptop as a possible temporary node.
-- [x] End the experiment after instability and unreliable operation were observed.
-- [x] Confirm that no Proxmox cluster had been created and no cluster-node removal was required.
-- [x] Return the ASUS laptop to desktop use with Zorin OS.
+- [x] Install Proxmox VE temporarily on the ASUS ADATA SSD.
+- [x] Preserve the WDC 1 TB HDD.
+- [x] Validate wired networking and time synchronisation.
+- [x] Decide not to continue because of old-hardware instability.
+- [x] Shut down the ASUS node.
+- [x] Remove the ASUS node from the active architecture.
+- [ ] Reinstall a desktop Linux distribution only if the laptop is reused.
 
-Cancelled scope:
+## Phase 1A — Disposable first-guest validation
 
-- Cross-node hostname configuration.
-- Cluster creation.
-- Cluster join.
-- Migration tests.
-- Two-node quorum exercises.
-- HA and Ceph were never planned for this temporary design.
+Status: **Complete**
 
-## Phase 2 — First guest validation
+- [x] Create Ubuntu VM `100` on `pve01`.
+- [x] Validate VM networking.
+- [x] Validate DNS and outbound internet.
+- [x] Validate QEMU Guest Agent.
+- [x] Validate Nginx as a simple workload.
+- [x] Shut down the VM.
+- [x] Delete VM `100` and its virtual disks after testing.
 
-Status: **Core validation complete**
+## Phase 1B — Core Talos platform
 
-- [x] Upload an Ubuntu Server ISO to `local`.
-- [x] Create a small test VM on `vmdata`.
-- [x] Allocate 2 vCPU, 4GiB RAM, and a 32GiB virtual disk.
-- [x] Verify VM networking through `vmbr0`.
-- [x] Verify DNS and outbound internet access.
-- [x] Install and validate QEMU Guest Agent.
-- [x] Install and validate OpenSSH and Nginx.
-- [x] Create and serve a static test page.
-- [x] Reserve `192.168.1.205` for `web-test01`.
-- [x] Verify clean shutdown and restart.
-- [ ] Create a snapshot.
-- [ ] Validate snapshot rollback.
-- [ ] Decide whether to retain the VM, convert it to a template source, or rebuild from cloud-init.
+Status: **In progress**
 
-## Phase 3 — Backup and resilience
+- [x] Prepare the GitOps repository structure.
+- [x] Install and verify workstation tooling.
+- [x] Generate Talos `v1.13.6` custom ISO with QEMU guest agent.
+- [x] Upload and transfer-check the Talos ISO.
+- [x] Create `talos-cp-01` as VM `210`.
+- [x] Reserve `192.168.1.210`.
+- [x] Verify Talos maintenance mode and `/dev/sda`.
+- [ ] Create `talos-wk-01` as VM `211`.
+- [ ] Create `talos-wk-02` as VM `212`.
+- [ ] Reserve `192.168.1.211` and `192.168.1.212`.
+- [ ] Confirm all worker disk device names.
+- [ ] Generate Talos cluster configuration.
+- [ ] Apply control-plane and worker configurations.
+- [ ] Bootstrap Kubernetes exactly once.
+- [ ] Retrieve kubeconfig.
+- [ ] Confirm all three nodes are `Ready`.
 
-- [ ] Select an external backup destination.
-- [ ] Configure scheduled Proxmox backups.
-- [ ] Test a full restore.
-- [x] Add UPS hardware protection.
-- [ ] Record the exact UPS model and load measurements.
-- [ ] Configure UPS monitoring.
-- [ ] Configure graceful shutdown on extended power loss.
-- [ ] Export and protect host configuration.
+## Phase 1C — GitOps and private access
 
-## Phase 4 — Security hardening
+Status: **Planned**
 
-- [ ] Create a named administrator account.
-- [ ] Enable two-factor authentication.
-- [ ] Configure SSH keys.
-- [ ] Restrict password-based SSH.
-- [ ] Define Proxmox firewall policy.
-- [ ] Document private remote access through Tailscale or WireGuard.
-- [ ] Keep TCP 8006 private.
+- [ ] Bootstrap Flux from the private `dgs-private-cloud` repository.
+- [ ] Generate an age identity and configure SOPS.
+- [ ] Store only encrypted Kubernetes secrets in Git.
+- [ ] Deploy the Tailscale Kubernetes Operator.
+- [ ] Keep Proxmox and Kubernetes administration private.
 
-## Phase 5 — Permanent multi-node private cloud
+## Phase 1D — Observability and dashboard
 
-- [ ] Select permanent second and third Proxmox nodes.
-- [ ] Standardise hostnames and addressing.
+Status: **Planned**
+
+- [ ] Deploy local persistent storage.
+- [ ] Deploy Prometheus.
+- [ ] Deploy Grafana.
+- [ ] Deploy Alertmanager.
+- [ ] Deploy Loki.
+- [ ] Deploy Grafana Alloy for log collection.
+- [ ] Deploy Homepage.
+- [ ] Expose selected services only through authenticated private access.
+
+## Phase 2 — IoT data platform
+
+Status: **Planned**
+
+- [ ] Deploy PostgreSQL and TimescaleDB.
+- [ ] Deploy MQTT.
+- [ ] Deploy Node-RED or equivalent automation.
+- [ ] Ingest polytunnel temperature, humidity, irrigation, pH, UPS, and camera metadata.
+- [ ] Add wellness-only WHOOP notifications through an appropriate integration.
+- [ ] Define backup and retention policies.
+
+## Phase 3 — Resilience and permanent expansion
+
+Status: **Planned**
+
+- [ ] Add permanent second and third Proxmox nodes.
 - [ ] Define an odd-vote quorum strategy or QDevice.
-- [ ] Define shared backup/storage strategy.
-- [ ] Test migration and node-failure procedures.
-
-## Phase 6 — Kubernetes platform
-
-- [ ] Define staging cluster VM sizes.
-- [ ] Define production-like cluster VM sizes.
-- [ ] Create VM templates.
-- [ ] Automate VM provisioning.
-- [ ] Deploy Kubernetes control-plane and worker nodes.
-- [ ] Add monitoring, logging, ingress, and secrets management.
+- [ ] Expand Kubernetes control-plane availability.
+- [ ] Introduce NAS or Proxmox Backup Server.
+- [ ] Configure scheduled backups.
+- [ ] Test restores.
+- [ ] Configure UPS telemetry and graceful shutdown.
+- [ ] Add VLANs and firewall policies where justified.

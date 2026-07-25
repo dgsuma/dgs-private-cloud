@@ -1,206 +1,58 @@
-# First Ubuntu VM Validation
+# First Ubuntu VM Validation and Retirement
 
 ## Purpose
 
-Validate the complete first-guest workflow on the standalone Beelink Proxmox node:
+VM `100` was a disposable first-guest validation workload used to confirm that `pve01`, `vmdata`, `vmbr0`, DHCP, DNS, outbound networking, QEMU Guest Agent, and a simple web service worked correctly.
 
-- ISO upload,
-- VM creation,
-- Ubuntu installation,
-- bridged networking,
-- guest-agent integration,
-- SSH and SCP,
-- Nginx deployment,
-- DHCP reservation,
-- clean shutdown and restart.
-
-## Verified VM configuration
+## Historical identity
 
 | Property | Value |
 |---|---|
-| Node | `pve01` |
-| VM ID | `100` |
+| Proxmox VM ID | `100` |
 | Proxmox name | `ubuntu-web-test` |
 | Guest hostname | `web-test01` |
-| OS | Ubuntu Server 26.04 LTS |
-| vCPU | 2 |
-| Memory | 4GiB |
-| Disk | 32GiB |
-| Disk storage | `vmdata` |
-| Disk bus | SCSI |
-| Network model | VirtIO |
-| Bridge | `vmbr0` |
-| QEMU Guest Agent option | Enabled |
-| Guest autostart | Disabled |
+| Historical reserved address | `192.168.1.205` |
+| Workload | Nginx validation page |
+| Storage | `vmdata` |
+| Final state | Deleted |
 
-## Storage placement
+## Validated capabilities
 
-```text
-Ubuntu ISO       -> local
-VM virtual disk  -> vmdata
-```
+- VM creation on `vmdata`.
+- Boot and console access.
+- LAN connectivity through `vmbr0`.
+- DHCP address assignment/reservation.
+- DNS resolution.
+- Outbound internet access.
+- QEMU Guest Agent reporting.
+- Nginx installation and HTTP response.
+- Clean guest shutdown.
 
-No physical disk was initialised or wiped during guest creation.
+## Retirement
 
-## Ubuntu installation
+The test VM was no longer needed after validation.
 
-The guided installer used the complete 32GiB virtual disk with LVM. This operation affected only the VM disk.
-
-Installed packages:
+It was shut down and deleted with:
 
 ```bash
-sudo apt update
-sudo apt upgrade -y
-sudo apt install -y nginx curl qemu-guest-agent openssh-server
-sudo systemctl enable --now nginx
-sudo systemctl enable --now qemu-guest-agent
-sudo systemctl enable --now ssh
+qm destroy 100 --purge 1 --destroy-unreferenced-disks 1
 ```
 
-Validation:
-
-```bash
-systemctl is-active nginx
-systemctl is-active qemu-guest-agent
-systemctl is-active ssh
-```
-
-Expected result for each service:
-
-```text
-active
-```
-
-## Test web page
-
-Nginx document root:
-
-```text
-/var/www/html
-```
-
-Test page:
-
-```text
-/var/www/html/index.html
-```
-
-File installation pattern:
-
-```bash
-sudo install -m 644 /home/duminda/index.html /var/www/html/index.html
-```
-
-Validation:
-
-```bash
-sudo nginx -t
-curl http://localhost
-curl -I http://localhost
-```
-
-Expected HTTP result:
-
-```text
-HTTP/1.1 200 OK
-Server: nginx
-Content-Type: text/html
-```
-
-## Windows file transfer
-
-The HTML file was created on the Windows admin laptop and copied to the guest:
-
-```powershell
-scp "$HOME\Downloads\index.html" duminda@192.168.1.205:/home/duminda/index.html
-```
-
-SSH access:
-
-```powershell
-ssh duminda@192.168.1.205
-```
-
-If Windows reports a changed host key after a legitimate guest rebuild, first verify the guest fingerprint through the Proxmox console, then remove the stale entry:
-
-```powershell
-ssh-keygen -R 192.168.1.205
-```
-
-## Network reservation
-
-The VM initially received a dynamic address. The Archer NX200 was then configured to reserve:
-
-```text
-Guest hostname: web-test01
-Reserved IPv4:  192.168.1.205
-Address method: DHCP reservation
-```
-
-The guest remains configured for DHCP. The router assigns the stable address based on the VM's virtual NIC.
-
-Verified browser URL:
-
-```text
-http://192.168.1.205
-```
-
-## Shutdown and restart
-
-Safe guest shutdown:
-
-```bash
-sudo shutdown -h now
-```
-
-Proxmox shell alternative:
-
-```bash
-qm shutdown 100
-```
-
-Start and verify:
-
-```bash
-qm start 100
-qm status 100
-```
-
-Before shutting down `pve01`, confirm the VM is stopped:
+Deletion was verified with:
 
 ```bash
 qm list
+pvesm list vmdata
 ```
 
-Then shut down the host through the Proxmox GUI or:
+Result:
 
-```bash
-shutdown -h now
-```
+- VM `100` no longer appeared.
+- No `vm-100-*` volume remained.
+- `vmdata` remained active.
 
-## Validation result
+## Decision
 
-Successful:
+The first-guest validation is complete. The repository must not describe VM `100` as an active workload.
 
-- VM creation,
-- Ubuntu installation,
-- console login,
-- package updates,
-- bridged LAN access,
-- DHCP reservation,
-- SSH and SCP,
-- QEMU Guest Agent,
-- Nginx service,
-- static web page,
-- local and remote HTTP response,
-- clean guest shutdown,
-- guest restart,
-- safe host shutdown.
-
-Not yet tested:
-
-- snapshot and rollback,
-- backup and restore,
-- clone and template conversion,
-- firewall policy,
-- automated provisioning.
+See [ADR-005](decisions/ADR-005-single-node-first-guest-validation.md).

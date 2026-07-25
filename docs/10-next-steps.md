@@ -1,93 +1,114 @@
 # Next Steps
 
-## Immediate next task: snapshot and rollback validation
+## Immediate task: create Talos workers
 
-VM `100` is the first validated guest. The next controlled exercise should test a snapshot before adding more infrastructure.
+Create:
 
-Suggested sequence:
-
-1. Start VM `100`.
-2. Confirm the website and guest agent are healthy.
-3. Create a snapshot named `before-change`.
-4. Modify the test page.
-5. Confirm the change in the browser.
-6. Shut down the VM if required by the selected snapshot mode.
-7. Roll back to `before-change`.
-8. Confirm the original page and services return.
-9. Record storage use before and after the test.
-
-Do not use snapshots as a replacement for backups.
-
-## Backup and restore
-
-After snapshot validation:
-
-- select an external backup destination,
-- create a scheduled Proxmox backup job,
-- produce a backup of VM `100`,
-- verify backup integrity,
-- restore to a different test VM ID,
-- start the restored VM on an isolated or carefully controlled network,
-- confirm that Nginx and the guest agent work.
-
-## Reusable Ubuntu template
-
-Choose one of these approaches:
-
-- retain VM `100` as a manual learning VM,
-- clone VM `100` and sanitise it before conversion to a template,
-- build a new cloud-init Ubuntu template.
-
-A template should not contain reused SSH host keys, temporary passwords, shell history, or application-specific test data.
-
-## UPS integration
-
-- Record the exact Eaton model and USB/network capabilities.
-- Connect UPS telemetry to an appropriate system.
-- Configure alerts.
-- Define the guest-shutdown order.
-- Configure a delayed graceful shutdown for `pve01`.
-- Test without risking filesystem corruption.
-
-## Security hardening
-
-- Create a named Proxmox administrator account.
-- Enable two-factor authentication.
-- Configure SSH keys.
-- Review root password-based SSH.
-- Define Proxmox firewall policy.
-- Keep TCP 8006 private.
-- Document Tailscale or WireGuard remote administration.
-
-## Permanent multi-node planning
-
-The ASUS laptop is no longer a Proxmox candidate. Future clustering work requires permanent hardware.
-
-Planned decisions:
-
-- select permanent `pve02` and `pve03`,
-- standardise CPU, RAM, storage, and NIC capabilities,
-- allocate stable management addresses,
-- define an odd-vote quorum strategy,
-- choose backup and shared-storage architecture,
-- test migration only after backups exist.
-
-## Long-term target
-
-```mermaid
-flowchart LR
-    PVE1["pve01<br/>Beelink GTi12<br/>permanent"]
-    PVE2["future pve02<br/>planned"]
-    PVE3["future pve03<br/>planned"]
-    Backup["NAS / Proxmox Backup Server<br/>planned"]
-    K8s["Staging and production-like Kubernetes<br/>planned"]
-
-    PVE1 -. future cluster .- PVE2
-    PVE2 -. future cluster .- PVE3
-    PVE1 -. backups .-> Backup
-    PVE2 -. backups .-> Backup
-    PVE3 -. backups .-> Backup
-    PVE1 -. hosts .-> K8s
-    PVE2 -. hosts .-> K8s
-    PVE3 -. hosts .-> K8s
+```text
+VM 211 talos-wk-01 192.168.1.211
+VM 212 talos-wk-02 192.168.1.212
 ```
+
+Use the detailed [worker and bootstrap runbook](runbooks/talos-phase1-workers-and-bootstrap.md).
+
+## Required VM baseline
+
+```text
+Machine: q35
+BIOS: OVMF
+EFI storage: vmdata
+Pre-enrolled Secure Boot keys: disabled
+CPU type: host
+Memory ballooning: disabled
+SCSI controller: VirtIO SCSI
+QEMU Guest Agent: enabled
+Network: VirtIO on vmbr0
+Proxmox firewall: disabled initially
+Talos ISO: talos-v1.13.6-qemu-agent-amd64.iso
+```
+
+Each worker needs:
+
+```text
+6 vCPU
+14336 MiB RAM
+64 GiB SCSI system disk on vmdata
+300 GiB SCSI data disk on vmdata
+discard enabled
+SSD emulation enabled
+```
+
+## Worker validation gate
+
+Before generating the cluster configuration, verify:
+
+```powershell
+Test-Connection 192.168.1.211 -Count 4
+Test-NetConnection 192.168.1.211 -Port 50000
+talosctl get disks --insecure --nodes 192.168.1.211
+
+Test-Connection 192.168.1.212 -Count 4
+Test-NetConnection 192.168.1.212 -Port 50000
+talosctl get disks --insecure --nodes 192.168.1.212
+```
+
+Record the exact device names for:
+
+- the 64 GiB system disk,
+- the 300 GiB data disk,
+- the ISO device.
+
+Do not assume the worker data disk device name.
+
+## Talos configuration sequence
+
+After all three maintenance-mode nodes and disk names are verified:
+
+1. Generate one cluster configuration.
+2. Use `/dev/sda` only after each node confirms it is the system disk.
+3. Configure the matching Image Factory installer:
+
+   ```text
+   factory.talos.dev/metal-installer/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515:v1.13.6
+   ```
+
+4. Apply the control-plane configuration to `192.168.1.210`.
+5. Apply worker configurations to `192.168.1.211` and `192.168.1.212`.
+6. Bootstrap exactly once against the control plane.
+7. Retrieve kubeconfig.
+8. Verify all nodes.
+
+## Kubernetes success criteria
+
+```powershell
+talosctl health
+kubectl get nodes -o wide
+kubectl get pods --all-namespaces
+```
+
+Required result:
+
+```text
+talos-cp-01 Ready
+talos-wk-01 Ready
+talos-wk-02 Ready
+```
+
+## Post-Kubernetes sequence
+
+1. Bootstrap Flux.
+2. Configure SOPS with age.
+3. Deploy local persistent storage.
+4. Deploy Tailscale Operator.
+5. Deploy Prometheus, Grafana, and Alertmanager.
+6. Deploy Loki and Alloy.
+7. Deploy Homepage.
+
+## Safety constraints
+
+- Run `talosctl bootstrap` only once.
+- Never commit files under `talos/generated/`.
+- Never commit `talosconfig` or kubeconfig.
+- Never commit an age private key.
+- Do not configure `192.168.1.220` as an API VIP while only one control plane exists.
+- Do not introduce Ceph or Proxmox HA into this single-host phase.
