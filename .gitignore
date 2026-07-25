@@ -62,3 +62,33 @@ wan-*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Talos-generated machine configurations and credentials
+/talos/generated/*
+!/talos/generated/.gitkeep
+/talosconfig
+/kubeconfig
+
+# SOPS and age private keys
+*.agekey
+keys.txt
+/sops-age-key.txt
+
+# Decrypted secret files
+*.decrypted.yaml
+*.plain.yaml
+*.unencrypted.yaml
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Local environment variables
+.env
+.env.*
+!.env.example
+
+# Windows
+Thumbs.db
+Desktop.ini
