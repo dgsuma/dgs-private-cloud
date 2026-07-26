@@ -24,7 +24,7 @@ Status: **Closed without cluster formation**
 - [x] Decide not to continue because of old-hardware instability.
 - [x] Shut down the ASUS node.
 - [x] Remove the ASUS node from the active architecture.
-- [ ] Reinstall a desktop Linux distribution only if the laptop is reused.
+- [x] Return the laptop to desktop use with Zorin OS.
 
 ## Phase 1A — Disposable first-guest validation
 
@@ -38,42 +38,61 @@ Status: **Complete**
 - [x] Shut down the VM.
 - [x] Delete VM `100` and its virtual disks after testing.
 
-## Phase 1B — Core Talos platform
+## Phase 1B — Core Talos Kubernetes platform
 
-Status: **In progress**
+Status: **Complete**
 
 - [x] Prepare the GitOps repository structure.
 - [x] Install and verify workstation tooling.
-- [x] Generate Talos `v1.13.6` custom ISO with QEMU guest agent.
+- [x] Generate Talos `v1.13.6` custom ISO.
 - [x] Upload and transfer-check the Talos ISO.
 - [x] Create `talos-cp-01` as VM `210`.
-- [x] Reserve `192.168.1.210`.
-- [x] Verify Talos maintenance mode and `/dev/sda`.
-- [ ] Create `talos-wk-01` as VM `211`.
-- [ ] Create `talos-wk-02` as VM `212`.
-- [ ] Reserve `192.168.1.211` and `192.168.1.212`.
-- [ ] Confirm all worker disk device names.
-- [ ] Generate Talos cluster configuration.
-- [ ] Apply control-plane and worker configurations.
-- [ ] Bootstrap Kubernetes exactly once.
-- [ ] Retrieve kubeconfig.
-- [ ] Confirm all three nodes are `Ready`.
+- [x] Create `talos-worker-01` as VM `211`.
+- [x] Create `talos-worker-02` as VM `212`.
+- [x] Reserve `192.168.1.210`, `.211`, and `.212`.
+- [x] Confirm `/dev/sda` on all three machines.
+- [x] Generate Talos cluster configuration.
+- [x] Generate and validate node-specific hostname configurations.
+- [x] Apply control-plane and worker configurations.
+- [x] Bootstrap Kubernetes exactly once.
+- [x] Retrieve kubeconfig.
+- [x] Confirm all three nodes are `Ready`.
+- [x] Confirm Talos cluster health.
+- [x] Confirm Kubernetes system pods are running.
+- [x] Validate workload distribution across both workers.
+- [x] Detach the installation ISO from all three VMs.
+- [x] Create and checksum the first off-cluster etcd snapshot.
 
-## Phase 1C — GitOps and private access
+## Phase 1C — Backup baseline and recovery testing
+
+Status: **In progress**
+
+- [x] Create the first etcd snapshot.
+- [x] Store the snapshot outside the cluster and repository.
+- [x] Generate a SHA-256 checksum.
+- [ ] Purchase or allocate an external backup target.
+- [ ] Configure Proxmox backup storage.
+- [ ] Back up VMs `210`, `211`, and `212`.
+- [ ] Test a full VM restore.
+- [ ] Automate etcd snapshot scheduling.
+- [ ] Define snapshot and VM-backup retention.
+- [ ] Test Talos disaster recovery in a controlled lab exercise.
+
+## Phase 1D — GitOps and private access
 
 Status: **Planned**
 
-- [ ] Bootstrap Flux from the private `dgs-private-cloud` repository.
+- [ ] Bootstrap Flux from the repository.
 - [ ] Generate an age identity and configure SOPS.
 - [ ] Store only encrypted Kubernetes secrets in Git.
 - [ ] Deploy the Tailscale Kubernetes Operator.
 - [ ] Keep Proxmox and Kubernetes administration private.
 
-## Phase 1D — Observability and dashboard
+## Phase 1E — Storage, observability, and dashboard
 
 Status: **Planned**
 
-- [ ] Deploy local persistent storage.
+- [ ] Select and deploy local persistent storage.
 - [ ] Deploy Prometheus.
 - [ ] Deploy Grafana.
 - [ ] Deploy Alertmanager.
@@ -91,7 +110,7 @@ Status: **Planned**
 - [ ] Deploy Node-RED or equivalent automation.
 - [ ] Ingest polytunnel temperature, humidity, irrigation, pH, UPS, and camera metadata.
 - [ ] Add wellness-only WHOOP notifications through an appropriate integration.
-- [ ] Define backup and retention policies.
+- [ ] Define application-data backup and retention policies.
 
 ## Phase 3 — Resilience and permanent expansion
 
@@ -101,7 +120,7 @@ Status: **Planned**
 - [ ] Define an odd-vote quorum strategy or QDevice.
 - [ ] Expand Kubernetes control-plane availability.
 - [ ] Introduce NAS or Proxmox Backup Server.
-- [ ] Configure scheduled backups.
-- [ ] Test restores.
+- [ ] Configure scheduled VM and application backups.
+- [ ] Test restores regularly.
 - [ ] Configure UPS telemetry and graceful shutdown.
 - [ ] Add VLANs and firewall policies where justified.

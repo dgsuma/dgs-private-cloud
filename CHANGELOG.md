@@ -2,79 +2,49 @@
 
 All notable documentation and infrastructure-state changes are recorded here.
 
-## [0.4.0] - 2026-07-25
+## [0.4.0] - 2026-07-26
 
 ### Added
 
-- Phase 1 GitOps repository structure for Talos, Kubernetes infrastructure, applications, and the home cluster.
-- Workstation verification script for Git, GitHub CLI, kubectl, talosctl, Flux, SOPS, and age.
-- Talos Image Factory schematic using `siderolabs/qemu-guest-agent`.
-- Talos Kubernetes Phase 1 implementation record.
-- ADR for the disposable first-guest validation.
-- ADR for the initial Talos Kubernetes architecture.
-- Worker-creation and Kubernetes-bootstrap runbook.
+- Talos worker VMs `211` and `212`.
+- Node-specific Talos hostname patches using `HostnameConfig`.
+- Completed Kubernetes bootstrap documentation.
+- Kubernetes cluster inventory.
+- etcd snapshot runbook and reusable PowerShell snapshot script.
+
+### Changed
+
+- Updated the verified state from one Talos maintenance-mode VM to an operational three-node cluster.
+- Corrected the worker specifications to the implemented 4 vCPU, 8 GiB RAM, and 64 GiB disk configuration.
+- Corrected the active worker names to `talos-worker-01` and `talos-worker-02`.
+- Updated the Talos runbook with the actual clone, boot-order, configuration-patching, validation, bootstrap, and ISO-detachment workflow.
+- Updated operations, security, roadmap, inventories, and next steps.
 
 ### Completed infrastructure
 
-- Removed obsolete Ubuntu validation VM `100` and confirmed no `vm-100-*` disks remained.
-- Confirmed `vmdata` remained active and healthy after VM deletion.
-- Updated the administration workstation toolset:
-  - GitHub CLI `2.96.0`,
-  - kubectl `1.36.3`,
-  - Flux CLI `2.9.3`,
-  - talosctl `1.13.6`,
-  - SOPS `3.13.2`,
-  - age `1.3.1`.
-- Generated Talos `v1.13.6` custom ISO with QEMU guest-agent support.
-- Verified the ISO’s SHA-256 remained identical after upload to `pve01`.
-- Created control-plane VM `210` as `talos-cp-01`.
-- Reserved `192.168.1.210`.
-- Booted Talos into maintenance mode.
-- Verified Talos API connectivity on TCP `50000`.
-- Confirmed `/dev/sda` is the 64 GiB installation disk.
+- Applied Talos `v1.13.6` machine configurations to all three nodes.
+- Bootstrapped the control plane exactly once.
+- Confirmed Kubernetes `v1.36.2` and all three nodes `Ready`.
+- Confirmed CoreDNS, Flannel, kube-proxy, API server, controller manager, and scheduler running.
+- Validated workload scheduling with four Nginx replicas across both workers.
+- Detached the installation ISO from all three VMs.
+- Created and SHA-256-verified the first off-cluster etcd snapshot.
 
-### Architecture changes
-
-- Retired the temporary ASUS node from the active topology.
-- Confirmed the ASUS experiment ended without forming a Proxmox cluster.
-- Changed the immediate platform direction from a temporary two-host Proxmox experiment to a three-VM Talos Kubernetes cluster on standalone `pve01`.
-- Reserved `192.168.1.220` for a future highly available Kubernetes API endpoint; it is not currently used.
-
-### Pending
-
-- Create workers VM `211` and VM `212`.
-- Generate and apply Talos machine configurations.
-- Bootstrap Kubernetes.
-- Bootstrap Flux.
-- Configure SOPS with age.
-- Deploy Tailscale Operator, observability, logging, and Homepage.
-
-## [0.3.0] - 2026-07-18
+## [0.3.0] - 2026-07-25
 
 ### Added
 
-- Temporary ASUS Proxmox node documentation.
-- ADR for the short-lived two-node experiment.
-- Safe temporary-node removal runbook for the later Linux reinstall.
-- UPS hardware inventory and updated two-host topology.
-- Sanitised pre-cluster hostname and connectivity evidence.
+- GitOps-oriented repository structure for Talos, Kubernetes infrastructure, applications, clusters, and runbooks.
+- Talos `v1.13.6` Image Factory schematic with the QEMU guest-agent extension selected.
+- Talos control-plane VM `210`.
+- Talos Phase 1 prerequisite documentation.
 
-### Completed infrastructure
+### Verified
 
-- Installed Proxmox VE on the ASUS 240 GB ADATA SSD while preserving the WDC 1 TB HDD.
-- Assigned `asus-pve.home.arpa` the static management address `192.168.1.203/24`.
-- Configured the Proxmox no-subscription repository policy on the ASUS node.
-- Updated both nodes to PVE Manager `9.2.4`.
-- Verified bidirectional wired connectivity with zero packet loss.
-- Verified NTP synchronisation and the `Australia/Melbourne` time zone on both nodes.
-- Confirmed the Archer LAN 3/WAN port is functioning as a LAN connection for the ASUS node.
-- Connected the router, Beelink, and ASUS laptop to the Eaton UPS.
-
-### Outcome recorded later
-
-- The temporary ASUS experiment was abandoned because the old hardware was unstable.
-- The ASUS node was shut down.
-- No Proxmox cluster was formed.
+- Talos maintenance mode on `192.168.1.210`.
+- Talos API reachability.
+- Writable installation disk `/dev/sda`.
+- Matching workstation and uploaded ISO hashes.
 
 ## [0.2.0] - 2026-07-12
 

@@ -1,114 +1,88 @@
 # Next Steps
 
-## Immediate task: create Talos workers
+## Immediate priority — durable backup and recovery
 
-Create:
+1. Purchase or allocate an external backup target.
+2. Add it to Proxmox as storage that accepts `VZDump backup file` content, or deploy Proxmox Backup Server later.
+3. Back up VMs `210`, `211`, and `212`.
+4. Verify backup archive integrity and available capacity.
+5. Restore one VM into an isolated test ID and validate that it boots.
+6. Schedule regular etcd snapshots and copy them off the LG Gram.
+7. Define retention for etcd snapshots and Proxmox backups.
+8. Document a controlled disaster-recovery test.
 
-```text
-VM 211 talos-wk-01 192.168.1.211
-VM 212 talos-wk-02 192.168.1.212
+## Platform verification before adding services
+
+- Verify the installed Talos system-extension list and whether the QEMU guest agent is running.
+- Record a current `qm config` export for each VM with MAC addresses redacted.
+- Record cluster certificate and kubeconfig expiry considerations.
+- Decide whether control-plane workload scheduling should remain enabled.
+- Define resource headroom for platform services and application workloads.
+
+## GitOps and secrets
+
+1. Bootstrap Flux against `clusters/home/`.
+2. Create an age key outside the repository.
+3. Configure SOPS.
+4. Commit only encrypted Kubernetes secret manifests.
+5. Add validation in CI to detect plaintext secrets and invalid YAML.
+
+## Private remote access
+
+1. Deploy the Tailscale Kubernetes Operator or another reviewed private-access method.
+2. Keep Proxmox, Talos API, Kubernetes API, Grafana, Prometheus, Loki, and databases off the public internet.
+3. Define named-user administration and MFA.
+
+## Persistent storage
+
+Choose the initial storage path before deploying stateful applications:
+
+- simple local-path storage for disposable and low-risk workloads,
+- a more resilient CSI solution when additional physical nodes or NAS storage become available.
+
+Do not deploy PostgreSQL or TimescaleDB until backup, restore, and persistent-volume behaviour are understood.
+
+## Observability and dashboard
+
+Deploy in controlled stages:
+
+1. metrics-server,
+2. Prometheus,
+3. Grafana,
+4. Alertmanager,
+5. Loki,
+6. Grafana Alloy,
+7. Homepage.
+
+Set resource requests and limits and verify the cluster remains within the Beelink resource budget.
+
+## IoT platform
+
+After storage and observability are stable:
+
+- deploy PostgreSQL and TimescaleDB,
+- deploy MQTT,
+- deploy Node-RED or an equivalent automation layer,
+- begin polytunnel sensor ingestion,
+- add UPS telemetry,
+- define application-level backup policies.
+
+## Long-term multi-node target
+
+```mermaid
+flowchart LR
+    PVE1["pve01<br/>Beelink GTi12<br/>current"]
+    PVE2["pve02<br/>planned"]
+    PVE3["pve03<br/>planned"]
+    Backup["NAS / Proxmox Backup Server<br/>planned"]
+    K8s["Multi-host Kubernetes<br/>planned"]
+
+    PVE1 -. cluster .- PVE2
+    PVE2 -. cluster .- PVE3
+    PVE1 -. backups .-> Backup
+    PVE2 -. backups .-> Backup
+    PVE3 -. backups .-> Backup
+    PVE1 -. hosts .-> K8s
+    PVE2 -. hosts .-> K8s
+    PVE3 -. hosts .-> K8s
 ```
-
-Use the detailed [worker and bootstrap runbook](runbooks/talos-phase1-workers-and-bootstrap.md).
-
-## Required VM baseline
-
-```text
-Machine: q35
-BIOS: OVMF
-EFI storage: vmdata
-Pre-enrolled Secure Boot keys: disabled
-CPU type: host
-Memory ballooning: disabled
-SCSI controller: VirtIO SCSI
-QEMU Guest Agent: enabled
-Network: VirtIO on vmbr0
-Proxmox firewall: disabled initially
-Talos ISO: talos-v1.13.6-qemu-agent-amd64.iso
-```
-
-Each worker needs:
-
-```text
-6 vCPU
-14336 MiB RAM
-64 GiB SCSI system disk on vmdata
-300 GiB SCSI data disk on vmdata
-discard enabled
-SSD emulation enabled
-```
-
-## Worker validation gate
-
-Before generating the cluster configuration, verify:
-
-```powershell
-Test-Connection 192.168.1.211 -Count 4
-Test-NetConnection 192.168.1.211 -Port 50000
-talosctl get disks --insecure --nodes 192.168.1.211
-
-Test-Connection 192.168.1.212 -Count 4
-Test-NetConnection 192.168.1.212 -Port 50000
-talosctl get disks --insecure --nodes 192.168.1.212
-```
-
-Record the exact device names for:
-
-- the 64 GiB system disk,
-- the 300 GiB data disk,
-- the ISO device.
-
-Do not assume the worker data disk device name.
-
-## Talos configuration sequence
-
-After all three maintenance-mode nodes and disk names are verified:
-
-1. Generate one cluster configuration.
-2. Use `/dev/sda` only after each node confirms it is the system disk.
-3. Configure the matching Image Factory installer:
-
-   ```text
-   factory.talos.dev/metal-installer/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515:v1.13.6
-   ```
-
-4. Apply the control-plane configuration to `192.168.1.210`.
-5. Apply worker configurations to `192.168.1.211` and `192.168.1.212`.
-6. Bootstrap exactly once against the control plane.
-7. Retrieve kubeconfig.
-8. Verify all nodes.
-
-## Kubernetes success criteria
-
-```powershell
-talosctl health
-kubectl get nodes -o wide
-kubectl get pods --all-namespaces
-```
-
-Required result:
-
-```text
-talos-cp-01 Ready
-talos-wk-01 Ready
-talos-wk-02 Ready
-```
-
-## Post-Kubernetes sequence
-
-1. Bootstrap Flux.
-2. Configure SOPS with age.
-3. Deploy local persistent storage.
-4. Deploy Tailscale Operator.
-5. Deploy Prometheus, Grafana, and Alertmanager.
-6. Deploy Loki and Alloy.
-7. Deploy Homepage.
-
-## Safety constraints
-
-- Run `talosctl bootstrap` only once.
-- Never commit files under `talos/generated/`.
-- Never commit `talosconfig` or kubeconfig.
-- Never commit an age private key.
-- Do not configure `192.168.1.220` as an API VIP while only one control plane exists.
-- Do not introduce Ceph or Proxmox HA into this single-host phase.

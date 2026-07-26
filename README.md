@@ -2,36 +2,37 @@
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, and operations documentation for the DGS home-lab/private-cloud platform.
 
-> **Current stage:** the Beelink `pve01` node is the active standalone Proxmox VE platform. The obsolete Ubuntu validation VM and temporary ASUS-node experiment have been retired. Talos Linux control-plane VM `210` is running in maintenance mode and the two worker VMs are the next implementation task.
+> **Current stage:** an operational three-node Talos Linux Kubernetes cluster is running as virtual machines on the standalone Proxmox VE host `pve01`. The cluster consists of one control-plane node and two worker nodes. All Kubernetes nodes are `Ready`, core system pods are running, a distributed Nginx workload test passed, and the first off-cluster etcd snapshot has been created.
 
 ## Current verified state
 
 | Item | Current value |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
-| Management address | `192.168.1.201/24` |
+| Proxmox management address | `192.168.1.201/24` |
 | Proxmox VE Manager | `9.2.5` observed in the web interface |
-| Cluster state | Standalone Proxmox node |
+| Proxmox topology | One standalone physical host |
 | Primary guest storage | Samsung 990 PRO 2 TB as `vmdata` |
-| Temporary ASUS node | Retired from the active design; no Proxmox cluster was formed |
-| Ubuntu validation VM | VM `100` removed with its virtual disks |
-| Talos control plane | VM `210`, `talos-cp-01`, `192.168.1.210` |
-| Talos state | Talos `v1.13.6`, maintenance mode, ready |
-| Kubernetes state | Not yet bootstrapped |
-| GitOps state | Repository structure prepared; Flux not yet bootstrapped |
-| Last verified | 2026-07-25 |
+| Talos version | `v1.13.6` |
+| Kubernetes version | `v1.36.2` |
+| Kubernetes topology | One control plane and two workers |
+| Kubernetes node state | All three nodes `Ready` |
+| CNI | Flannel |
+| etcd | Healthy, single control-plane member |
+| First etcd snapshot | Completed and stored outside the repository |
+| Proxmox VM backups | Pending external backup storage |
+| Flux / SOPS | Repository prepared; not yet bootstrapped |
+| Last verified | 2026-07-26 |
 
-## Phase 1 target
+## Active Talos Kubernetes topology
 
-The initial single-host Kubernetes platform will use three Talos VMs on `pve01`.
+| VM | VM ID | Role | Address | vCPU | RAM | System disk |
+|---|---:|---|---|---:|---:|---:|
+| `talos-cp-01` | 210 | Control plane | `192.168.1.210` | 4 | 8 GiB | 64 GiB |
+| `talos-worker-01` | 211 | Worker | `192.168.1.211` | 4 | 8 GiB | 64 GiB |
+| `talos-worker-02` | 212 | Worker | `192.168.1.212` | 4 | 8 GiB | 64 GiB |
 
-| VM | VM ID | Role | Address | vCPU | RAM | Disks |
-|---|---:|---|---|---:|---:|---|
-| `talos-cp-01` | 210 | Control plane | `192.168.1.210` | 4 | 8 GiB | 64 GiB system |
-| `talos-wk-01` | 211 | Worker | `192.168.1.211` | 6 | 14 GiB | 64 GiB system + 300 GiB data |
-| `talos-wk-02` | 212 | Worker | `192.168.1.212` | 6 | 14 GiB | 64 GiB system + 300 GiB data |
-
-`192.168.1.220` is reserved for a future Kubernetes API virtual IP. It is not used by the current single-control-plane design.
+All VM disks are on `vmdata`, all network interfaces use VirtIO on `vmbr0`, and all three VMs boot from `scsi0`. The Talos ISO has been detached from each virtual CD/DVD drive.
 
 ## Architecture
 
@@ -41,59 +42,91 @@ flowchart TB
     UPS["Eaton UPS<br/>hardware protection active<br/>telemetry pending"]
     Router["TP-Link Archer NX200<br/>192.168.1.1<br/>LAN 192.168.1.0/24"]
     Admin["LG Gram<br/>administration workstation"]
-    PVE["Beelink GTi12<br/>pve01.home.arpa<br/>192.168.1.201<br/>Proxmox VE 9.2"]
-    OS["Crucial 1 TB<br/>Proxmox system<br/>local + local-lvm"]
-    DATA["Samsung 990 PRO 2 TB<br/>vmdata LVM-thin"]
-    CP["VM 210<br/>talos-cp-01<br/>192.168.1.210"]
-    W1["VM 211 planned<br/>talos-wk-01<br/>192.168.1.211"]
-    W2["VM 212 planned<br/>talos-wk-02<br/>192.168.1.212"]
-    Git["Private GitHub repository<br/>Flux source of truth"]
-    Services["Planned Phase 1 services<br/>Tailscale Operator<br/>Prometheus / Grafana / Alertmanager<br/>Loki / Alloy<br/>Homepage"]
+    PVE["Beelink GTi12<br/>pve01.home.arpa<br/>192.168.1.201<br/>Proxmox VE 9.2.5"]
+    Storage["Samsung 990 PRO 2 TB<br/>vmdata LVM-thin"]
+    CP["VM 210<br/>talos-cp-01<br/>192.168.1.210<br/>control plane + etcd"]
+    W1["VM 211<br/>talos-worker-01<br/>192.168.1.211"]
+    W2["VM 212<br/>talos-worker-02<br/>192.168.1.212"]
+    Git["GitHub repository<br/>documentation and future GitOps source"]
+    Backup["Off-cluster etcd snapshot<br/>external Proxmox backup target pending"]
+    Future["Next services<br/>Flux + SOPS<br/>Tailscale<br/>storage<br/>observability<br/>Homepage"]
 
     Internet --> Router
     UPS --> Router
     UPS --> PVE
     Admin --> Router
     Router --> PVE
-    PVE --> OS
-    PVE --> DATA
-    DATA --> CP
-    DATA -.-> W1
-    DATA -.-> W2
-    Git -. GitOps after bootstrap .-> CP
-    CP -. Kubernetes .-> Services
-    W1 -. workloads .-> Services
-    W2 -. workloads .-> Services
+    PVE --> Storage
+    Storage --> CP
+    Storage --> W1
+    Storage --> W2
+    CP --> W1
+    CP --> W2
+    CP -. snapshot .-> Backup
+    Git -. future reconciliation .-> CP
+    W1 -. workloads .-> Future
+    W2 -. workloads .-> Future
 ```
 
-## Completed work
+## Completed milestones
 
 - Installed and validated Proxmox VE on `pve01`.
-- Configured `192.168.1.201/24` on bridge `vmbr0`.
-- Prepared the Samsung 990 PRO as `vmdata`.
+- Configured the management bridge at `192.168.1.201/24`.
+- Prepared the Samsung 990 PRO as `vmdata` LVM-thin storage.
 - Corrected the Archer NX200 IPv4 WAN configuration.
-- Enabled the Proxmox no-subscription repository policy.
 - Completed and retired the temporary ASUS Proxmox experiment without forming a cluster.
-- Created, validated, and then removed disposable Ubuntu VM `100`.
-- Installed and verified the Windows administration tools: GitHub CLI, `kubectl`, `talosctl`, Flux CLI, SOPS, and age.
-- Generated a Talos `v1.13.6` Image Factory ISO containing `siderolabs/qemu-guest-agent`.
-- Uploaded the ISO and verified identical SHA-256 values on the LG Gram and `pve01`.
-- Created Talos control-plane VM `210`.
-- Reserved `192.168.1.210` and verified ICMP and Talos API TCP `50000`.
-- Confirmed the Talos installation target is `/dev/sda`.
+- Created and retired disposable Ubuntu validation VM `100`.
+- Installed and verified workstation tooling including `kubectl` and `talosctl`.
+- Generated and uploaded a Talos `v1.13.6` installation ISO.
+- Created VM `210` and cloned worker VMs `211` and `212`.
+- Reserved `192.168.1.210`, `.211`, and `.212` on the LAN.
+- Validated Talos maintenance-mode connectivity and `/dev/sda` on every node.
+- Generated and validated node-specific Talos configurations without committing secrets.
+- Applied the control-plane and worker configurations.
+- Bootstrapped the first control-plane node exactly once.
+- Retrieved kubeconfig and confirmed all three Kubernetes nodes are `Ready`.
+- Confirmed CoreDNS, Flannel, kube-proxy, API server, controller manager, and scheduler are running.
+- Ran four Nginx replicas distributed evenly across the two workers, then removed the test deployment.
+- Detached the Talos ISO from all three VMs.
+- Created and SHA-256-verified the first off-cluster etcd snapshot.
+
+## Quick validation
+
+```powershell
+$CP = "192.168.1.210"
+$W1 = "192.168.1.211"
+$W2 = "192.168.1.212"
+
+$env:TALOSCONFIG = (Resolve-Path ".\talos\generated\talosconfig").Path
+$env:KUBECONFIG = (Resolve-Path ".\talos\generated\kubeconfig").Path
+
+talosctl health `
+  --control-plane-nodes $CP `
+  --worker-nodes "$W1,$W2" `
+  --endpoints $CP
+
+kubectl get nodes -o wide
+kubectl get pods -A -o wide
+```
+
+## Backup state
+
+The first etcd snapshot was written outside the repository under the administrator workstation backup directory and verified with SHA-256. Generated Talos machine configurations, `talosconfig`, kubeconfig, etcd snapshots, VM backup archives, and private keys must never be committed.
+
+An external backup disk, NAS, or Proxmox Backup Server is still required for durable Proxmox VM backups and restore testing.
 
 ## Immediate next work
 
-1. Create Talos workers VM `211` and VM `212`.
-2. Reserve `192.168.1.211` and `192.168.1.212`.
-3. Confirm each worker’s 64 GiB system disk and 300 GiB data disk.
-4. Generate Talos machine configuration without committing generated credentials.
-5. Apply the control-plane and worker configurations.
-6. Bootstrap Kubernetes exactly once.
-7. Retrieve kubeconfig and confirm all three nodes are `Ready`.
-8. Bootstrap Flux.
-9. Configure SOPS with age.
-10. Deploy Tailscale Operator, observability, logging, and Homepage.
+1. Obtain and configure an external Proxmox backup destination.
+2. Create full backups of VMs `210`, `211`, and `212`.
+3. Test one complete VM restore and document the result.
+4. Automate etcd snapshots and define retention.
+5. Verify whether the installed Talos nodes retained the QEMU guest-agent extension.
+6. Bootstrap Flux.
+7. Configure SOPS with age and keep only encrypted secrets in Git.
+8. Deploy authenticated private access with Tailscale.
+9. Select and deploy the initial persistent-storage solution.
+10. Deploy monitoring, logging, and Homepage.
 
 ## Repository map
 
@@ -115,11 +148,7 @@ dgs-private-cloud/
 │   └── patches/
 ├── kubernetes/
 │   ├── infrastructure/
-│   │   ├── storage/local-path/
-│   │   ├── tailscale-operator/
-│   │   ├── monitoring/
-│   │   └── logging/
-│   └── apps/homepage/
+│   └── apps/
 ├── docs/
 │   ├── 00-project-overview.md
 │   ├── 01-current-state.md
@@ -135,10 +164,21 @@ dgs-private-cloud/
 │   ├── 11-temporary-asus-node.md
 │   ├── 12-first-ubuntu-vm.md
 │   ├── 13-talos-kubernetes-phase1.md
+│   ├── 14-talos-kubernetes-cluster-bootstrap.md
 │   ├── decisions/
 │   └── runbooks/
+│       ├── talos-phase1-workers-and-bootstrap.md
+│       └── talos-etcd-snapshot.md
 ├── inventory/
+│   ├── host.yaml
+│   ├── network.yaml
+│   ├── storage.yaml
+│   ├── power.yaml
+│   ├── guests.yaml
+│   └── kubernetes.yaml
 ├── scripts/
+│   └── workstation/
+│       └── New-TalosEtcdSnapshot.ps1
 ├── evidence/
 └── .github/
 ```
@@ -158,25 +198,28 @@ dgs-private-cloud/
 11. [Next steps](docs/10-next-steps.md)
 12. [Retired ASUS experiment](docs/11-temporary-asus-node.md)
 13. [First Ubuntu VM lifecycle](docs/12-first-ubuntu-vm.md)
-14. [Talos Kubernetes Phase 1](docs/13-talos-kubernetes-phase1.md)
-15. [Talos worker and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+14. [Talos Phase 1 prerequisites](docs/13-talos-kubernetes-phase1.md)
+15. [Talos Kubernetes cluster bootstrap](docs/14-talos-kubernetes-cluster-bootstrap.md)
+16. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+17. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 
 ## Security boundary
 
-Proxmox management remains private. Do not expose TCP `8006`, SSH, the Talos API, Kubernetes API, Prometheus, Alertmanager, or Loki directly to the public internet.
+Proxmox management, the Talos API, and the Kubernetes API remain private. Do not expose TCP `8006`, TCP `50000`, TCP `6443`, SSH, monitoring endpoints, or dashboards directly to the public internet.
 
 Never commit:
 
 - Talos-generated machine configurations,
 - `talosconfig` or kubeconfig,
+- etcd snapshots,
 - age private keys,
 - decrypted SOPS files,
 - OAuth clients or Tailscale credentials,
-- passwords, tokens, private keys, VPN profiles,
-- backup archives, VM disks, ISO images, or router exports.
+- passwords, tokens, private keys, or VPN profiles,
+- VM backup archives, virtual disks, ISO images, or router exports.
 
 ## Licence
 
 Copyright © 2026 Duminda Sumanasinghe. All rights reserved.
 
-This is a proprietary repository intended to remain private. See [LICENSE](LICENSE.md).
+This is proprietary project documentation. See [LICENSE](LICENSE.md).

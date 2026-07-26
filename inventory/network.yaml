@@ -21,23 +21,34 @@ network:
     mac_address_recorded_privately: true
 
   talos:
-    control_plane:
-      vm_id: 210
-      name: talos-cp-01
-      address: 192.168.1.210/24
-      dhcp_reservation: active
-      mac_address_recorded_privately: true
-      talos_api_port: 50000
-      kubernetes_api_port: 6443
-      connectivity_verified: true
+    api_endpoint:
+      address: 192.168.1.210
+      port: 50000
 
-    planned_workers:
+    kubernetes_endpoint:
+      url: https://192.168.1.210:6443
+
+    nodes:
+      - vm_id: 210
+        name: talos-cp-01
+        role: controlplane
+        address: 192.168.1.210/24
+        dhcp_reservation: active
+        mac_address_recorded_privately: true
+
       - vm_id: 211
-        name: talos-wk-01
+        name: talos-worker-01
+        role: worker
         address: 192.168.1.211/24
+        dhcp_reservation: active
+        mac_address_recorded_privately: true
+
       - vm_id: 212
-        name: talos-wk-02
+        name: talos-worker-02
+        role: worker
         address: 192.168.1.212/24
+        dhcp_reservation: active
+        mac_address_recorded_privately: true
 
     future_api_vip:
       address: 192.168.1.220

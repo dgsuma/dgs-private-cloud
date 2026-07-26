@@ -1,215 +1,281 @@
 # Runbook: Talos Workers and Kubernetes Bootstrap
 
-## Scope
+## Purpose
 
-Continue from this verified state:
+Reproduce the implemented single-host Talos cluster:
 
 ```text
-pve01: active standalone Proxmox host
-VM 210 talos-cp-01: maintenance mode at 192.168.1.210
-Control-plane installation disk: /dev/sda
-Kubernetes: not bootstrapped
+pve01 / Proxmox VE
+VM 210 talos-cp-01       192.168.1.210
+VM 211 talos-worker-01   192.168.1.211
+VM 212 talos-worker-02   192.168.1.212
 ```
 
 ## Safety rules
 
 - Keep generated Talos configurations under `talos/generated/`.
-- Do not commit generated machine configurations.
-- Do not commit `talosconfig` or kubeconfig.
-- Confirm every disk device before applying configuration.
+- Never commit machine configurations, `talosconfig`, kubeconfig, or etcd snapshots.
+- Confirm `/dev/sda` independently on every VM before applying configuration.
 - Run `talosctl bootstrap` exactly once.
-- Do not configure the reserved `.220` VIP yet.
-- Use standard `VirtIO SCSI`, not `VirtIO SCSI Single`.
+- Do not bootstrap a worker.
+- Keep the Proxmox, Talos, and Kubernetes management interfaces private.
+- Do not use the future `.220` virtual IP in this single-control-plane build.
 
-## Worker 1 specification
+## VM specification
 
-```text
-VM ID: 211
-Name: talos-wk-01
-Address: 192.168.1.211
-CPU: host, 1 socket, 6 cores
-Memory: 14336 MiB
-System disk: 64 GiB on vmdata
-Data disk: 300 GiB on vmdata
-```
-
-## Worker 2 specification
-
-```text
-VM ID: 212
-Name: talos-wk-02
-Address: 192.168.1.212
-CPU: host, 1 socket, 6 cores
-Memory: 14336 MiB
-System disk: 64 GiB on vmdata
-Data disk: 300 GiB on vmdata
-```
-
-## Common Proxmox configuration
+Use this configuration for all three nodes unless a deliberate resource change is documented:
 
 ```text
 Machine: q35
 BIOS: OVMF
-EFI storage: vmdata
-Pre-enrolled keys: disabled
-QEMU Guest Agent: enabled
-SCSI controller: VirtIO SCSI
+CPU type: host
+Sockets: 1
+Cores: 4
+Memory: 8192 MiB
 Ballooning: disabled
+SCSI controller: VirtIO SCSI
+System disk: 64 GiB on vmdata
+Discard: enabled
+SSD emulation: enabled
 Network model: VirtIO
 Bridge: vmbr0
 VLAN: none
-Firewall: disabled initially
-ISO: talos-v1.13.6-qemu-agent-amd64.iso
-Discard: enabled on both disks
-SSD emulation: enabled on both disks
+Firewall: disabled during initial build
 ```
 
-## Create each worker
+## Clone the workers
 
-Create the VM without selecting **Start after created**.
+1. Shut down VM `210`.
+2. Clone VM `210` to:
 
-After creation:
+```text
+VM 211: talos-worker-01
+VM 212: talos-worker-02
+Target node: pve01
+Target storage: vmdata
+```
 
-1. Record its generated MAC address locally.
-2. Add its DHCP reservation to the Archer NX200.
-3. Put the ISO first in the temporary boot order:
+A regular Proxmox VM clone does not show the Full Clone / Linked Clone mode selector that appears for templates. Verify that each clone owns its own virtual disk and has a unique MAC address.
 
-   ```bash
-   qm set 211 --boot 'order=ide2;scsi0;net0'
-   qm set 212 --boot 'order=ide2;scsi0;net0'
-   ```
+## Configure boot order
 
-4. Verify:
+For VMs `210`, `211`, and `212`:
 
-   ```bash
-   qm config 211
-   qm config 212
-   ```
+```text
+1. scsi0
+2. ide2
+3. net0
+```
 
-5. Start both VMs.
+Keep the Talos ISO mounted during installation. A blank `scsi0` falls through to the ISO; after installation, the disk becomes bootable and remains first.
+
+## Reserve addresses
+
+Create router DHCP reservations:
+
+```text
+talos-cp-01       192.168.1.210
+talos-worker-01   192.168.1.211
+talos-worker-02   192.168.1.212
+```
 
 ## Maintenance-mode validation
 
-From the LG Gram:
-
 ```powershell
-Test-Connection 192.168.1.211 -Count 4
-Test-NetConnection 192.168.1.211 -Port 50000
-talosctl get disks --insecure --nodes 192.168.1.211
+$CP = "192.168.1.210"
+$W1 = "192.168.1.211"
+$W2 = "192.168.1.212"
 
-Test-Connection 192.168.1.212 -Count 4
-Test-NetConnection 192.168.1.212 -Port 50000
-talosctl get disks --insecure --nodes 192.168.1.212
+Test-Connection $CP -Count 2
+Test-Connection $W1 -Count 2
+Test-Connection $W2 -Count 2
+
+talosctl version --nodes $CP --insecure
+talosctl version --nodes $W1 --insecure
+talosctl version --nodes $W2 --insecure
+
+talosctl get disks --nodes $CP --insecure
+talosctl get disks --nodes $W1 --insecure
+talosctl get disks --nodes $W2 --insecure
 ```
 
-Record the exact system and data disk names.
+Proceed only if every node shows a writable `/dev/sda` of the expected size and `sr0` is the read-only installer media.
 
-Expected pattern only:
-
-```text
-system disk: writable, approximately 69 GB
-data disk: writable, approximately 322 GB
-ISO: read-only, approximately 338 MB
-```
-
-Do not proceed if the device identities are ambiguous.
-
-## Generate Talos configuration
+## Generate base configuration
 
 From the repository root:
 
 ```powershell
-$ControlPlane = "192.168.1.210"
-$Worker1 = "192.168.1.211"
-$Worker2 = "192.168.1.212"
-$ClusterName = "dgs-home"
 $Generated = ".\talos\generated"
+New-Item -ItemType Directory -Force -Path $Generated | Out-Null
 
-New-Item -ItemType Directory -Force $Generated | Out-Null
-```
-
-Generate configuration only after confirming the install disk:
-
-```powershell
 talosctl gen config `
-  $ClusterName `
-  "https://${ControlPlane}:6443" `
-  --output-dir $Generated `
+  dgs-homelab `
+  "https://192.168.1.210:6443" `
   --install-disk /dev/sda `
-  --install-image "factory.talos.dev/metal-installer/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515:v1.13.6"
+  --output-dir $Generated `
+  --force
 ```
 
-Inspect the generated files locally. Do not stage them with Git.
+For a future rebuild that must retain a custom Image Factory extension, explicitly configure the matching schematic installer image in the generated machine configuration or with the supported `gen config` installer-image option.
 
-## Apply configuration
+## Create hostname patches
 
-Apply the control-plane configuration:
+Control plane:
+
+```yaml
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: talos-cp-01
+auto: off
+```
+
+Worker 1:
+
+```yaml
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: talos-worker-01
+auto: off
+```
+
+Worker 2:
+
+```yaml
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: talos-worker-02
+auto: off
+```
+
+Do not use `machine.network.hostname` with this Talos configuration version.
+
+## Generate node-specific files
+
+```powershell
+talosctl machineconfig patch `
+  "$Generated\controlplane.yaml" `
+  --patch "@$Generated\cp-hostname.patch.yaml" `
+  --output "$Generated\controlplane-210.yaml"
+
+talosctl machineconfig patch `
+  "$Generated\worker.yaml" `
+  --patch "@$Generated\worker-01-hostname.patch.yaml" `
+  --output "$Generated\worker-211.yaml"
+
+talosctl machineconfig patch `
+  "$Generated\worker.yaml" `
+  --patch "@$Generated\worker-02-hostname.patch.yaml" `
+  --output "$Generated\worker-212.yaml"
+```
+
+## Validate configurations
+
+```powershell
+talosctl validate --config "$Generated\controlplane-210.yaml" --mode metal
+talosctl validate --config "$Generated\worker-211.yaml" --mode metal
+talosctl validate --config "$Generated\worker-212.yaml" --mode metal
+```
+
+All commands must succeed before applying any configuration.
+
+## Apply configurations
 
 ```powershell
 talosctl apply-config `
   --insecure `
-  --nodes $ControlPlane `
-  --file "$Generated\controlplane.yaml"
-```
-
-Apply worker configurations:
-
-```powershell
-talosctl apply-config `
-  --insecure `
-  --nodes $Worker1 `
-  --file "$Generated\worker.yaml"
+  --nodes $CP `
+  --file "$Generated\controlplane-210.yaml"
 
 talosctl apply-config `
   --insecure `
-  --nodes $Worker2 `
-  --file "$Generated\worker.yaml"
+  --nodes $W1 `
+  --file "$Generated\worker-211.yaml"
+
+talosctl apply-config `
+  --insecure `
+  --nodes $W2 `
+  --file "$Generated\worker-212.yaml"
 ```
 
-Wait for installation and reboot.
+Before bootstrap, `Ready: False` is expected even when the stage is `Running` and kubelet is healthy.
 
-## Configure talosctl
+## Configure authenticated access
 
 ```powershell
 $env:TALOSCONFIG = (Resolve-Path "$Generated\talosconfig").Path
 
-talosctl config endpoint $ControlPlane
-talosctl config node $ControlPlane
+talosctl config endpoint $CP
+talosctl config node $CP
+talosctl version --nodes $CP --endpoints $CP
 ```
 
-## Bootstrap once
+## Bootstrap exactly once
 
 ```powershell
-talosctl bootstrap --nodes $ControlPlane
+talosctl bootstrap --nodes $CP --endpoints $CP
 ```
 
-Do not run bootstrap a second time.
+Do not repeat the command and do not target a worker.
 
 ## Retrieve kubeconfig
 
 ```powershell
-talosctl kubeconfig "$Generated\kubeconfig" --nodes $ControlPlane
+talosctl kubeconfig "$Generated\kubeconfig" `
+  --nodes $CP `
+  --endpoints $CP `
+  --force
+
 $env:KUBECONFIG = (Resolve-Path "$Generated\kubeconfig").Path
 ```
 
-## Validate
+## Validate cluster health
 
 ```powershell
-talosctl health
+talosctl health `
+  --control-plane-nodes $CP `
+  --worker-nodes "$W1,$W2" `
+  --endpoints $CP
+
+kubectl cluster-info
 kubectl get nodes -o wide
-kubectl get pods --all-namespaces
+kubectl get pods -A -o wide
+
+talosctl get members --nodes $CP --endpoints $CP
 ```
 
-Success requires all three nodes to report `Ready`.
+Success requires all three Kubernetes nodes to report `Ready`.
 
-## After successful installation
+## Workload scheduling test
 
-Change each VM to boot from disk first and detach the ISO when safe:
-
-```bash
-qm set 210 --boot 'order=scsi0;net0'
-qm set 211 --boot 'order=scsi0;net0'
-qm set 212 --boot 'order=scsi0;net0'
+```powershell
+kubectl create deployment nginx-test --image=nginx:stable-alpine
+kubectl scale deployment nginx-test --replicas=4
+kubectl get pods -o wide -w
 ```
 
-Confirm each VM restarts from its installed system disk before removing ISO attachments.
+Confirm that pods run on both workers, then remove the test:
+
+```powershell
+kubectl delete deployment nginx-test
+```
+
+## Detach the ISO
+
+After all nodes boot successfully from their installed disks:
+
+```text
+VM -> Hardware -> CD/DVD Drive -> Edit -> Do not use any media
+```
+
+Perform this on VMs `210`, `211`, and `212`.
+
+Keep the boot order:
+
+```text
+scsi0, ide2, net0
+```
+
+## Create the first etcd snapshot
+
+Follow [Talos etcd snapshot](talos-etcd-snapshot.md) and store the file outside the repository and cluster.

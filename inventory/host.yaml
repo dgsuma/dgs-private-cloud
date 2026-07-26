@@ -14,9 +14,9 @@ host:
 
   state:
     headless: true
-    active_vm_count_verified: 1
+    active_vm_count_verified: 3
     active_container_count_verified: 0
-    last_verified: 2026-07-25
+    last_verified: 2026-07-26
 
   bios:
     vmx: enabled
@@ -32,16 +32,36 @@ host:
       name: talos-cp-01
       role: talos_kubernetes_control_plane
       address: 192.168.1.210
-      state: maintenance_mode
+      state: running_ready
       talos_version: v1.13.6
+      kubernetes_version: v1.36.2
       install_disk: /dev/sda
-      kubernetes_bootstrapped: false
+      kubernetes_bootstrapped: true
+
+    - vm_id: 211
+      name: talos-worker-01
+      role: talos_kubernetes_worker
+      address: 192.168.1.211
+      state: running_ready
+      talos_version: v1.13.6
+      kubernetes_version: v1.36.2
+      install_disk: /dev/sda
+
+    - vm_id: 212
+      name: talos-worker-02
+      role: talos_kubernetes_worker
+      address: 192.168.1.212
+      state: running_ready
+      talos_version: v1.13.6
+      kubernetes_version: v1.36.2
+      install_disk: /dev/sda
 
   retired_items:
     - name: asus-pve
       type: temporary_proxmox_node
       outcome: retired_without_cluster_formation
       active: false
+
     - name: ubuntu-web-test
       vm_id: 100
       type: disposable_validation_vm

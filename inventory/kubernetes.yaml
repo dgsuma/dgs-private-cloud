@@ -1,0 +1,79 @@
+kubernetes:
+  cluster_name: dgs-homelab
+  state: operational
+  last_verified: 2026-07-26
+
+  platform:
+    talos_version: v1.13.6
+    kubernetes_version: v1.36.2
+    kernel_version: 6.18.38-talos
+    architecture: amd64
+    container_runtime: containerd
+    container_runtime_version: 2.2.5
+    cni: flannel
+
+  endpoint:
+    url: https://192.168.1.210:6443
+    high_availability: false
+
+  topology:
+    physical_hosts: 1
+    control_plane_nodes: 1
+    worker_nodes: 2
+    all_nodes_ready: true
+    physically_highly_available: false
+
+  nodes:
+    - name: talos-cp-01
+      vm_id: 210
+      role: control-plane
+      address: 192.168.1.210
+      ready: true
+      etcd_member: true
+      schedulable: true
+
+    - name: talos-worker-01
+      vm_id: 211
+      role: worker
+      address: 192.168.1.211
+      ready: true
+      etcd_member: false
+      schedulable: true
+
+    - name: talos-worker-02
+      vm_id: 212
+      role: worker
+      address: 192.168.1.212
+      ready: true
+      etcd_member: false
+      schedulable: true
+
+  system_workloads:
+    coredns: running
+    kube_apiserver: running
+    kube_controller_manager: running
+    kube_scheduler: running
+    kube_proxy: running_on_all_nodes
+    flannel: running_on_all_nodes
+
+  validation:
+    talos_health: passed
+    node_readiness: passed
+    system_pods: passed
+    workload_scheduling:
+      image: nginx:stable-alpine
+      replicas: 4
+      worker_01_replicas: 2
+      worker_02_replicas: 2
+      cleanup_completed: true
+
+  backup:
+    etcd_snapshot_created: true
+    etcd_snapshot_stored_off_cluster: true
+    etcd_snapshot_sha256_created: true
+    proxmox_vm_backup_configured: false
+    restore_tested: false
+
+  gitops:
+    flux_bootstrapped: false
+    sops_configured: false

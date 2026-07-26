@@ -1,6 +1,6 @@
 # Current State
 
-Verified on **2026-07-25** after creating and booting the first Talos control-plane VM.
+Verified on **2026-07-26** after completing the first Talos Kubernetes cluster, validating workload scheduling, detaching the installation media, and creating the first etcd snapshot.
 
 ## Proxmox platform
 
@@ -13,8 +13,8 @@ Verified on **2026-07-25** after creating and booting the first Talos control-pl
 | Management URL | `https://192.168.1.201:8006` |
 | PVE Manager | `9.2.5` observed in the web interface |
 | Cluster membership | Standalone |
-| Active temporary second node | None |
-| Failed-systemd-unit baseline | Previously validated as zero |
+| Active VM count | 3 |
+| Active container count | 0 |
 | Primary VM storage | `vmdata` |
 | UPS hardware protection | Active |
 | UPS telemetry | Not configured |
@@ -23,92 +23,102 @@ Verified on **2026-07-25** after creating and booting the first Talos control-pl
 
 | Item | Final state |
 |---|---|
-| `asus-pve` | Experiment ended; old laptop shut down; no cluster was formed |
-| VM `100` `ubuntu-web-test` | Deleted with owned virtual disks |
-| Two-node Proxmox plan | Superseded by the single-host Talos Phase 1 plan |
+| `asus-pve` | Experiment ended; no Proxmox cluster was formed |
+| VM `100` `ubuntu-web-test` | Deleted with its owned virtual disks |
+| Two-node temporary Proxmox plan | Superseded by the single-host Talos Phase 1 design |
 
-## Talos image
+## Talos and Kubernetes versions
+
+| Component | Version/state |
+|---|---|
+| Talos Linux | `v1.13.6` |
+| Kubernetes server | `v1.36.2` |
+| Workstation kubectl client | `v1.36.3` |
+| Kernel | `6.18.38-talos` on amd64 |
+| Container runtime | `containerd 2.2.5` |
+| CNI | Flannel |
+| Kubernetes API endpoint | `https://192.168.1.210:6443` |
+| Talos API endpoint | `192.168.1.210:50000` |
+| Cluster health | Passed |
+
+## Active virtual machines
+
+| VM ID | Name | Role | Address | vCPU | RAM | Disk | State |
+|---:|---|---|---|---:|---:|---:|---|
+| 210 | `talos-cp-01` | Control plane and etcd | `192.168.1.210/24` | 4 | 8 GiB | 64 GiB | Running, Ready |
+| 211 | `talos-worker-01` | Worker | `192.168.1.211/24` | 4 | 8 GiB | 64 GiB | Running, Ready |
+| 212 | `talos-worker-02` | Worker | `192.168.1.212/24` | 4 | 8 GiB | 64 GiB | Running, Ready |
+
+## Common VM configuration
 
 | Property | Value |
 |---|---|
-| Talos version | `v1.13.6` |
-| Architecture | `amd64` |
-| Platform/model | `metal` ISO |
-| Secure Boot | Disabled |
-| Bootloader | Auto |
-| System extension | `siderolabs/qemu-guest-agent` |
-| Schematic ID | `ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515` |
-| ISO name in Proxmox | `talos-v1.13.6-qemu-agent-amd64.iso` |
-| Local/upload SHA-256 | `5e3d395a6f55b5394e91ad3d31639e3df02b2a0907e6034f82797de98145eeb7` |
-| Transfer-integrity result | LG Gram and `pve01` hashes matched |
-
-The community Image Factory did not expose a publisher checksum. The recorded hash proves transfer integrity between the downloaded copy and the Proxmox copy; it is not a publisher-authentication claim.
-
-## Talos control-plane VM
-
-| Property | Value |
-|---|---|
-| VM ID | `210` |
-| Name | `talos-cp-01` |
-| Address | `192.168.1.210/24` |
-| Gateway/DNS | `192.168.1.1` |
-| CPU | 4 cores, type `host` |
-| Memory | 8192 MiB |
-| Ballooning | Disabled |
 | Machine | `q35` |
 | BIOS | OVMF |
-| EFI storage | `vmdata` |
-| Secure Boot pre-enrolled keys | Disabled |
+| CPU type | `host` |
+| Ballooning | Disabled |
 | SCSI controller | VirtIO SCSI |
-| QEMU Guest Agent setting | Enabled |
-| System disk | 64 GiB on `vmdata` |
+| System disk | `scsi0` on `vmdata` |
 | Discard | Enabled |
 | SSD emulation | Enabled |
 | Network | VirtIO on `vmbr0` |
-| Proxmox firewall | Disabled initially |
-| Talos state | Maintenance |
-| Talos ready | True |
-| Connectivity | OK |
-| Talos API TCP `50000` | Reachable |
+| Gateway/DNS | `192.168.1.1` |
+| Boot order | `scsi0`, `ide2`, `net0` |
+| Installation ISO | Detached from all three VMs |
 | Installation target | `/dev/sda` |
-| ISO device | `/dev/sr0` |
 
-## Verified connectivity
+The Talos bootstrap ISO was built with the `siderolabs/qemu-guest-agent` extension selected. The installed extension state should be checked separately before relying on Proxmox guest-agent reporting.
 
-From `pve01`:
+## Kubernetes node validation
+
+All three nodes reported `Ready`:
 
 ```text
-4 packets transmitted
-4 packets received
-0% packet loss
+talos-cp-01       Ready   control-plane   192.168.1.210
+talos-worker-01   Ready   <none>          192.168.1.211
+talos-worker-02   Ready   <none>          192.168.1.212
 ```
 
-From the LG Gram:
+The following core workloads were confirmed running:
 
-- ICMP to `192.168.1.210` succeeded.
-- TCP `50000` succeeded.
-- `talosctl get disks --insecure --nodes 192.168.1.210` succeeded.
+- CoreDNS,
+- kube-apiserver,
+- kube-controller-manager,
+- kube-scheduler,
+- kube-proxy on all nodes,
+- Flannel on all nodes.
 
-## Planned workers
+## Scheduling validation
 
-| VM | VM ID | Address | vCPU | RAM | Disk layout | State |
-|---|---:|---|---:|---:|---|---|
-| `talos-wk-01` | 211 | `192.168.1.211` | 6 | 14 GiB | 64 GiB system + 300 GiB data | Not created |
-| `talos-wk-02` | 212 | `192.168.1.212` | 6 | 14 GiB | 64 GiB system + 300 GiB data | Not created |
+A disposable Nginx deployment was created and scaled to four replicas. Kubernetes scheduled two replicas on `talos-worker-01` and two on `talos-worker-02`. All replicas reached `Running`, and the deployment was then deleted.
 
-## Kubernetes and GitOps
+The Pod Security admission warning for the default Nginx image was non-blocking. Future application manifests should use explicit restricted-compatible security contexts.
+
+## Backup state
+
+| Backup item | State |
+|---|---|
+| First consistent etcd snapshot | Complete |
+| Snapshot storage | Outside the repository and outside the cluster |
+| Snapshot checksum | SHA-256 generated |
+| Snapshot size | 2,232,352 bytes at creation |
+| Proxmox VM backups | Not configured |
+| External backup target | Pending |
+| Restore test | Not performed |
+
+The etcd snapshot contains sensitive Kubernetes state and must not be committed.
+
+## GitOps and services
 
 ```text
-Kubernetes installed: No
-Talos machine configuration applied: No
-Control plane bootstrapped: No
-kubeconfig generated: No
 Flux bootstrapped: No
 SOPS age identity generated: No
 Tailscale Operator deployed: No
+Persistent storage deployed: No
 Monitoring deployed: No
 Logging deployed: No
 Homepage deployed: No
+PostgreSQL/TimescaleDB deployed: No
 ```
 
 ## Workstation tooling
@@ -118,7 +128,7 @@ Homepage deployed: No
 | PowerShell | `7.6.3` |
 | Git | `2.46.2` |
 | GitHub CLI | `2.96.0` |
-| kubectl | `1.36.3` |
+| kubectl | `1.36.3` client |
 | Kustomize through kubectl | `5.8.1` |
 | talosctl | `1.13.6` |
 | Flux CLI | `2.9.3` |
