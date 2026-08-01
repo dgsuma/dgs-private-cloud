@@ -2,95 +2,89 @@
 
 ## Private management plane
 
-The Proxmox management interface, Talos API, and Kubernetes API must remain accessible only from trusted private networks or an approved authenticated private-access solution.
+The Proxmox management interface, Talos API, Kubernetes API, SSH, and future observability endpoints must remain accessible only from trusted private networks or an approved authenticated private-access solution.
 
 Do not forward these ports from the TP-Link Archer NX200:
 
 ```text
 8006/tcp  Proxmox web management
-22/tcp    SSH
-3128/tcp  SPICE proxy
 50000/tcp Talos API
 6443/tcp  Kubernetes API
+22/tcp    SSH
+3128/tcp  SPICE proxy
 ```
 
-Monitoring systems, dashboards, databases, and storage management interfaces must also remain private unless they are deliberately published through a reviewed authentication and access-control layer.
-
-## Secret-handling policy
+## Secret and recovery-material policy
 
 Never commit:
 
 - root or administrator passwords,
 - SSH private keys,
-- API tokens,
-- recovery codes,
+- API tokens or recovery codes,
 - router configuration exports,
-- VPN private keys,
+- VPN private keys or profiles,
 - SIM identifiers,
 - public WAN details that are not intentionally documented,
 - Talos-generated machine configurations,
-- `talosconfig`,
-- kubeconfig,
-- age private keys,
-- decrypted SOPS files,
-- etcd snapshots,
-- Kubernetes Secret exports,
+- `talosconfig` or kubeconfig,
+- Talos etcd snapshots or their sensitive metadata,
+- age private keys or decrypted SOPS files,
 - VM disk images,
-- Proxmox or PBS backup archives,
+- VZDump archives,
+- Proxmox Backup Server archives,
 - files from `/etc/pve/priv/`.
 
-The repository `.gitignore` protects the local `talos/generated/` directory except for `.gitkeep`. Before every push, confirm that generated credentials are not tracked.
+The repository `.gitignore` must continue to exclude `talos/generated/*`, `git-commands-local.txt`, generated credentials, etcd snapshots, VM archives, and virtual disks.
 
-```powershell
-git check-ignore -v .\talos\generated\talosconfig
-git check-ignore -v .\talos\generated\kubeconfig
-git ls-files -- .\talos\generated
-```
+## Backup confidentiality
 
-The final command must return no generated credential files.
+An etcd snapshot can contain Kubernetes Secrets. A VM backup can contain operating-system configuration, service credentials, application data, and private keys. Treat both as sensitive data.
 
-## Backup security
-
-An etcd snapshot contains the Kubernetes API state and can include Kubernetes Secrets. Treat it as sensitive backup material.
-
-- Store snapshots outside the Git repository.
-- Restrict filesystem access.
-- Copy important snapshots to a separate physical device or protected backup service.
-- Maintain checksums.
-- Do not publish snapshot filenames, contents, or private restoration material unnecessarily.
+- Keep the removable backup disk physically secure.
+- Encrypt any second copy stored on a general-purpose workstation or cloud service.
+- Do not publish backup filenames if they reveal sensitive project or customer identifiers.
+- Verify SHA-256 checksums before relying on copied snapshot files.
 
 ## Screenshot policy
 
 Before committing screenshots, redact:
 
-- IMSI,
-- ICCID,
-- MSISDN/mobile number,
-- public WAN address,
-- passwords,
-- tokens,
-- certificate material,
+- passwords and tokens,
 - QR codes,
+- browser session identifiers,
+- public WAN addresses,
+- IMSI, ICCID, MSISDN, and mobile numbers,
 - serial numbers when not operationally required,
-- browser session identifiers.
+- private MAC addresses when not required,
+- terminal output containing credentials or private file contents.
 
 ## Destructive-change policy
 
 Before wiping or repartitioning a disk:
 
-1. Identify it by model, serial, and capacity.
-2. Confirm it is not the running system disk.
-3. Record the command or GUI operation.
-4. Record the expected result.
-5. Ensure a recovery path exists.
+1. Identify it by **model, serial, transport, and capacity**.
+2. Confirm it is not the running system disk or primary guest-storage disk.
+3. Record the intended operation and expected result.
+4. Ensure a recovery path exists.
+5. Re-check the device immediately before confirmation.
 
-The Proxmox system disk is:
+Linux device names such as `/dev/nvme0n1`, `/dev/nvme1n1`, and `/dev/sda` can change between boots or when devices are added. Never authorise a destructive operation from the device name alone.
+
+Stable model identities in this environment are:
 
 ```text
-/dev/nvme1n1
-Crucial CT1000P3PSSD8 1 TB
+Crucial CT1000P3PSSD8       Proxmox system storage
+Samsung SSD 990 PRO 2TB     Primary VM storage
+Seagate One Touch 2 TB      Removable backup storage
 ```
 
-It must never be used as the target of a wipe command.
+## Removable-backup operating rule
 
-For Talos VM installation, the verified system disk is `/dev/sda`; `/dev/sr0` is the installer CD/DVD device and must never be selected as the installation target.
+Before unplugging the Seagate HDD:
+
+1. Confirm no VZDump, restore, upload, or file-copy task is active.
+2. Disable `usb-backup-2tb` in Proxmox.
+3. Run `sync`.
+4. Unmount `/mnt/pve/usb-backup-2tb`.
+5. Verify `findmnt` returns no mount.
+6. Disconnect the USB cable only after unmount succeeds.

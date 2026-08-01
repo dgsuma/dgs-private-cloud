@@ -5,109 +5,122 @@
 ```mermaid
 flowchart TB
     PVE["pve01"]
-    Crucial["Crucial 1TB /dev/nvme1n1"]
-    Samsung["Samsung 990 PRO 2TB /dev/nvme0n1"]
+    Crucial["Crucial CT1000P3PSSD8 1 TB<br/>Proxmox system"]
+    Samsung["Samsung 990 PRO 2 TB<br/>primary VM storage"]
+    Seagate["Seagate One Touch 2 TB USB<br/>removable backup storage"]
     Root["pve-root 96 GiB"]
-    Swap["pve-swap 8 GiB"]
     LocalLVM["pve-data / local-lvm ~793.8 GiB"]
-    Local["local directory /var/lib/vz ~94 GiB"]
+    Local["local directory /var/lib/vz"]
     VG["vg_vmdata"]
     Thin["thin_vmdata ~1.73 TiB"]
-    Store["Proxmox storage ID: vmdata"]
+    VMStore["Proxmox storage ID: vmdata"]
+    BackupFS["ext4 /mnt/pve/usb-backup-2tb"]
+    BackupStore["Proxmox storage ID: usb-backup-2tb"]
 
     PVE --> Crucial
     PVE --> Samsung
+    PVE --> Seagate
     Crucial --> Root
-    Crucial --> Swap
     Crucial --> LocalLVM
     Root --> Local
-    Samsung --> VG --> Thin --> Store
+    Samsung --> VG --> Thin --> VMStore
+    Seagate --> BackupFS --> BackupStore
 ```
 
-## Physical disks
+## Stable disk identification
 
-```text
-/dev/nvme1n1
-Model: CT1000P3PSSD8
-Role: Proxmox system disk
-```
+Linux device names can change. Identify disks by model, serial, capacity, and transport before destructive operations.
 
-```text
-/dev/nvme0n1
-Model: Samsung SSD 990 PRO 2TB
-Role: Primary guest storage
-```
+| Model | Nominal capacity | Role |
+|---|---:|---|
+| Crucial `CT1000P3PSSD8` | 1 TB | Proxmox system disk |
+| Samsung `SSD 990 PRO 2TB` | 2 TB | Primary guest storage |
+| Seagate `One Touch` | 2 TB | Removable VM-backup target |
 
-## Samsung volume group
+## Primary VM storage
 
-Created through the Proxmox GUI:
+The Samsung disk contains:
 
 ```text
 Volume group: vg_vmdata
-Physical disk: /dev/nvme0n1
+Thin pool:    thin_vmdata
+Storage ID:   vmdata
+Purpose:      VM disks and LXC root filesystems
 ```
 
-Verification:
+The thin pool is monitored and has enlarged metadata compared with the initial default.
 
-```bash
-vgs
-```
+## External Seagate backup storage
 
-Initial state:
+### Preparation completed
+
+The factory exFAT partition was removed through the Proxmox disk interface. A GPT partition and ext4 filesystem were created, then registered as directory storage.
 
 ```text
-vg_vmdata  1 PV  0 LV  <1.82 TiB free
+Partition:       /dev/sda1 when observed on 2026-08-01
+Filesystem:      ext4
+Mount point:     /mnt/pve/usb-backup-2tb
+Proxmox ID:      usb-backup-2tb
+Content:         backup
+Shared:          no
+Node restriction: pve01
+Mountpoint guard: is_mountpoint 1
+Usable capacity: approximately 1.7 TiB
 ```
 
-## Thin pool creation
+The observed `/dev/sda` name is not a permanent identity; confirm the Seagate model every time before wiping, formatting, or mounting manually.
 
-Because the disk was already assigned to a volume group, the GUI's whole-disk thin-pool wizard showed `No Disks unused`.
-
-The thin pool was created inside the existing VG:
+### Verification commands
 
 ```bash
-lvcreate --type thin-pool -l 95%FREE -n thin_vmdata vg_vmdata
-```
-
-Registered in Proxmox:
-
-```bash
-pvesm add lvmthin vmdata \
-  --vgname vg_vmdata \
-  --thinpool thin_vmdata \
-  --content images,rootdir
-```
-
-## Metadata improvement
-
-Initial metadata was approximately 112 MiB. It was extended:
-
-```bash
-lvextend --poolmetadatasize +1G vg_vmdata/thin_vmdata
-```
-
-Final state:
-
-```text
-thin-pool size:       approximately 1.73 TiB
-metadata size:        approximately 1.11 GiB
-data usage:           0.00%
-metadata usage:       1.46%
-monitoring:           enabled
-```
-
-Verification:
-
-```bash
-lvs -a -o lv_name,vg_name,lv_attr,lv_size,data_percent,metadata_percent
-lvs -o lv_name,vg_name,seg_monitor vg_vmdata/thin_vmdata
+lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINTS,MODEL,TRAN
+df -hT /mnt/pve/usb-backup-2tb
 pvesm status
+grep -A 8 '^dir: usb-backup-2tb$' /etc/pve/storage.cfg
 ```
+
+Expected storage stanza:
+
+```text
+dir: usb-backup-2tb
+        path /mnt/pve/usb-backup-2tb
+        content backup
+        is_mountpoint 1
+        nodes pve01
+```
+
+### Backup retention
+
+```text
+Keep Last:    3
+Keep Weekly:  2
+Keep Monthly: 1
+```
+
+Retention pruning can only occur while the drive is connected, mounted, enabled, and a backup or prune operation runs.
+
+### Baseline backup contents
+
+```text
+vzdump-qemu-210-2026_08_01-10_29_43.vma.zst
+vzdump-qemu-211-2026_08_01-10_31_58.vma.zst
+vzdump-qemu-212-2026_08_01-10_33_27.vma.zst
+```
+
+### Normal disconnected state
+
+When not in use:
+
+- `usb-backup-2tb` is disabled in Proxmox,
+- `/mnt/pve/usb-backup-2tb` is not mounted,
+- `pvesm status` reports the storage as disabled,
+- the physical USB disk is disconnected and stored safely.
 
 ## Final storage IDs
 
-| ID | Type | Content |
-|---|---|---|
-| `local` | Directory | Backup, import, ISO image, container template |
-| `local-lvm` | LVM-thin | Disk image, container |
-| `vmdata` | LVM-thin | Disk image, container |
+| ID | Type | Content | Normal state |
+|---|---|---|---|
+| `local` | Directory | Backup, import, ISO, templates | Active |
+| `local-lvm` | LVM-thin | Disk image, container | Active |
+| `vmdata` | LVM-thin | Disk image, container | Active |
+| `usb-backup-2tb` | Directory on ext4 USB HDD | Backup | Disabled when disconnected |

@@ -18,48 +18,34 @@ network:
     dns: 192.168.1.1
     bridge: vmbr0
     bridge_port: nic0
+    management_port: 8006
     mac_address_recorded_privately: true
 
   talos:
-    api_endpoint:
-      address: 192.168.1.210
-      port: 50000
-
-    kubernetes_endpoint:
-      url: https://192.168.1.210:6443
-
+    api_endpoint: 192.168.1.210
+    talos_api_port: 50000
+    kubernetes_api_port: 6443
     nodes:
       - vm_id: 210
         name: talos-cp-01
-        role: controlplane
+        role: control_plane
         address: 192.168.1.210/24
         dhcp_reservation: active
-        mac_address_recorded_privately: true
-
       - vm_id: 211
         name: talos-worker-01
         role: worker
         address: 192.168.1.211/24
         dhcp_reservation: active
-        mac_address_recorded_privately: true
-
       - vm_id: 212
         name: talos-worker-02
         role: worker
         address: 192.168.1.212/24
         dhcp_reservation: active
-        mac_address_recorded_privately: true
-
     future_api_vip:
       address: 192.168.1.220
       state: reserved_not_configured
 
-  retired:
-    asus_pve:
-      address: 192.168.1.203/24
-      active: false
-      cluster_joined: false
-
-  admin_workstation:
+  administration:
     device: LG Gram
-    network_path: LAN_or_WiFi
+    path: trusted_lan_or_future_authenticated_private_access
+    direct_public_exposure_allowed: false

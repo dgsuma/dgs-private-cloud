@@ -1,88 +1,63 @@
 # Next Steps
 
-## Immediate priority — durable backup and recovery
+## Priority 1 — Prove recovery
 
-1. Purchase or allocate an external backup target.
-2. Add it to Proxmox as storage that accepts `VZDump backup file` content, or deploy Proxmox Backup Server later.
-3. Back up VMs `210`, `211`, and `212`.
-4. Verify backup archive integrity and available capacity.
-5. Restore one VM into an isolated test ID and validate that it boots.
-6. Schedule regular etcd snapshots and copy them off the LG Gram.
-7. Define retention for etcd snapshots and Proxmox backups.
-8. Document a controlled disaster-recovery test.
+The platform now has backups, but a backup is not fully trusted until restore has been tested.
 
-## Platform verification before adding services
+1. Connect, mount, and enable `usb-backup-2tb`.
+2. Choose one worker backup for a controlled restore test.
+3. Restore to a different VM ID with networking initially disconnected or isolated.
+4. Confirm VM configuration and bootability without affecting the production cluster.
+5. Remove the test VM after documenting results.
+6. Do not attempt an etcd restore on the only working cluster; rehearse it only in an isolated recovery exercise.
 
-- Verify the installed Talos system-extension list and whether the QEMU guest agent is running.
-- Record a current `qm config` export for each VM with MAC addresses redacted.
-- Record cluster certificate and kubeconfig expiry considerations.
-- Decide whether control-plane workload scheduling should remain enabled.
-- Define resource headroom for platform services and application workloads.
+## Priority 2 — Protect recovery credentials
 
-## GitOps and secrets
+Create an encrypted second copy of:
 
-1. Bootstrap Flux against `clusters/home/`.
-2. Create an age key outside the repository.
-3. Configure SOPS.
-4. Commit only encrypted Kubernetes secret manifests.
-5. Add validation in CI to detect plaintext secrets and invalid YAML.
+- `talosconfig`,
+- kubeconfig,
+- generated Talos machine configurations,
+- etcd snapshots and `.sha256` files,
+- the documentation required to rebuild the VMs.
 
-## Private remote access
+Store the copy on a second physical device or encrypted off-site location. Never commit it.
 
-1. Deploy the Tailscale Kubernetes Operator or another reviewed private-access method.
-2. Keep Proxmox, Talos API, Kubernetes API, Grafana, Prometheus, Loki, and databases off the public internet.
-3. Define named-user administration and MFA.
+## Priority 3 — Automate safe backups
 
-## Persistent storage
+- Decide whether the external HDD remains disconnected except during manual backup sessions.
+- If it remains removable, prefer a documented manual checklist over unattended schedules.
+- If it remains connected, create scheduled Proxmox backups and alerts for failures.
+- Schedule regular etcd snapshots from the LG Gram or a secure management host.
+- Define snapshot and VM-backup retention independently.
 
-Choose the initial storage path before deploying stateful applications:
+## Priority 4 — GitOps and private access
 
-- simple local-path storage for disposable and low-risk workloads,
-- a more resilient CSI solution when additional physical nodes or NAS storage become available.
+- Bootstrap Flux.
+- Configure SOPS with age.
+- Commit only encrypted Kubernetes secrets.
+- Deploy Tailscale Operator or another approved private-access method.
+- Keep Proxmox, Talos, Kubernetes, and monitoring endpoints private.
 
-Do not deploy PostgreSQL or TimescaleDB until backup, restore, and persistent-volume behaviour are understood.
+## Priority 5 — Persistent storage and observability
 
-## Observability and dashboard
+- Select initial Kubernetes persistent storage.
+- Deploy Prometheus, Grafana, Alertmanager, Loki, and Alloy.
+- Deploy Homepage.
+- Add Eaton UPS telemetry and graceful shutdown.
 
-Deploy in controlled stages:
+## Priority 6 — Application platforms
 
-1. metrics-server,
-2. Prometheus,
-3. Grafana,
-4. Alertmanager,
-5. Loki,
-6. Grafana Alloy,
-7. Homepage.
+- Deploy PostgreSQL plus TimescaleDB.
+- Add MQTT and automation for polytunnel sensors.
+- Add supported WHOOP cloud data for wellness-pattern analytics.
+- Define application-data backups; etcd does not contain persistent-volume contents.
 
-Set resource requests and limits and verify the cluster remains within the Beelink resource budget.
+## Exit criteria for the next milestone
 
-## IoT platform
-
-After storage and observability are stable:
-
-- deploy PostgreSQL and TimescaleDB,
-- deploy MQTT,
-- deploy Node-RED or an equivalent automation layer,
-- begin polytunnel sensor ingestion,
-- add UPS telemetry,
-- define application-level backup policies.
-
-## Long-term multi-node target
-
-```mermaid
-flowchart LR
-    PVE1["pve01<br/>Beelink GTi12<br/>current"]
-    PVE2["pve02<br/>planned"]
-    PVE3["pve03<br/>planned"]
-    Backup["NAS / Proxmox Backup Server<br/>planned"]
-    K8s["Multi-host Kubernetes<br/>planned"]
-
-    PVE1 -. cluster .- PVE2
-    PVE2 -. cluster .- PVE3
-    PVE1 -. backups .-> Backup
-    PVE2 -. backups .-> Backup
-    PVE3 -. backups .-> Backup
-    PVE1 -. hosts .-> K8s
-    PVE2 -. hosts .-> K8s
-    PVE3 -. hosts .-> K8s
-```
+- [ ] One VM restore completes successfully in isolation.
+- [ ] Recovery instructions are verified by following them from a clean session.
+- [ ] Critical Talos credentials and snapshots have an encrypted second copy.
+- [ ] Flux reconciles the home cluster.
+- [ ] SOPS-encrypted secrets are used.
+- [ ] Private remote access is operational.

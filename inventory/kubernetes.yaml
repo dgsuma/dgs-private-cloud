@@ -1,7 +1,7 @@
 kubernetes:
   cluster_name: dgs-homelab
   state: operational
-  last_verified: 2026-07-26
+  last_verified: 2026-08-01
 
   platform:
     talos_version: v1.13.6
@@ -31,7 +31,6 @@ kubernetes:
       ready: true
       etcd_member: true
       schedulable: true
-
     - name: talos-worker-01
       vm_id: 211
       role: worker
@@ -39,7 +38,6 @@ kubernetes:
       ready: true
       etcd_member: false
       schedulable: true
-
     - name: talos-worker-02
       vm_id: 212
       role: worker
@@ -57,7 +55,7 @@ kubernetes:
     flannel: running_on_all_nodes
 
   validation:
-    talos_health: passed
+    talos_health: passed_after_backup_restart
     node_readiness: passed
     system_pods: passed
     workload_scheduling:
@@ -68,10 +66,25 @@ kubernetes:
       cleanup_completed: true
 
   backup:
-    etcd_snapshot_created: true
-    etcd_snapshot_stored_off_cluster: true
-    etcd_snapshot_sha256_created: true
-    proxmox_vm_backup_configured: false
+    etcd_snapshots:
+      - date: 2026-07-26
+        filename: dgs-homelab-etcd-2026-07-26_192642.snapshot
+        sha256_file_created: true
+        stored_off_cluster: true
+      - date: 2026-08-01
+        filename: dgs-homelab-etcd-2026-08-01_090643.snapshot
+        sha256_file_created: true
+        stored_off_cluster: true
+    proxmox_vm_backup:
+      configured: true
+      generation_completed: true
+      date: 2026-08-01
+      vm_ids:
+        - 210
+        - 211
+        - 212
+      storage_id: usb-backup-2tb
+      storage_disconnected_after_backup: true
     restore_tested: false
 
   gitops:

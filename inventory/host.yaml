@@ -9,59 +9,44 @@ host:
   hypervisor:
     product: Proxmox VE
     major_minor_version: "9.2"
-    manager_version_observed: "9.2.5"
+    manager_version_observed: "9.2.6"
     cluster_membership: standalone
 
   state:
     headless: true
     active_vm_count_verified: 3
     active_container_count_verified: 0
-    last_verified: 2026-07-26
-
-  bios:
-    vmx: enabled
-    vt_d: enabled
-    hyper_threading: enabled
-    secure_boot: disabled
-    boot_mode: UEFI
-    fast_boot: disabled
-    state_after_g3: S0
+    last_verified: 2026-08-01
 
   active_vms:
     - vm_id: 210
       name: talos-cp-01
-      role: talos_kubernetes_control_plane
+      role: talos_kubernetes_control_plane_and_etcd
       address: 192.168.1.210
       state: running_ready
-      talos_version: v1.13.6
-      kubernetes_version: v1.36.2
-      install_disk: /dev/sda
-      kubernetes_bootstrapped: true
-
     - vm_id: 211
       name: talos-worker-01
       role: talos_kubernetes_worker
       address: 192.168.1.211
       state: running_ready
-      talos_version: v1.13.6
-      kubernetes_version: v1.36.2
-      install_disk: /dev/sda
-
     - vm_id: 212
       name: talos-worker-02
       role: talos_kubernetes_worker
       address: 192.168.1.212
       state: running_ready
-      talos_version: v1.13.6
-      kubernetes_version: v1.36.2
-      install_disk: /dev/sda
+
+  backup:
+    vm_backup_generation_completed: true
+    vm_backup_date: 2026-08-01
+    external_storage_id: usb-backup-2tb
+    external_storage_normally_disconnected: true
+    restore_tested: false
 
   retired_items:
     - name: asus-pve
       type: temporary_proxmox_node
       outcome: retired_without_cluster_formation
       active: false
-
     - name: ubuntu-web-test
       vm_id: 100
       type: disposable_validation_vm

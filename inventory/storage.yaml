@@ -1,65 +1,106 @@
 storage:
+  identification_policy:
+    rely_on_device_name_only: false
+    required_attributes:
+      - model
+      - serial
+      - capacity
+      - transport
+
   physical_disks:
-    - device: /dev/nvme1n1
-      model: CT1000P3PSSD8
+    - model: CT1000P3PSSD8
       vendor: Crucial
       nominal_capacity_tb: 1
       role: proxmox_system
+      device_name_may_change: true
       destructive_operations_allowed: false
 
-    - device: /dev/nvme0n1
-      model: Samsung SSD 990 PRO 2TB
+    - model: Samsung SSD 990 PRO 2TB
       vendor: Samsung
       nominal_capacity_tb: 2
       role: primary_guest_storage
       volume_group: vg_vmdata
       thin_pool: thin_vmdata
       proxmox_storage_id: vmdata
+      device_name_may_change: true
+
+    - model: One Touch
+      vendor: Seagate
+      nominal_capacity_tb: 2
+      transport: usb
+      role: removable_vm_backup
+      filesystem: ext4
+      mount_point: /mnt/pve/usb-backup-2tb
+      proxmox_storage_id: usb-backup-2tb
+      is_mountpoint_guard: true
+      normally_connected: false
+      last_backup_date: 2026-08-01
 
   proxmox_storage:
     - id: local
       type: directory
+      state: active
       purpose:
         - iso
         - templates
-        - snippets
+        - import
         - temporary_backups
 
     - id: local-lvm
       type: lvmthin
+      state: active
       purpose:
-        - secondary_guest_disks
+        - guest_disks
 
     - id: vmdata
       type: lvmthin
       approximate_usable_tib: 1.73
       monitored: true
+      state: active
       purpose:
         - primary_vm_disks
         - primary_lxc_root_filesystems
+
+    - id: usb-backup-2tb
+      type: directory
+      filesystem: ext4
+      content:
+        - backup
+      node: pve01
+      shared: false
+      mount_point: /mnt/pve/usb-backup-2tb
+      is_mountpoint: true
+      normal_disconnected_state: disabled
+      retention:
+        keep_last: 3
+        keep_weekly: 2
+        keep_monthly: 1
 
   active_allocations:
     - vm_id: 210
       name: talos-cp-01
       system_disk_gib: 64
       storage_id: vmdata
-      talos_device: /dev/sda
-
-  planned_allocations:
     - vm_id: 211
-      name: talos-wk-01
+      name: talos-worker-01
       system_disk_gib: 64
-      data_disk_gib: 300
       storage_id: vmdata
-
     - vm_id: 212
-      name: talos-wk-02
+      name: talos-worker-02
       system_disk_gib: 64
-      data_disk_gib: 300
       storage_id: vmdata
 
-  retired_allocations:
-    - vm_id: 100
-      name: ubuntu-web-test
-      state: deleted
-      remaining_volumes: none_verified
+  backup_generation:
+    date: 2026-08-01
+    note: Talos cluster baseline after bootstrap
+    archives:
+      - vm_id: 210
+        filename: vzdump-qemu-210-2026_08_01-10_29_43.vma.zst
+        size_mib: 432.11
+      - vm_id: 211
+        filename: vzdump-qemu-211-2026_08_01-10_31_58.vma.zst
+        size_mib: 270.95
+      - vm_id: 212
+        filename: vzdump-qemu-212-2026_08_01-10_33_27.vma.zst
+        size_mib: 251.83
+    restore_tested: false
