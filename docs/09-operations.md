@@ -1,178 +1,166 @@
 # Operations
 
-## Administration endpoints
+## Administration entry points
 
-Use only the private LAN or an approved authenticated private-access path.
+| Component | Access |
+|---|---|
+| Proxmox | `https://192.168.1.201:8006` on the trusted LAN |
+| Kubernetes API | `https://192.168.1.210:6443` through kubeconfig |
+| Talos API | Control plane `192.168.1.210` through talosconfig |
+| GitOps | Git commits to `main`; Flux reconciles `clusters/beelink-talos` |
+| Tailscale | Admin console and future private Kubernetes services |
+
+Do not expose management ports directly to the internet.
+
+## Workstation session setup
+
+```powershell
+Set-Location "E:\home-server\dgs-private-cloud"
+
+$env:TALOSCONFIG = (Resolve-Path ".\talos\generated\talosconfig").Path
+$env:KUBECONFIG = (Resolve-Path ".\talos\generated\kubeconfig").Path
+
+kubectl config current-context
+kubectl cluster-info
+```
+
+Expected context:
 
 ```text
-Proxmox pve01:       https://192.168.1.201:8006
-Talos API endpoint:  192.168.1.210:50000
-Kubernetes API:      https://192.168.1.210:6443
+admin@dgs-homelab
 ```
 
-Do not expose these services through router port forwarding.
-
-## Fresh PowerShell session
-
-A new PowerShell window does not retain `$CP`, `$W1`, `$W2`, `TALOSCONFIG`, or `KUBECONFIG`.
+## Routine Kubernetes and Talos health check
 
 ```powershell
-$CP = "192.168.1.210"
-$W1 = "192.168.1.211"
-$W2 = "192.168.1.212"
-$RepoPath = "E:\home-server\dgs-private-cloud"
-
-$env:TALOSCONFIG = Join-Path $RepoPath "talos\generated\talosconfig"
-$env:KUBECONFIG = Join-Path $RepoPath "talos\generated\kubeconfig"
-
-talosctl version --nodes $CP --endpoints $CP --talosconfig $env:TALOSCONFIG
-kubectl get nodes -o wide
-```
-
-Workers are target nodes. The control plane remains the Talos API endpoint:
-
-```powershell
-talosctl version --nodes $W1 --endpoints $CP --talosconfig $env:TALOSCONFIG
-talosctl version --nodes $W2 --endpoints $CP --talosconfig $env:TALOSCONFIG
-```
-
-## Cluster health
-
-```powershell
-talosctl health `
-  --control-plane-nodes $CP `
-  --worker-nodes "$W1,$W2" `
-  --endpoints $CP `
-  --talosconfig $env:TALOSCONFIG
-
 kubectl get nodes -o wide
 kubectl get pods -A -o wide
+
+talosctl health `
+  --control-plane-nodes 192.168.1.210 `
+  --worker-nodes "192.168.1.211,192.168.1.212" `
+  --endpoints 192.168.1.210
 ```
 
-## VM lifecycle
-
-List VMs:
-
-```bash
-qm list
-```
-
-Inspect a VM:
-
-```bash
-qm config 210
-qm status 210
-```
-
-Graceful cluster shutdown order:
-
-```text
-1. VM 211 — talos-worker-01
-2. VM 212 — talos-worker-02
-3. VM 210 — talos-cp-01
-```
-
-Startup order:
-
-```text
-1. VM 210 — talos-cp-01
-2. VM 211 — talos-worker-01
-3. VM 212 — talos-worker-02
-```
-
-Use `qm stop` only when graceful shutdown cannot complete.
-
-## Talos etcd snapshot
-
-From the repository root:
+## Routine Flux check
 
 ```powershell
-.\scripts\workstation\New-TalosEtcdSnapshot.ps1 `
-  -ControlPlane "192.168.1.210" `
-  -WorkerNodes "192.168.1.211","192.168.1.212" `
-  -BackupFolder "E:\home-server-backups\etcd" `
-  -TalosConfig ".\talos\generated\talosconfig"
+flux check
+flux get sources git -A
+flux get kustomizations -A
+flux get sources helm -A
+flux get helmreleases -A
 ```
 
-See [Talos etcd snapshot runbook](runbooks/talos-etcd-snapshot.md).
+Healthy state:
 
-## Connect and enable the USB backup drive
+- GitRepository `Ready=True`;
+- Kustomization `Ready=True`;
+- Tailscale HelmRepository `Ready=True`;
+- Tailscale HelmRelease `Ready=True`.
 
-1. Connect the Seagate directly to a USB 3.x port.
-2. Confirm it by model and transport:
+Force reconciliation after a Git push:
 
-```bash
-lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINTS,MODEL,TRAN
+```powershell
+flux reconcile source git flux-system --namespace flux-system
+
+flux reconcile kustomization flux-system `
+  --namespace flux-system `
+  --with-source
 ```
 
-3. Verify or start the mount:
+## Routine Tailscale Operator check
 
-```bash
-findmnt /mnt/pve/usb-backup-2tb
-systemctl start "$(systemd-escape -p --suffix=mount /mnt/pve/usb-backup-2tb)"
+```powershell
+kubectl get deployment -n tailscale
+kubectl get pods -n tailscale
+kubectl get ingressclass tailscale
+kubectl get secret operator-oauth -n tailscale
+kubectl logs -n tailscale deployment/operator --tail=100
 ```
 
-4. Enable Proxmox storage:
+Expected state:
 
-```bash
-pvesm set usb-backup-2tb --disable 0
-pvesm status
-```
+- Deployment `operator` is `1/1 Available`;
+- pod is `1/1 Running`;
+- restart count is normally zero;
+- IngressClass `tailscale` exists;
+- Secret `operator-oauth` contains two data entries;
+- no continuing authentication, invalid-tag, fatal, or crash errors.
 
-Do not continue until it reports `active` and `df -hT` shows `/dev/sda1` or the currently assigned Seagate partition mounted at the expected path.
-
-## Create VM backups
-
-For a clean baseline, shut down the cluster in worker-first order and use:
+The log message below is informational when a Service is not configured for a ProxyGroup:
 
 ```text
-Storage:     usb-backup-2tb
-Mode:        Stop
-Compression: ZSTD
-Notes:       Talos cluster baseline after bootstrap
+no ProxyGroup annotation, skipping Tailscale Service provisioning
 ```
 
-Back up VMs `210`, `211`, and `212`, and wait for `TASK OK` after each job.
+## PowerShell command notes
 
-Verify:
+PowerShell may treat an unquoted comma-separated kubectl resource expression unexpectedly. Prefer separate commands:
+
+```powershell
+kubectl get deployment -n tailscale
+kubectl get pods -n tailscale
+```
+
+For commands that pipe generated YAML into `kubectl apply -f -`, this workstation has shown stdin hangs. Prefer direct creation commands or write the manifest to a file first.
+
+## GitOps change workflow
+
+```powershell
+git status
+git pull --ff-only origin main
+
+# Edit and validate files.
+
+kubectl kustomize ".\clusters\beelink-talos" | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    throw "Kustomize validation failed."
+}
+
+git diff --check
+git diff
+git add <specific-files>
+git diff --cached --check
+git diff --cached
+git commit -m "<type(scope): description>"
+git push origin main
+```
+
+Never stage the whole repository blindly when credentials, screenshots, or generated files may be present.
+
+## Safe Proxmox shutdown
+
+From the web interface:
+
+```text
+pve01 → Shutdown
+```
+
+From the shell:
 
 ```bash
-pvesm list usb-backup-2tb
-ls -lh /mnt/pve/usb-backup-2tb/dump/
-df -h /mnt/pve/usb-backup-2tb
+shutdown -h now
 ```
 
-## Safe USB disconnect
+Wait until the Beelink power light and fan stop before disconnecting power.
 
-1. Confirm no backup, restore, upload, or copy task is running.
-2. Disable storage:
+## Startup
 
-```bash
-pvesm set usb-backup-2tb --disable 1
-```
+Press the Beelink power button once. The BIOS setting `State After G3: S0 State` allows automatic power-on after electricity returns following a complete outage.
 
-3. Flush writes and unmount:
+## Backup session closing procedure
 
-```bash
-cd /root
-sync
-umount -R /mnt/pve/usb-backup-2tb
-```
+Before disconnecting the Seagate backup disk:
 
-4. Verify:
+1. Confirm every backup task has completed successfully.
+2. Confirm no restore, upload, or copy task is active.
+3. Disable `usb-backup-2tb` in Proxmox.
+4. Run `sync`.
+5. Unmount `/mnt/pve/usb-backup-2tb`.
+6. Confirm `findmnt` returns no mount.
+7. Disconnect the USB cable.
 
-```bash
-findmnt /mnt/pve/usb-backup-2tb
-pvesm status
-lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS,MODEL,TRAN
-```
+## Secret recovery note
 
-Only disconnect the cable when `findmnt` returns no output and the Proxmox storage is disabled.
-
-If unmount reports `target is busy`:
-
-```bash
-fuser -vm /mnt/pve/usb-backup-2tb
-```
-
-Stop the process using the mount, then retry. Never unplug a busy or mounted filesystem.
+The Tailscale `operator-oauth` Secret is not currently stored in Git. A cluster rebuild requires recreating it from the OAuth credentials stored in the password manager before the Tailscale HelmRelease can become fully operational. Move this Secret to SOPS-encrypted Git management in a later milestone.

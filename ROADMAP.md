@@ -2,7 +2,7 @@
 
 ## Phase 0 — Proxmox foundation
 
-Status: **Complete**
+**Status: Complete**
 
 - [x] Install Proxmox VE on `pve01`.
 - [x] Configure static management address `192.168.1.201/24`.
@@ -15,7 +15,7 @@ Status: **Complete**
 
 ## Retired experiment — ASUS temporary node
 
-Status: **Closed without cluster formation**
+**Status: Closed without cluster formation**
 
 - [x] Install Proxmox VE temporarily on the ASUS ADATA SSD.
 - [x] Preserve the WDC 1 TB HDD.
@@ -25,7 +25,7 @@ Status: **Closed without cluster formation**
 
 ## Phase 1A — Disposable first-guest validation
 
-Status: **Complete**
+**Status: Complete**
 
 - [x] Create Ubuntu VM `100` on `pve01`.
 - [x] Validate networking, DNS, internet access, QEMU Guest Agent, and Nginx.
@@ -33,7 +33,7 @@ Status: **Complete**
 
 ## Phase 1B — Core Talos Kubernetes platform
 
-Status: **Complete**
+**Status: Complete**
 
 - [x] Prepare the repository structure and workstation tooling.
 - [x] Generate and upload Talos `v1.13.6` installation media.
@@ -51,12 +51,12 @@ Status: **Complete**
 
 ## Phase 1C — Recovery baseline
 
-Status: **Baseline complete; restore test pending**
+**Status: Backup baseline complete; restore testing remains**
 
-- [x] Create first off-cluster Talos etcd snapshot.
-- [x] Create second off-cluster Talos etcd snapshot.
+- [x] Create the first off-cluster Talos etcd snapshot.
+- [x] Create the second off-cluster Talos etcd snapshot.
 - [x] Generate SHA-256 files for both snapshots.
-- [x] Prepare Seagate One Touch 2 TB as ext4 backup storage.
+- [x] Prepare the Seagate One Touch 2 TB as ext4 backup storage.
 - [x] Configure `usb-backup-2tb` with `is_mountpoint 1`.
 - [x] Create full backups of VMs `210`, `211`, and `212`.
 - [x] Revalidate cluster health after restart.
@@ -68,27 +68,37 @@ Status: **Baseline complete; restore test pending**
 
 ## Phase 1D — GitOps and private access
 
-Status: **Planned**
+**Status: Operational baseline complete; SOPS remains**
 
-- [ ] Bootstrap Flux from the private `dgs-private-cloud` repository.
+- [x] Bootstrap Flux `v2.9.3` from the private `dgs-private-cloud` repository.
+- [x] Configure the active Flux path as `clusters/beelink-talos`.
+- [x] Use an SSH deploy key for ongoing private-repository access.
+- [x] Revoke the temporary GitHub bootstrap PAT.
+- [x] Deploy the Tailscale Kubernetes Operator through Flux.
+- [x] Confirm `beelink-talos-operator` is connected with `tag:k8s-operator`.
+- [x] Install the Tailscale IngressClass and CRDs.
+- [x] Keep Proxmox and Kubernetes administration private.
 - [ ] Generate an age identity and configure SOPS.
-- [ ] Store only encrypted Kubernetes secrets in Git.
-- [ ] Deploy the Tailscale Kubernetes Operator.
-- [ ] Keep Proxmox and Kubernetes administration private.
+- [ ] Store only SOPS-encrypted Kubernetes Secrets in Git.
+- [ ] Migrate `operator-oauth` from a manually created Secret to encrypted Git management.
 
-## Phase 1E — Observability and dashboard
+## Phase 1E — Persistent storage, observability, and dashboard
 
-Status: **Planned**
+**Status: Next**
 
-- [ ] Select and deploy local persistent storage.
-- [ ] Deploy Prometheus, Grafana, Alertmanager, Loki, and Grafana Alloy.
+- [ ] Select a Talos-compatible initial persistent-storage solution.
+- [ ] Validate dynamic PersistentVolume provisioning.
+- [ ] Define capacity and retention for metrics, dashboards, and logs.
+- [ ] Deploy Prometheus, Grafana, and Alertmanager.
+- [ ] Deploy Loki and Grafana Alloy.
+- [ ] Expose selected dashboards only through authenticated Tailscale access.
 - [ ] Deploy Homepage.
-- [ ] Add UPS telemetry and graceful-shutdown monitoring.
-- [ ] Expose selected services only through authenticated private access.
+- [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
+- [ ] Test application and database recovery independently of etcd.
 
 ## Phase 2 — IoT and wellness data platform
 
-Status: **Planned**
+**Status: Planned**
 
 - [ ] Deploy PostgreSQL and TimescaleDB.
 - [ ] Deploy MQTT.
@@ -99,7 +109,7 @@ Status: **Planned**
 
 ## Phase 3 — Resilience and permanent expansion
 
-Status: **Planned**
+**Status: Planned**
 
 - [ ] Add permanent second and third Proxmox nodes.
 - [ ] Define an odd-vote quorum strategy or QDevice.

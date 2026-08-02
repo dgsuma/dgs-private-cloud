@@ -2,108 +2,87 @@
 
 All notable documentation and infrastructure-state changes are recorded here.
 
-## [0.6.0] - 2026-08-01
+## [0.5.0] - 2026-08-02
 
 ### Added
 
-- External USB backup lifecycle and Proxmox VM-backup runbook.
-- Complete backup-and-recovery baseline record.
-- Fresh-PowerShell Talos authentication and etcd-snapshot procedure.
-- Updated host, guest, Kubernetes, network, and storage inventories.
+- Flux `v2.9.3` bootstrap against the private `dgs-private-cloud` repository.
+- Active GitOps cluster path at `clusters/beelink-talos`.
+- Flux-generated controller and synchronization manifests.
+- Tailscale HelmRepository and HelmRelease managed by Flux.
+- Tailscale Kubernetes Operator chart `1.98.9`.
+- `tailscale` IngressClass and Tailscale custom-resource definitions.
+- Documentation and validation runbook for Flux and Tailscale.
+- Kubernetes inventory entries for GitOps, private access, and remaining platform services.
 
-### Completed infrastructure
+### Changed
 
-- Updated Proxmox VE Manager to `9.2.6` as observed in the web interface.
-- Connected and identified a Seagate One Touch 2 TB USB HDD.
-- Removed the factory exFAT layout and created an ext4 filesystem.
-- Mounted the drive at `/mnt/pve/usb-backup-2tb`.
-- Registered Proxmox directory storage `usb-backup-2tb` with content type `backup`.
-- Enabled mount-point protection with `is_mountpoint 1`.
-- Configured retention: keep last 3, weekly 2, monthly 1.
-- Created compressed full backups of Talos VMs `210`, `211`, and `212`.
-- Restarted the Talos cluster and reconfirmed every node `Ready`.
-- Re-ran `talosctl health` successfully after the backup cycle.
-- Created a second off-cluster Talos etcd snapshot and SHA-256 file.
-- Disabled the USB storage, flushed pending writes, unmounted it, and disconnected it safely.
+- Updated the verified platform date to `2026-08-02`.
+- Updated the README, current-state document, roadmap, operations guide, next steps, security policy, and Kubernetes inventory.
+- Marked Proxmox VM backups of `210`, `211`, and `212` as completed.
+- Marked the removable backup disk as safely disabled, unmounted, and disconnected after backup.
+- Marked Flux bootstrap and Tailscale Operator deployment as completed.
+- Set persistent storage and observability as the immediate next platform work.
+- Removed the obsolete empty `clusters/home` placeholder.
 
-### Backup artefacts recorded
+### Security
 
-- `vzdump-qemu-210-2026_08_01-10_29_43.vma.zst` — 432.11 MiB.
-- `vzdump-qemu-211-2026_08_01-10_31_58.vma.zst` — 270.95 MiB.
-- `vzdump-qemu-212-2026_08_01-10_33_27.vma.zst` — 251.83 MiB.
-- `dgs-homelab-etcd-2026-07-26_192642.snapshot` with SHA-256 file.
-- `dgs-homelab-etcd-2026-08-01_090643.snapshot` with SHA-256 file.
+- Kept the Tailscale `operator-oauth` Secret outside Git.
+- Documented required Tailscale tag ownership and OAuth scopes without recording credentials.
+- Confirmed the Flux deploy key remains the repository authentication method after revoking the temporary bootstrap PAT.
+- Added explicit guidance for moving the manually created OAuth Secret to SOPS-encrypted Git management later.
 
-### Pending
+### Verified
 
-- Perform and document an isolated restore test.
-- Add a second encrypted copy of Talos recovery material on separate physical storage.
-- Automate snapshot and backup scheduling only after the removable-disk operating model is finalised.
-- Bootstrap Flux and configure SOPS.
+- Flux GitRepository and Kustomization report `Ready=True`.
+- Flux HelmRepository and Tailscale HelmRelease report `Ready=True`.
+- Tailscale operator Deployment is available.
+- Tailscale operator pod is `1/1 Running` with zero restarts.
+- `beelink-talos-operator` is connected in the Tailscale admin console with `tag:k8s-operator`.
 
-## [0.5.0] - 2026-07-26
+## [0.4.0] - 2026-07-26
 
 ### Added
 
-- Operational three-node Talos Kubernetes topology documentation.
-- Detailed Talos cluster-bootstrap implementation record.
-- Talos etcd snapshot runbook and reusable workstation script.
-- Kubernetes, guest, host, and network inventory updates.
+- Talos worker VMs `211` and `212`.
+- Node-specific Talos hostname patches using `HostnameConfig`.
+- Completed Kubernetes bootstrap documentation.
+- Kubernetes cluster inventory.
+- etcd snapshot runbook and reusable PowerShell snapshot script.
+
+### Changed
+
+- Updated the verified state from one Talos maintenance-mode VM to an operational three-node cluster.
+- Corrected the worker specifications to the implemented 4 vCPU, 8 GiB RAM, and 64 GiB disk configuration.
+- Corrected the active worker names to `talos-worker-01` and `talos-worker-02`.
+- Updated the Talos runbook with the actual clone, boot-order, configuration-patching, validation, bootstrap, and ISO-detachment workflow.
+- Updated operations, security, roadmap, inventories, and next steps.
 
 ### Completed infrastructure
 
-- Created Talos worker VMs `211` and `212` by full cloning VM `210`.
-- Configured 4 vCPU, 8 GiB RAM, 64 GiB disks, VirtIO networking, and disk-first boot order.
-- Reserved `192.168.1.211` and `192.168.1.212`.
-- Validated maintenance-mode connectivity and `/dev/sda` on all nodes.
-- Generated and validated node-specific Talos configurations.
-- Applied control-plane and worker configurations.
-- Bootstrapped the first control-plane node exactly once.
-- Retrieved kubeconfig and confirmed all nodes `Ready`.
+- Applied Talos `v1.13.6` machine configurations to all three nodes.
+- Bootstrapped the control plane exactly once.
+- Confirmed Kubernetes `v1.36.2` and all three nodes `Ready`.
 - Confirmed CoreDNS, Flannel, kube-proxy, API server, controller manager, and scheduler running.
-- Validated workload distribution using four Nginx replicas.
-- Detached the Talos ISO from all three VMs.
+- Validated workload scheduling with four Nginx replicas across both workers.
+- Detached the installation ISO from all three VMs.
 - Created and SHA-256-verified the first off-cluster etcd snapshot.
 
-## [0.4.0] - 2026-07-25
+## [0.3.0] - 2026-07-25
 
 ### Added
 
-- Phase 1 GitOps repository structure for Talos, Kubernetes infrastructure, applications, and the home cluster.
-- Workstation verification script for Git, GitHub CLI, kubectl, talosctl, Flux, SOPS, and age.
-- Talos Image Factory schematic using `siderolabs/qemu-guest-agent`.
-- Talos Kubernetes Phase 1 implementation record.
-- ADR for the disposable first-guest validation.
-- ADR for the initial Talos Kubernetes architecture.
-- Worker-creation and Kubernetes-bootstrap runbook.
+- GitOps-oriented repository structure for Talos, Kubernetes infrastructure, applications, clusters, and runbooks.
+- Talos `v1.13.6` Image Factory schematic with the QEMU guest-agent extension selected.
+- Talos control-plane VM `210`.
+- Talos Phase 1 prerequisite documentation.
 
-### Completed infrastructure
+### Verified
 
-- Removed obsolete Ubuntu validation VM `100` and confirmed no `vm-100-*` disks remained.
-- Confirmed `vmdata` remained active and healthy after VM deletion.
-- Installed and verified current workstation tooling.
-- Generated Talos `v1.13.6` custom ISO with QEMU guest-agent support.
-- Verified the ISO SHA-256 remained identical after upload to `pve01`.
-- Created control-plane VM `210` as `talos-cp-01`.
-- Reserved `192.168.1.210`.
-- Booted Talos into maintenance mode.
-- Verified Talos API connectivity on TCP `50000`.
-- Confirmed `/dev/sda` is the 64 GiB installation disk.
-
-## [0.3.0] - 2026-07-18
-
-### Added
-
-- Temporary ASUS Proxmox node documentation.
-- ADR for the short-lived two-node experiment.
-- Safe temporary-node removal runbook.
-- UPS hardware inventory and updated two-host topology.
-
-### Outcome
-
-- The temporary ASUS experiment was abandoned because the old hardware was unstable.
-- The ASUS node was shut down.
-- No Proxmox cluster was formed.
+- Talos maintenance mode on `192.168.1.210`.
+- Talos API reachability.
+- Writable installation disk `/dev/sda`.
+- Matching workstation and uploaded ISO hashes.
 
 ## [0.2.0] - 2026-07-12
 
@@ -117,10 +96,22 @@ All notable documentation and infrastructure-state changes are recorded here.
 - Codex instructions through `AGENTS.md`.
 - ADRs for storage separation, static management networking, and repository policy.
 
+### Documented
+
+- Proxmox VE installation on the Crucial 1 TB SSD.
+- Archer NX200 IPv4 recovery through a custom Vodafone IPv4 profile.
+- Samsung 990 PRO 2 TB LVM-thin configuration.
+- Thin metadata extension and monitoring.
+- Final validation state with zero failed systemd units.
+
 ## [0.1.0] - 2026-07-11
 
 ### Added
 
 - Initial README.
 - Proprietary licence.
+
+### Completed infrastructure
+
 - First Proxmox node installed and operational.
+- No VMs or containers deployed.

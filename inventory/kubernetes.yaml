@@ -1,7 +1,7 @@
 kubernetes:
   cluster_name: dgs-homelab
   state: operational
-  last_verified: 2026-08-01
+  last_verified: 2026-08-02
 
   platform:
     talos_version: v1.13.6
@@ -31,6 +31,7 @@ kubernetes:
       ready: true
       etcd_member: true
       schedulable: true
+
     - name: talos-worker-01
       vm_id: 211
       role: worker
@@ -38,6 +39,7 @@ kubernetes:
       ready: true
       etcd_member: false
       schedulable: true
+
     - name: talos-worker-02
       vm_id: 212
       role: worker
@@ -67,14 +69,13 @@ kubernetes:
 
   backup:
     etcd_snapshots:
-      - date: 2026-07-26
-        filename: dgs-homelab-etcd-2026-07-26_192642.snapshot
-        sha256_file_created: true
-        stored_off_cluster: true
-      - date: 2026-08-01
-        filename: dgs-homelab-etcd-2026-08-01_090643.snapshot
-        sha256_file_created: true
-        stored_off_cluster: true
+      count: 2
+      dates:
+        - 2026-07-26
+        - 2026-08-01
+      sha256_files_created: true
+      stored_off_cluster: true
+
     proxmox_vm_backup:
       configured: true
       generation_completed: true
@@ -84,9 +85,50 @@ kubernetes:
         - 211
         - 212
       storage_id: usb-backup-2tb
+      storage_disabled_after_backup: true
+      storage_unmounted_after_backup: true
       storage_disconnected_after_backup: true
-    restore_tested: false
+      restore_tested: false
 
   gitops:
-    flux_bootstrapped: false
+    flux_bootstrapped: true
+    flux_version: v2.9.3
+    repository: dgsuma/dgs-private-cloud
+    branch: main
+    path: clusters/beelink-talos
+    authentication: ssh_deploy_key
+    gitrepository_ready: true
+    kustomization_ready: true
+    temporary_bootstrap_pat_revoked: true
     sops_configured: false
+
+  private_access:
+    provider: tailscale
+    operator_deployed: true
+    namespace: tailscale
+    helm_chart: tailscale-operator
+    helm_chart_version: 1.98.9
+    helmrepository_ready: true
+    helmrelease_ready: true
+    deployment_name: operator
+    deployment_available: true
+    pod_ready: true
+    ingress_class: tailscale
+    operator_hostname: beelink-talos-operator
+    operator_tag: tag:k8s-operator
+    proxy_tag: tag:k8s
+    oauth_secret_name: operator-oauth
+    oauth_secret_managed_in_git: false
+    kubernetes_api_proxy_enabled: false
+
+  storage:
+    storage_class_present: false
+    dynamic_provisioning_configured: false
+
+  observability:
+    prometheus_deployed: false
+    grafana_deployed: false
+    alertmanager_deployed: false
+    loki_deployed: false
+    alloy_deployed: false
+    homepage_deployed: false
