@@ -1,0 +1,47 @@
+tailscale:
+  purpose: private_remote_administration
+  last_verified: 2026-08-03
+
+  server:
+    device_name: mel-pve01
+    host: pve01
+    platform: Proxmox_VE
+    local_management_address: 192.168.1.201
+    tailscale_ipv4: recorded_privately
+    tailnet_dns_name: recorded_privately
+    tailscaled_enabled: true
+    tailscaled_active: true
+
+  serve:
+    enabled: true
+    background_mode: true
+    backend: https+insecure://127.0.0.1:8006
+    public_funnel_enabled: false
+    preferred_remote_url: recorded_privately
+
+  clients:
+    - device: LG_Gram
+      operating_system: Windows
+      externally_verified: true
+      verification_network: alternate_wifi
+      tailscale_address: recorded_privately
+
+    - device: Moto_G84
+      operating_system: Android
+      externally_verified: true
+      verification_network: mobile_data
+      tailscale_address: recorded_privately
+
+  network_boundary:
+    router: TP-Link_Archer_NX200
+    inbound_port_forwarding_required: false
+    prohibited_public_management_ports:
+      - 8006
+      - 22
+      - 6443
+
+  pending:
+    - verify_key_expiry_policy_for_mel_pve01
+    - enable_and_test_proxmox_two_factor_authentication
+    - complete_reboot_and_power_recovery_test
+    - configure_raspberry_pi_5_as_separate_subnet_router

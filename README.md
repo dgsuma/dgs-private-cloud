@@ -1,5 +1,32 @@
 # DGS Private Cloud
 
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-03 -->
+> **Current checkpoint — 2026-08-03**
+>
+> The active platform is the Beelink `pve01` Proxmox host. It runs three Talos
+> virtual machines (`210`, `211`, and `212`) for one Kubernetes control plane
+> and two workers. Flux and the Tailscale Kubernetes Operator are operational.
+> Direct private remote administration of Proxmox has now been implemented and
+> externally verified through Tailscale Serve from the LG Gram and Moto G84.
+>
+> Preferred remote-access pattern:
+> `https://mel-pve01.<tailnet-name>.ts.net/`
+>
+> The real tailnet suffix and Tailscale IP addresses are intentionally kept out
+> of Git. Tailscale Funnel is disabled, and the Archer NX200 does not expose
+> Proxmox management ports publicly.
+>
+> Historical sections that refer to the retired temporary ASUS experiment or
+> to a zero-guest state require broader repository consolidation.
+
+### Remote-access documentation
+
+- [Tailscale reverse proxy for Proxmox](docs/12-tailscale-reverse-proxy.md)
+- [Remote-access validation runbook](docs/runbooks/validate-tailscale-proxmox-access.md)
+- [Sanitised Tailscale inventory](inventory/tailscale.yaml)
+<!-- END CURRENT CHECKPOINT 2026-08-03 -->
+
+
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
 
 > **Current stage:** a three-node Talos Linux Kubernetes cluster is operational on the standalone Proxmox VE host `pve01`. Flux continuously reconciles the cluster from this repository, the Tailscale Kubernetes Operator is connected to the tailnet, two off-cluster etcd snapshots have been verified, and full Proxmox backups of VMs `210`, `211`, and `212` have been written to removable storage.

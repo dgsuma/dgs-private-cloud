@@ -118,3 +118,24 @@
 - [ ] Configure scheduled backups and tested retention.
 - [ ] Test restores regularly.
 - [ ] Add VLANs and firewall policies where justified.
+
+<!-- BEGIN TAILSCALE ROADMAP 2026-08-03 -->
+## Phase 4A — Tailscale remote administration
+
+Status: **Implemented and externally verified**
+
+- [x] Install Tailscale directly on `pve01`.
+- [x] Register the host as `mel-pve01`.
+- [x] Enable and validate the `tailscaled` system service.
+- [x] Enable HTTPS certificates for Serve.
+- [x] Keep Tailscale Funnel disabled.
+- [x] Configure Serve for the Proxmox HTTPS backend.
+- [x] Validate Tailscale ping from the LG Gram.
+- [x] Validate Proxmox TCP port `8006` from the LG Gram.
+- [x] Validate the private Serve URL from the LG Gram on alternate Wi-Fi.
+- [x] Validate the private Serve URL from the Moto G84 over mobile data.
+- [ ] Enable and test Proxmox two-factor authentication.
+- [ ] Verify key-expiry settings for remote infrastructure devices.
+- [ ] Complete full reboot and power-recovery testing.
+- [ ] Configure the Raspberry Pi 5 as a separate subnet router.
+<!-- END TAILSCALE ROADMAP 2026-08-03 -->

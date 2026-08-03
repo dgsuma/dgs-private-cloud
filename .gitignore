@@ -85,3 +85,8 @@ Desktop.ini
 
 # Local operator notes
 /git-commands-local.txt
+
+# Local operator notes and private Tailscale evidence
+git-commands-local.txt
+evidence/tailscale-private/
+*.tailscale-local.txt

@@ -1,5 +1,35 @@
 # Changelog
 
+<!-- BEGIN CHANGELOG 0.4.0 -->
+## [0.4.0] - 2026-08-03
+
+### Added
+
+- End-to-end Tailscale Serve implementation guide for private Proxmox access.
+- Remote-access validation runbook.
+- Sanitised Tailscale inventory.
+- Current-state and operations checkpoints for remote administration.
+
+### Implemented
+
+- Installed Tailscale directly on `pve01`.
+- Registered the Proxmox host as `mel-pve01`.
+- Enabled the `tailscaled` system service.
+- Enabled private HTTPS certificates for Tailscale Serve.
+- Configured a background Serve proxy to
+  `https+insecure://127.0.0.1:8006`.
+- Kept Tailscale Funnel disabled.
+- Verified Tailscale ping and TCP `8006` connectivity from the LG Gram.
+- Verified the private Serve URL from the LG Gram on alternate Wi-Fi.
+- Verified the private Serve URL from the Moto G84 over mobile data.
+
+### Security
+
+- Kept Proxmox management ports closed to the public internet.
+- Excluded real tailnet addresses, authentication links, keys, and unredacted
+  screenshots from committed documentation.
+<!-- END CHANGELOG 0.4.0 -->
+
 All notable documentation and infrastructure-state changes are recorded here.
 
 ## [0.5.0] - 2026-08-02

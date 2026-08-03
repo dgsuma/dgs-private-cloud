@@ -1,5 +1,38 @@
 # Current State
 
+<!-- BEGIN CURRENT STATE 2026-08-03 -->
+## Current checkpoint — 2026-08-03
+
+| Property | Verified state |
+|---|---|
+| Active Proxmox node | `pve01` on Beelink GTi12 |
+| PVE Manager | `9.2.6` |
+| Proxmox cluster | Standalone host |
+| Talos VMs | `210` control plane, `211` worker 1, `212` worker 2 |
+| Kubernetes | Operational |
+| Flux | Operational |
+| Tailscale Kubernetes Operator | Operational |
+| Direct Proxmox Tailscale endpoint | Operational |
+| Tailscale Serve | Operational |
+| Tailscale Funnel | Disabled |
+| LG Gram external test | Passed using alternate Wi-Fi |
+| Moto G84 external test | Passed using mobile data |
+| External VM backups | Completed for VMs `210`, `211`, and `212` |
+| Talos etcd snapshots | Completed on 2026-07-26 and 2026-08-01 |
+| Temporary ASUS Proxmox node | Retired from active use |
+
+The preferred private remote-management URL is recorded locally and represented
+in committed documentation as:
+
+```text
+https://mel-pve01.<tailnet-name>.ts.net/
+```
+
+The earlier sections below remain as historical records of the temporary ASUS
+experiment and must not be interpreted as the current operating state.
+<!-- END CURRENT STATE 2026-08-03 -->
+
+
 Verified on `2026-08-02` after Kubernetes bootstrap, backup completion, Flux bootstrap, and Tailscale Operator deployment.
 
 ## Hypervisor

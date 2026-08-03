@@ -128,3 +128,30 @@ Before temporarily making the repository public:
 5. Review screenshots and evidence files.
 6. Keep the public window as short as practical.
 7. Return the repository to private immediately after review.
+
+<!-- BEGIN TAILSCALE SECURITY BOUNDARY -->
+## Tailscale remote-management boundary
+
+Proxmox remote administration uses authenticated Tailscale connectivity and
+Tailscale Serve. It does not use public router forwarding.
+
+Required controls:
+
+- Tailscale Funnel is disabled.
+- TCP `8006`, `22`, and `6443` are not forwarded on the Archer NX200.
+- The Serve backend is local to `pve01`:
+  `https+insecure://127.0.0.1:8006`.
+- Real Tailscale IP addresses and the tailnet DNS suffix are recorded only in
+  ignored local operator notes.
+- Tailscale authentication URLs, auth keys, OAuth credentials, and machine keys
+  are never committed.
+- Unredacted screenshots are stored under `evidence/private/`.
+- Proxmox two-factor authentication is required before extended overseas
+  administration.
+- Forced Tailscale reauthentication is never initiated through the only active
+  remote-management session.
+
+Tailscale Serve is private to authorised tailnet members. Tailscale Funnel,
+which can expose a service to the broader internet, is prohibited for the
+Proxmox management interface.
+<!-- END TAILSCALE SECURITY BOUNDARY -->

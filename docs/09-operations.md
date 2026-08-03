@@ -164,3 +164,51 @@ Before disconnecting the Seagate backup disk:
 ## Secret recovery note
 
 The Tailscale `operator-oauth` Secret is not currently stored in Git. A cluster rebuild requires recreating it from the OAuth credentials stored in the password manager before the Tailscale HelmRelease can become fully operational. Move this Secret to SOPS-encrypted Git management in a later milestone.
+
+<!-- BEGIN TAILSCALE REMOTE OPERATIONS -->
+## Tailscale remote administration
+
+The preferred remote Proxmox entry point is:
+
+```text
+https://mel-pve01.<tailnet-name>.ts.net/
+```
+
+The exact URL is kept in `git-commands-local.txt`, which is ignored by Git.
+
+The Serve backend on `pve01` is:
+
+```bash
+tailscale serve --bg https+insecure://127.0.0.1:8006
+```
+
+Routine validation:
+
+```bash
+systemctl is-active tailscaled
+tailscale status
+tailscale serve status
+systemctl is-active pveproxy
+```
+
+Windows client validation:
+
+```powershell
+tailscale ping mel-pve01
+Test-NetConnection mel-pve01 -Port 8006
+```
+
+Operational requirements:
+
+- Tailscale Funnel remains disabled.
+- No public forwarding of TCP `8006`, `22`, or `6443`.
+- The direct Tailscale endpoint on `mel-pve01` remains available even after a
+  separate Raspberry Pi subnet router is added.
+- Major network changes are not performed while Tailscale is the only
+  administrative path.
+- Reboot and recovery tests are performed while physically present in
+  Melbourne.
+
+See [the implementation guide](12-tailscale-reverse-proxy.md) and
+[the validation runbook](runbooks/validate-tailscale-proxmox-access.md).
+<!-- END TAILSCALE REMOTE OPERATIONS -->
