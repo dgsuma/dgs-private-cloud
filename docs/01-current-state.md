@@ -1,39 +1,33 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-03 -->
-## Current checkpoint — 2026-08-03
-
+<!-- BEGIN CURRENT STATE 2026-08-07 -->
+## Current checkpoint — 2026-08-07
 | Property | Verified state |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
-| PVE Manager | `9.2.6` |
+| PVE Manager | `9.2.9` |
 | Proxmox cluster | Standalone host |
 | Talos VMs | `210` control plane, `211` worker 1, `212` worker 2 |
+| Jenkins VM | `220` `jenkins-ci` |
 | Kubernetes | Operational |
 | Flux | Operational |
 | Tailscale Kubernetes Operator | Operational |
 | Direct Proxmox Tailscale endpoint | Operational |
-| Tailscale Serve | Operational |
+| Jenkins Tailscale Serve endpoint | Operational |
+| Jenkins direct LAN `:8080` | Refused by design |
+| Jenkins smoke Pipeline | `jenkins-learning-smoke` Build `#1` `SUCCESS` |
+| Jenkins mobile-data test | Passed |
 | Tailscale Funnel | Disabled |
-| LG Gram external test | Passed using alternate Wi-Fi |
-| Moto G84 external test | Passed using mobile data |
 | External VM backups | Completed for VMs `210`, `211`, and `212` |
 | Talos etcd snapshots | Completed on 2026-07-26 and 2026-08-01 |
+| Jenkins Proxmox snapshot | `jenkins-baseline-tailscale` |
 | Temporary ASUS Proxmox node | Retired from active use |
 
-The preferred private remote-management URL is recorded locally and represented
-in committed documentation as:
-
-```text
-https://mel-pve01.<tailnet-name>.ts.net/
-```
-
-The earlier sections below remain as historical records of the temporary ASUS
-experiment and must not be interpreted as the current operating state.
-<!-- END CURRENT STATE 2026-08-03 -->
+Exact private tailnet hostnames remain in local operator notes rather than Git.
+<!-- END CURRENT STATE 2026-08-07 -->
 
 
-Verified on `2026-08-02` after Kubernetes bootstrap, backup completion, Flux bootstrap, and Tailscale Operator deployment.
+Verified on `2026-08-07` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, remote-access validation, and Jenkins Controller Phase 1 completion.
 
 ## Hypervisor
 
@@ -42,7 +36,7 @@ Verified on `2026-08-02` after Kubernetes bootstrap, backup completion, Flux boo
 | Hostname | `pve01` |
 | FQDN | `pve01.home.arpa` |
 | Management address | `192.168.1.201/24` |
-| PVE Manager | `9.2.5` observed in the web interface |
+| PVE Manager | `9.2.9` observed in the web interface |
 | Running mode | Standalone, headless |
 | Primary guest storage | `vmdata` on Samsung 990 PRO 2 TB |
 | UPS | Eaton hardware protection active; telemetry pending |
@@ -99,6 +93,32 @@ Verified on `2026-08-02` after Kubernetes bootstrap, backup completion, Flux boo
 | Operator tag | `tag:k8s-operator` |
 | OAuth Secret | `tailscale/operator-oauth`, manually created and not committed |
 | Kubernetes API proxy | Disabled |
+
+## Jenkins controller
+
+| Property | Value |
+|---|---|
+| VM | `220` `jenkins-ci` |
+| OS | Ubuntu Server 26.04 LTS |
+| CPU | 1 socket / 4 vCPU, type `host` |
+| Memory | 8 GiB; ballooning disabled |
+| System disk | 100 GiB `scsi0` on `vmdata`; discard, IO thread, and SSD emulation enabled |
+| Start at boot | Enabled |
+| QEMU Guest Agent | Active |
+| LAN address | `192.168.1.213/24` |
+| Java | OpenJDK `21.0.11` |
+| Git | `2.53.0` |
+| Jenkins | `2.568.2` |
+| Jenkins service | Enabled and active |
+| Tailscale | Enabled and active |
+| Jenkins listener | Loopback-only TCP `8080` |
+| Private access | Tailscale Serve HTTPS |
+| Direct LAN `192.168.1.213:8080` | Refused by design |
+| Smoke Pipeline | `jenkins-learning-smoke` Build `#1` `SUCCESS` |
+| Remote mobile-data validation | Passed |
+| Proxmox snapshot | `jenkins-baseline-tailscale` |
+| Phase 1 | Complete |
+| Phase 2 | Deferred |
 
 ## Recovery baseline
 

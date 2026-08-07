@@ -9,8 +9,57 @@
 | Talos API | Control plane `192.168.1.210` through talosconfig |
 | GitOps | Git commits to `main`; Flux reconciles `clusters/beelink-talos` |
 | Tailscale | Admin console and future private Kubernetes services |
+| Jenkins | Private Tailscale Serve HTTPS; backend 127.0.0.1:8080 |
 
 Do not expose management ports directly to the internet.
+
+## Jenkins controller operations
+
+Jenkins runs on VM `220` (`jenkins-ci`) at `192.168.1.213`. The browser interface is intentionally not exposed directly on LAN TCP `8080`.
+
+Routine checks inside the VM:
+
+```bash
+hostname
+ip -br address
+systemctl is-enabled jenkins
+systemctl is-active jenkins
+systemctl is-enabled tailscaled
+systemctl is-active tailscaled
+systemctl is-active qemu-guest-agent
+sudo ss -lntp | grep ':8080'
+curl -I http://127.0.0.1:8080/login
+sudo tailscale serve status
+```
+
+Expected state:
+
+- Jenkins, Tailscale, and QEMU Guest Agent are active.
+- Jenkins TCP `8080` is loopback-only.
+- Local `curl` to `127.0.0.1:8080/login` succeeds.
+- Tailscale Serve reports private HTTPS proxying to `127.0.0.1:8080`.
+- Direct browser access to `http://192.168.1.213:8080` fails.
+
+Service recovery:
+
+```bash
+sudo systemctl restart jenkins
+sudo systemctl status jenkins --no-pager
+sudo journalctl -u jenkins -n 100 --no-pager
+
+sudo systemctl restart tailscaled
+sudo tailscale serve status
+```
+
+Known-good Proxmox snapshot:
+
+```text
+jenkins-baseline-tailscale
+```
+
+A Proxmox snapshot is a rollback point, not an external backup.
+
+See [Jenkins Controller Phase 1](16-jenkins-controller-phase1.md).
 
 ## Workstation session setup
 

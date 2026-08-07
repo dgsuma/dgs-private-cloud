@@ -24,7 +24,7 @@ Node: pve01
 Platform: Beelink GTi12
 CPU: Intel Core i9-12900H
 RAM: 64 GiB
-Hypervisor: Proxmox VE 9.2.5
+Hypervisor: Proxmox VE 9.2.9
 Primary VM storage: vmdata on Samsung 990 PRO 2 TB
 ```
 
@@ -48,6 +48,29 @@ First etcd snapshot: completed off-cluster
 
 Phase 1 remains a single-host, single-control-plane design. It is appropriate for learning, development, and controlled home-lab workloads, but it is not physically highly available.
 
+## Jenkins controller milestone
+
+Jenkins Controller Phase 1 is complete on the same single-host Proxmox platform:
+
+```text
+VM: 220 / jenkins-ci
+OS: Ubuntu Server 26.04 LTS
+CPU: 4 vCPU, type host
+RAM: 8 GiB
+Disk: 100 GiB on vmdata
+LAN: 192.168.1.213/24
+Java: OpenJDK 21.0.11
+Git: 2.53.0
+Jenkins: 2.568.2
+Access: Tailscale Serve HTTPS -> 127.0.0.1:8080
+Smoke pipeline: jenkins-learning-smoke Build #1 SUCCESS
+Snapshot: jenkins-baseline-tailscale
+```
+
+The Jenkins controller is not exposed through router port forwarding or Tailscale Funnel. Jenkins Phase 2, including a dedicated build agent, is deferred.
+
+See [Jenkins Controller Phase 1](16-jenkins-controller-phase1.md).
+
 ## Design principles
 
 1. Keep the hypervisor and cluster management planes private.
@@ -67,10 +90,10 @@ Phase 1 remains a single-host, single-control-plane design. It is appropriate fo
 flowchart LR
     TalosVMs["Talos VMs<br/>complete"]
     K8s["Kubernetes<br/>complete"]
-    Backup["etcd snapshot<br/>complete<br/>VM backup pending"]
-    Flux["Flux GitOps"]
+    Backup["etcd snapshot<br/>complete<br/>VM backup complete"]
+    Flux["Flux GitOps<br/>complete"]
     SOPS["SOPS + age"]
-    TS["Tailscale Operator"]
+    TS["Tailscale Operator<br/>complete"]
     Storage["Local persistent storage"]
     Metrics["Prometheus<br/>Grafana<br/>Alertmanager"]
     Logs["Loki<br/>Alloy"]

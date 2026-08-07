@@ -63,6 +63,55 @@ guests:
         vm_backup_completed: true
         backup_date: 2026-08-01
 
+    - vm_id: 220
+      proxmox_name: jenkins-ci
+      guest_hostname: jenkins-ci
+      type: qemu_vm
+      role: jenkins_controller
+      operating_system: Ubuntu Server 26.04 LTS
+      resources:
+        sockets: 1
+        vcpu: 4
+        cpu_type: host
+        memory_gib: 8
+        ballooning: false
+        system_disk_gib: 100
+        disk_storage: vmdata
+        scsi_controller: virtio-scsi-single
+        discard: true
+        io_thread: true
+        ssd_emulation: true
+        bridge: vmbr0
+        virtual_nic_model: VirtIO
+        proxmox_firewall: true
+      network:
+        ipv4_address: 192.168.1.213
+        assignment: dhcp_reservation
+      services:
+        qemu_guest_agent: active
+        jenkins:
+          version: "2.568.2"
+          state: active
+          listen_address: 127.0.0.1
+          port: 8080
+        tailscale:
+          state: active
+          serve_enabled: true
+          funnel_enabled: false
+      validation:
+        smoke_pipeline: jenkins-learning-smoke
+        smoke_build: 1
+        smoke_result: success
+        remote_mobile_data_test: passed
+      lifecycle:
+        running: true
+        start_at_boot: true
+        snapshot_created: true
+        snapshot_name: jenkins-baseline-tailscale
+        external_vm_backup_completed: false
+        phase1_complete: true
+        phase2_deferred: true
+      last_verified: 2026-08-07
   retired:
     - vm_id: 100
       proxmox_name: ubuntu-web-test

@@ -1,5 +1,27 @@
 # Next Steps
 
+
+## Jenkins Phase 2 — deferred
+
+Jenkins Controller Phase 1 is complete. The next Jenkins exercise will use a separate build agent rather than placing normal build workloads on the controller.
+
+1. Create VM `221` `jenkins-agent01`.
+2. Install Java, Git, Docker/BuildKit, and CI/security tooling.
+3. Connect the agent to Jenkins.
+4. Run a Pipeline on the agent.
+5. Set the built-in controller executor count to `0`.
+6. Create a disposable GitHub application repository with a `Jenkinsfile`.
+7. Build and scan a container image.
+8. Push the image to GHCR.
+9. Update the GitOps source.
+10. Let Flux reconcile the Kubernetes deployment.
+
+Target responsibility split:
+
+```text
+Jenkins -> CI
+Flux    -> GitOps CD
+```
 ## Priority 1 — Persistent storage
 
 Prometheus, Grafana, Loki, databases, and stateful applications require durable PersistentVolumes.

@@ -1,5 +1,37 @@
 # Changelog
 
+
+## [0.6.0] - 2026-08-07
+
+### Added
+
+- Ubuntu Server 26.04 LTS Jenkins controller VM `220` (`jenkins-ci`).
+- Jenkins LTS `2.568.2` on OpenJDK `21.0.11`.
+- Direct Tailscale integration for the Jenkins VM.
+- Tailscale Serve private HTTPS reverse proxy to Jenkins loopback TCP `8080`.
+- Synthetic Pipeline `jenkins-learning-smoke`.
+- Proxmox snapshot `jenkins-baseline-tailscale`.
+- Dedicated Jenkins Controller Phase 1 documentation.
+
+### Changed
+
+- Updated the verified Proxmox Manager version to `9.2.9`.
+- Added VM `220` to active guest and network inventories.
+- Restricted Jenkins from all-interface TCP `8080` to loopback-only access.
+- Established Tailscale Serve HTTPS as the Jenkins remote-administration path.
+
+### Verified
+
+- Jenkins, Tailscale, and QEMU Guest Agent services are active.
+- Direct LAN access to `192.168.1.213:8080` is refused.
+- Tailscale Serve proxies private HTTPS to `127.0.0.1:8080`.
+- `jenkins-learning-smoke` Build `#1` completed with `Finished: SUCCESS`.
+- Jenkins remote access succeeded from a phone over mobile data through Tailscale.
+- Proxmox snapshot `jenkins-baseline-tailscale` exists.
+
+### Deferred
+
+- Jenkins build-agent VM and distributed-build configuration are deferred to Phase 2.
 <!-- BEGIN CHANGELOG 0.4.0 -->
 ## [0.4.0] - 2026-08-03
 

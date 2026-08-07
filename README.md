@@ -1,44 +1,43 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-03 -->
-> **Current checkpoint — 2026-08-03**
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-07 -->
+> **Current checkpoint — 2026-08-07**
 >
 > The active platform is the Beelink `pve01` Proxmox host. It runs three Talos
-> virtual machines (`210`, `211`, and `212`) for one Kubernetes control plane
-> and two workers. Flux and the Tailscale Kubernetes Operator are operational.
-> Direct private remote administration of Proxmox has now been implemented and
-> externally verified through Tailscale Serve from the LG Gram and Moto G84.
+> Kubernetes virtual machines (`210`, `211`, and `212`) plus Ubuntu Server VM
+> `220` (`jenkins-ci`) as the Jenkins controller. Flux, the Tailscale Kubernetes
+> Operator, private Proxmox remote administration, and Jenkins Controller Phase 1
+> are operational.
 >
-> Preferred remote-access pattern:
-> `https://mel-pve01.<tailnet-name>.ts.net/`
+> Jenkins is available only through private Tailscale Serve HTTPS access. Its
+> backend is restricted to loopback TCP `8080`; direct LAN access to
+> `192.168.1.213:8080` is refused by design. The synthetic
+> `jenkins-learning-smoke` Pipeline completed Build `#1` with `SUCCESS`, and
+> remote access was verified from a phone over mobile data.
 >
-> The real tailnet suffix and Tailscale IP addresses are intentionally kept out
-> of Git. Tailscale Funnel is disabled, and the Archer NX200 does not expose
-> Proxmox management ports publicly.
+> Exact private tailnet hostnames and Tailscale addresses are intentionally kept
+> out of Git. Tailscale Funnel remains disabled, and the Archer NX200 does not
+> expose Jenkins or Proxmox management ports publicly.
 >
-> Historical sections that refer to the retired temporary ASUS experiment or
-> to a zero-guest state require broader repository consolidation.
-
-### Remote-access documentation
-
-- [Tailscale reverse proxy for Proxmox](docs/12-tailscale-reverse-proxy.md)
-- [Remote-access validation runbook](docs/runbooks/validate-tailscale-proxmox-access.md)
-- [Sanitised Tailscale inventory](inventory/tailscale.yaml)
-<!-- END CURRENT CHECKPOINT 2026-08-03 -->
+> Jenkins Phase 2, including a dedicated build-agent VM, is deferred.
+>
+> Jenkins documentation:
+> - [Jenkins Controller Phase 1](docs/16-jenkins-controller-phase1.md)
+<!-- END CURRENT CHECKPOINT 2026-08-07 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
 
-> **Current stage:** a three-node Talos Linux Kubernetes cluster is operational on the standalone Proxmox VE host `pve01`. Flux continuously reconciles the cluster from this repository, the Tailscale Kubernetes Operator is connected to the tailnet, two off-cluster etcd snapshots have been verified, and full Proxmox backups of VMs `210`, `211`, and `212` have been written to removable storage.
+> **Current stage:** the Talos Kubernetes cluster, Flux GitOps, Tailscale private access, recovery baseline, and Jenkins Controller Phase 1 are operational on the standalone `pve01` host. Jenkins VM `220` is privately reachable through Tailscale Serve and its synthetic Build `#1` completed successfully.
 
 ## Current verified state
 
 | Item | Current value |
 |---|---|
-| Last verified | `2026-08-02` |
+| Last verified | `2026-08-07` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
-| Proxmox VE Manager | `9.2.5` observed in the web interface |
+| Proxmox VE Manager | `9.2.9` observed in the web interface |
 | Proxmox topology | One standalone physical host |
 | Primary guest storage | Samsung 990 PRO 2 TB as `vmdata` |
 | Talos version | `v1.13.6` |
@@ -55,6 +54,31 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Secret encryption | SOPS with age not yet configured |
 | Kubernetes persistent storage | Not yet deployed |
 | Observability and Homepage | Not yet deployed |
+
+## Jenkins Controller Phase 1
+
+| Item | Verified state |
+|---|---|
+| VM | `220` `jenkins-ci` |
+| OS | Ubuntu Server 26.04 LTS |
+| Compute | 4 vCPU, 8 GiB RAM |
+| Disk | 100 GiB on `vmdata` |
+| LAN address | `192.168.1.213/24` |
+| Java | OpenJDK `21.0.11` |
+| Git | `2.53.0` |
+| Jenkins | `2.568.2` |
+| Jenkins service | Enabled and active |
+| Tailscale | Enabled and active |
+| Jenkins listener | Loopback-only TCP `8080` |
+| Private access | Tailscale Serve HTTPS |
+| Direct LAN `:8080` | Refused by design |
+| Smoke Pipeline | `jenkins-learning-smoke` Build `#1` `SUCCESS` |
+| Remote mobile-data test | Passed |
+| Proxmox snapshot | `jenkins-baseline-tailscale` |
+| Phase 1 | Complete |
+| Phase 2 | Deferred |
+
+See [docs/16-jenkins-controller-phase1.md](docs/16-jenkins-controller-phase1.md) for the complete implementation and recovery record.
 
 ## Active Talos Kubernetes topology
 
@@ -229,6 +253,7 @@ dgs-private-cloud/
 │   ├── 13-talos-kubernetes-phase1.md
 │   ├── 14-talos-kubernetes-cluster-bootstrap.md
 │   ├── 15-flux-and-tailscale-operator.md
+│   ├── 16-jenkins-controller-phase1.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -265,13 +290,14 @@ dgs-private-cloud/
 14. [Talos Phase 1 prerequisites](docs/13-talos-kubernetes-phase1.md)
 15. [Talos Kubernetes cluster bootstrap](docs/14-talos-kubernetes-cluster-bootstrap.md)
 16. [Flux and Tailscale Operator](docs/15-flux-and-tailscale-operator.md)
-17. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
-18. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
-19. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
+17. [Jenkins Controller Phase 1](docs/16-jenkins-controller-phase1.md)
+18. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
+19. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+20. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 
 ## Security boundary
 
-Proxmox management, the Talos API, the Kubernetes API, and observability endpoints remain private. Do not expose TCP `8006`, TCP `50000`, TCP `6443`, SSH, or dashboards directly to the public internet.
+Proxmox management, the Talos API, the Kubernetes API, and observability endpoints remain private. Do not expose TCP `8006`, TCP `50000`, TCP `6443`, Jenkins TCP `8080`, SSH, or dashboards directly to the public internet.
 
 Never commit:
 

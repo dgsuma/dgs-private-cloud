@@ -96,6 +96,37 @@
 - [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
 - [ ] Test application and database recovery independently of etcd.
 
+## Phase 1F — Jenkins controller and private CI access
+
+**Status: Complete**
+
+- [x] Create Ubuntu Server VM `220` `jenkins-ci`.
+- [x] Configure 4 vCPU, 8 GiB RAM, 100 GiB `vmdata` disk, QEMU Guest Agent, and start-at-boot.
+- [x] Reserve `192.168.1.213`.
+- [x] Install OpenJDK 21, Git, and Jenkins LTS.
+- [x] Complete Jenkins administrator setup.
+- [x] Join the VM directly to Tailscale.
+- [x] Configure Tailscale Serve private HTTPS access.
+- [x] Bind Jenkins to loopback-only TCP `8080`.
+- [x] Confirm direct LAN access to TCP `8080` is refused.
+- [x] Complete `jenkins-learning-smoke` Build `#1`.
+- [x] Validate remote mobile-data access through Tailscale.
+- [x] Create the `jenkins-baseline-tailscale` Proxmox snapshot.
+
+## Phase 1G — Jenkins build agent and CI-to-GitOps workflow
+
+**Status: Deferred**
+
+- [ ] Create VM `221` `jenkins-agent01`.
+- [ ] Install Java, Git, Docker/BuildKit, and CI/security tooling.
+- [ ] Connect the agent to the Jenkins controller.
+- [ ] Set built-in controller executors to `0`.
+- [ ] Move the test Pipeline into a repository `Jenkinsfile`.
+- [ ] Build and scan a container image.
+- [ ] Push the image to GHCR.
+- [ ] Integrate image release with the GitOps source.
+- [ ] Let Flux perform Kubernetes continuous delivery.
+
 ## Phase 2 — IoT and wellness data platform
 
 **Status: Planned**

@@ -12,9 +12,21 @@ Do not forward these ports from the TP-Link Archer NX200:
 6443/tcp   Kubernetes API
 22/tcp     SSH
 3128/tcp   SPICE proxy
+8080/tcp   Jenkins controller HTTP backend
 ```
 
 The Tailscale Kubernetes Operator is the approved initial private-access mechanism for selected Kubernetes services. Its presence does not authorise direct public exposure of Proxmox, Talos, Kubernetes, Grafana, Homepage, or application administration endpoints.
+
+## Jenkins controller boundary
+
+Jenkins VM `220` is a private management service.
+
+- Do not forward TCP `8080` from the Archer NX200.
+- Do not expose the Jenkins administrative interface through Tailscale Funnel.
+- Keep the Jenkins HTTP backend bound to `127.0.0.1:8080`.
+- Use Tailscale Serve HTTPS for remote administration.
+- Never commit Jenkins passwords, API tokens, credential exports, the initial unlock password, SSH private keys, or Tailscale authentication material.
+- The built-in node was used only for the Phase 1 synthetic smoke test. Normal build execution should move to a dedicated agent in Phase 2.
 
 ## GitOps trust boundary
 
