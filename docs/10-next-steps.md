@@ -24,14 +24,21 @@ Flux    -> GitOps CD
 ```
 ## Priority 1 — Persistent storage
 
-Prometheus, Grafana, Loki, databases, and stateful applications require durable PersistentVolumes.
+**Prerequisite completed on 2026-08-09.**
 
-1. Select a Talos-compatible storage approach for the single-host phase.
-2. Define the Talos user-volume or mounted path required by the provisioner.
-3. Deploy the storage provisioner through Flux.
-4. Create a default StorageClass only after confirming its reclaim policy and volume-binding mode.
-5. Run a test PVC, write data, restart the pod, and confirm persistence.
-6. Document node affinity and the consequences of single-host local storage.
+- [x] Selected Rancher Local Path Provisioner for the current single-host phase.
+- [x] Added a dedicated 300 GiB data disk to each Talos worker.
+- [x] Provisioned XFS Talos user volumes at `/var/mnt/local-path-provisioner`.
+- [x] Created and verified the default `local-path` StorageClass.
+- [x] Confirmed `ReclaimPolicy=Delete`.
+- [x] Confirmed `VolumeBindingMode=WaitForFirstConsumer`.
+- [x] Dynamically provisioned a 1 GiB PVC/PV.
+- [x] Verified successful write/read through the PVC.
+- [x] Deleted and recreated the Pod while keeping the PVC bound.
+- [x] Verified the original data survived Pod recreation.
+- [x] Deleted the test namespace and confirmed PVC, PV, and backing-directory cleanup.
+- [x] Documented the node-local/non-replicated storage limitation.
+- [ ] Add Local Path Provisioner to the active Flux reconciliation path.
 
 ## Priority 2 — Observability
 
@@ -94,8 +101,8 @@ Store the copy on a second physical device or encrypted off-site location. Never
 
 ## Exit criteria for the next milestone
 
-- [ ] Dynamic PVC provisioning works.
-- [ ] Data survives a pod restart.
+- [x] Dynamic PVC provisioning works.
+- [x] Data survives a pod deletion/recreation cycle.
 - [ ] Prometheus, Grafana, and Alertmanager are healthy.
 - [ ] Loki receives logs through Alloy.
 - [ ] Grafana is reachable privately through Tailscale.

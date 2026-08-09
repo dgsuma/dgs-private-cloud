@@ -1,6 +1,42 @@
 # Changelog
 
+## [0.7.0] - 2026-08-09
 
+### Added
+
+- Dedicated 300 GiB `scsi1` data disks to Talos worker VMs `211` and `212`.
+- Talos XFS user volume `u-local-path-provisioner` on both workers.
+- Rancher Local Path Provisioner `v0.0.37`.
+- Default `local-path` StorageClass.
+- Reproducible PVC/PV smoke-test manifest.
+- Dedicated Talos persistent-storage implementation and validation document.
+
+### Verified
+
+- Both worker user volumes report `PHASE=ready`.
+- Both volumes mount at `/var/mnt/local-path-provisioner`.
+- Local Path Provisioner is available and healthy.
+- `local-path` uses `rancher.io/local-path`, `Delete`, and `WaitForFirstConsumer`.
+- A 1 GiB PVC dynamically created and bound a PV.
+- The test Pod wrote and read persistent data successfully.
+- The PVC remained bound after the original Pod was deleted.
+- A recreated Pod mounted the same PVC and read the original data.
+- Deleting the test namespace removed the PVC, PV, and physical backing directory.
+- All three Kubernetes nodes remained `Ready`.
+
+### Workstation
+
+- Removed the PowerShell `kubectl` wrapper that interfered with `kubectl exec`.
+- Disabled Docker Desktop's unused bundled `kubectl.exe`.
+- Confirmed normal command resolution to WinGet `kubectl` `v1.36.3`.
+- Confirmed `kubectl exec POD -- COMMAND` works normally.
+
+### Notes
+
+- The storage provisioner was initially applied manually from the committed
+  Kustomize manifest; Flux ownership is still pending.
+- Local Path Provisioner is node-local and does not provide replicated storage
+  or physical high availability.
 ## [0.6.0] - 2026-08-07
 
 ### Added

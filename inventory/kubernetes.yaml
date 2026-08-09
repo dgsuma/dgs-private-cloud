@@ -1,7 +1,7 @@
 kubernetes:
   cluster_name: dgs-homelab
   state: operational
-  last_verified: 2026-08-02
+  last_verified: 2026-08-09
 
   platform:
     talos_version: v1.13.6
@@ -122,8 +122,23 @@ kubernetes:
     kubernetes_api_proxy_enabled: false
 
   storage:
-    storage_class_present: false
-    dynamic_provisioning_configured: false
+    state: operational
+    storage_class_present: true
+    default_storage_class: local-path
+    provisioner: rancher.io/local-path
+    provisioner_release: v0.0.37
+    namespace: local-path-storage
+    dynamic_provisioning_configured: true
+    reclaim_policy: Delete
+    volume_binding_mode: WaitForFirstConsumer
+    talos_user_volume: u-local-path-provisioner
+    mount_path: /var/mnt/local-path-provisioner
+    worker_data_disk_gib: 300
+    dynamic_pvc_test: passed
+    pod_recreation_persistence_test: passed
+    reclaim_cleanup_test: passed
+    replicated: false
+    flux_managed: false
 
   observability:
     prometheus_deployed: false

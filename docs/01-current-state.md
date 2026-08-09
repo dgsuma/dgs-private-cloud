@@ -1,33 +1,38 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-07 -->
-## Current checkpoint — 2026-08-07
+<!-- BEGIN CURRENT STATE 2026-08-09 -->
+## Current checkpoint — 2026-08-09
 | Property | Verified state |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
-| PVE Manager | `9.2.9` |
+| PVE Manager | `9.2.10` |
 | Proxmox cluster | Standalone host |
 | Talos VMs | `210` control plane, `211` worker 1, `212` worker 2 |
 | Jenkins VM | `220` `jenkins-ci` |
 | Kubernetes | Operational |
 | Flux | Operational |
 | Tailscale Kubernetes Operator | Operational |
+| Kubernetes persistent storage | Operational |
+| Talos worker data disks | 300 GiB `scsi1` on VMs `211` and `212` |
+| Talos user volume | `u-local-path-provisioner`, XFS, `ready` on both workers |
+| Persistent mount | `/var/mnt/local-path-provisioner` |
+| Default StorageClass | `local-path` |
+| Dynamic PVC/PV smoke test | Passed |
+| Pod recreation persistence test | Passed |
+| Test reclaim cleanup | Passed |
 | Direct Proxmox Tailscale endpoint | Operational |
 | Jenkins Tailscale Serve endpoint | Operational |
 | Jenkins direct LAN `:8080` | Refused by design |
 | Jenkins smoke Pipeline | `jenkins-learning-smoke` Build `#1` `SUCCESS` |
-| Jenkins mobile-data test | Passed |
 | Tailscale Funnel | Disabled |
 | External VM backups | Completed for VMs `210`, `211`, and `212` |
 | Talos etcd snapshots | Completed on 2026-07-26 and 2026-08-01 |
-| Jenkins Proxmox snapshot | `jenkins-baseline-tailscale` |
 | Temporary ASUS Proxmox node | Retired from active use |
-
 Exact private tailnet hostnames remain in local operator notes rather than Git.
-<!-- END CURRENT STATE 2026-08-07 -->
+<!-- END CURRENT STATE 2026-08-09 -->
 
 
-Verified on `2026-08-07` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, remote-access validation, and Jenkins Controller Phase 1 completion.
+Verified on `2026-08-09` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, Jenkins Controller Phase 1, and end-to-end Talos persistent-storage validation.
 
 ## Hypervisor
 
@@ -36,7 +41,7 @@ Verified on `2026-08-07` after Kubernetes bootstrap, backup completion, Flux/Tai
 | Hostname | `pve01` |
 | FQDN | `pve01.home.arpa` |
 | Management address | `192.168.1.201/24` |
-| PVE Manager | `9.2.9` observed in the web interface |
+| PVE Manager | `9.2.10` observed in the web interface |
 | Running mode | Standalone, headless |
 | Primary guest storage | `vmdata` on Samsung 990 PRO 2 TB |
 | UPS | Eaton hardware protection active; telemetry pending |
@@ -94,6 +99,29 @@ Verified on `2026-08-07` after Kubernetes bootstrap, backup completion, Flux/Tai
 | OAuth Secret | `tailscale/operator-oauth`, manually created and not committed |
 | Kubernetes API proxy | Disabled |
 
+## Persistent storage
+
+| Property | Value |
+|---|---|
+| Worker data disks | 300 GiB `scsi1` on VMs `211` and `212` |
+| Talos device | `/dev/sdb` provisioned as `/dev/sdb1` |
+| User volume | `u-local-path-provisioner` |
+| Filesystem | XFS |
+| Mount | `/var/mnt/local-path-provisioner` |
+| Provisioner | Rancher Local Path Provisioner `v0.0.37` |
+| Namespace | `local-path-storage` |
+| StorageClass | `local-path` (default) |
+| Reclaim policy | `Delete` |
+| Volume binding | `WaitForFirstConsumer` |
+| Dynamic provisioning | Verified |
+| Data across Pod recreation | Verified |
+| Disposable test cleanup | Verified |
+| Physical HA | No; storage remains local to worker VMs on the single `pve01` host |
+
+The initial provisioner deployment was applied manually from the committed
+Kustomize manifest. Flux reconciliation for this component has not yet been
+configured.
+
 ## Jenkins controller
 
 | Property | Value |
@@ -135,7 +163,6 @@ Verified on `2026-08-07` after Kubernetes bootstrap, backup completion, Flux/Tai
 
 ## Services not yet deployed
 
-- Kubernetes persistent-storage provisioner;
 - Prometheus;
 - Grafana;
 - Alertmanager;

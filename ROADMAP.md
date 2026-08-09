@@ -84,10 +84,14 @@
 
 ## Phase 1E — Persistent storage, observability, and dashboard
 
-**Status: Next**
-
-- [ ] Select a Talos-compatible initial persistent-storage solution.
-- [ ] Validate dynamic PersistentVolume provisioning.
+**Status: In progress — persistent-storage prerequisite complete**
+- [x] Select a Talos-compatible initial persistent-storage solution.
+- [x] Add dedicated worker data disks and Talos XFS user volumes.
+- [x] Deploy and validate Rancher Local Path Provisioner.
+- [x] Validate dynamic PersistentVolume provisioning.
+- [x] Prove data persistence across Pod deletion/recreation.
+- [x] Validate `Delete` reclaim cleanup for the disposable test.
+- [ ] Bring the provisioner under Flux reconciliation.
 - [ ] Define capacity and retention for metrics, dashboards, and logs.
 - [ ] Deploy Prometheus, Grafana, and Alertmanager.
 - [ ] Deploy Loki and Grafana Alloy.
@@ -95,7 +99,6 @@
 - [ ] Deploy Homepage.
 - [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
 - [ ] Test application and database recovery independently of etcd.
-
 ## Phase 1F — Jenkins controller and private CI access
 
 **Status: Complete**

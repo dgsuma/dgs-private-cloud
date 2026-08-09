@@ -1,43 +1,43 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-07 -->
-> **Current checkpoint — 2026-08-07**
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-09 -->
+> **Current checkpoint — 2026-08-09**
 >
 > The active platform is the Beelink `pve01` Proxmox host. It runs three Talos
 > Kubernetes virtual machines (`210`, `211`, and `212`) plus Ubuntu Server VM
-> `220` (`jenkins-ci`) as the Jenkins controller. Flux, the Tailscale Kubernetes
-> Operator, private Proxmox remote administration, and Jenkins Controller Phase 1
-> are operational.
+> `220` (`jenkins-ci`) as the Jenkins controller. Flux, Tailscale private
+> access, Jenkins Controller Phase 1, and the Talos persistent-storage
+> prerequisite are operational.
 >
-> Jenkins is available only through private Tailscale Serve HTTPS access. Its
-> backend is restricted to loopback TCP `8080`; direct LAN access to
-> `192.168.1.213:8080` is refused by design. The synthetic
-> `jenkins-learning-smoke` Pipeline completed Build `#1` with `SUCCESS`, and
-> remote access was verified from a phone over mobile data.
+> Each Talos worker now has a dedicated 300 GiB `scsi1` data disk. Talos
+> provisions it as XFS user volume `u-local-path-provisioner`, mounted at
+> `/var/mnt/local-path-provisioner`. Rancher Local Path Provisioner `v0.0.37`
+> exposes the default `local-path` StorageClass.
+>
+> Dynamic PVC/PV provisioning, write/read access, persistence across Pod
+> deletion/recreation, and `Delete` reclaim cleanup were verified on
+> 2026-08-09.
 >
 > Exact private tailnet hostnames and Tailscale addresses are intentionally kept
-> out of Git. Tailscale Funnel remains disabled, and the Archer NX200 does not
-> expose Jenkins or Proxmox management ports publicly.
+> out of Git. Tailscale Funnel remains disabled.
 >
-> Jenkins Phase 2, including a dedicated build-agent VM, is deferred.
->
-> Jenkins documentation:
-> - [Jenkins Controller Phase 1](docs/16-jenkins-controller-phase1.md)
-<!-- END CURRENT CHECKPOINT 2026-08-07 -->
+> Persistent-storage documentation:
+> - [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
+<!-- END CURRENT CHECKPOINT 2026-08-09 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
 
-> **Current stage:** the Talos Kubernetes cluster, Flux GitOps, Tailscale private access, recovery baseline, and Jenkins Controller Phase 1 are operational on the standalone `pve01` host. Jenkins VM `220` is privately reachable through Tailscale Serve and its synthetic Build `#1` completed successfully.
+> **Current stage:** Talos Kubernetes, Flux GitOps, Tailscale private access, recovery baseline, Jenkins Controller Phase 1, and the Talos persistent-storage prerequisite are operational on the standalone `pve01` host.
 
 ## Current verified state
 
 | Item | Current value |
 |---|---|
-| Last verified | `2026-08-07` |
+| Last verified | `2026-08-09` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
-| Proxmox VE Manager | `9.2.9` observed in the web interface |
+| Proxmox VE Manager | `9.2.10` observed in the web interface |
 | Proxmox topology | One standalone physical host |
 | Primary guest storage | Samsung 990 PRO 2 TB as `vmdata` |
 | Talos version | `v1.13.6` |
@@ -52,7 +52,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | GitOps | Flux `v2.9.3` bootstrapped from `clusters/beelink-talos` |
 | Private access | Tailscale Operator chart `1.98.9` connected and healthy |
 | Secret encryption | SOPS with age not yet configured |
-| Kubernetes persistent storage | Not yet deployed |
+| Kubernetes persistent storage | Operational — Talos user volumes + Rancher Local Path Provisioner |
 | Observability and Homepage | Not yet deployed |
 
 ## Jenkins Controller Phase 1
@@ -82,13 +82,12 @@ See [docs/16-jenkins-controller-phase1.md](docs/16-jenkins-controller-phase1.md)
 
 ## Active Talos Kubernetes topology
 
-| VM | VM ID | Role | Address | vCPU | RAM | System disk |
-|---|---:|---|---|---:|---:|---:|
-| `talos-cp-01` | 210 | Control plane and etcd | `192.168.1.210` | 4 | 8 GiB | 64 GiB |
-| `talos-worker-01` | 211 | Worker | `192.168.1.211` | 4 | 8 GiB | 64 GiB |
-| `talos-worker-02` | 212 | Worker | `192.168.1.212` | 4 | 8 GiB | 64 GiB |
-
-All VM disks are on `vmdata`, all network interfaces use VirtIO on `vmbr0`, and all three VMs boot from `scsi0`. The Talos installation ISO is detached from every VM.
+| VM | VM ID | Role | Address | vCPU | RAM | System disk | Data disk |
+|---|---:|---|---|---:|---:|---:|---:|
+| `talos-cp-01` | 210 | Control plane and etcd | `192.168.1.210` | 4 | 8 GiB | 64 GiB | — |
+| `talos-worker-01` | 211 | Worker | `192.168.1.211` | 4 | 8 GiB | 64 GiB | 300 GiB |
+| `talos-worker-02` | 212 | Worker | `192.168.1.212` | 4 | 8 GiB | 64 GiB | 300 GiB |
+All Talos VM disks are on `vmdata`, all network interfaces use VirtIO on `vmbr0`, and all three VMs boot from `scsi0`. Workers `211` and `212` also have a dedicated `scsi1` data disk for Talos local persistent storage. The Talos installation ISO is detached from every VM.
 
 ## Platform architecture
 
@@ -107,7 +106,7 @@ flowchart TB
     Flux["Flux controllers<br/>flux-system namespace"]
     TS["Tailscale Kubernetes Operator<br/>tailscale namespace<br/>private-service ingress"]
     Backup["Seagate One Touch 2 TB<br/>VM backups + off-cluster etcd snapshots<br/>normally disconnected"]
-    Next["Next platform layer<br/>persistent storage<br/>Prometheus / Grafana / Alertmanager<br/>Loki / Alloy / Homepage"]
+    Next["Next platform layer<br/>Prometheus / Grafana / Alertmanager<br/>Loki / Alloy / Homepage"]
 
     Internet --> Router
     UPS --> Router
@@ -155,6 +154,11 @@ flowchart TB
 - Confirmed the operator Deployment and pod are healthy with zero restarts.
 - Confirmed the `tailscale` IngressClass and Tailscale CRDs are installed.
 - Confirmed `beelink-talos-operator` is connected in the Tailscale admin console with `tag:k8s-operator`.
+- Added dedicated 300 GiB data disks to Talos worker VMs `211` and `212`.
+- Provisioned XFS Talos user volumes at `/var/mnt/local-path-provisioner`.
+- Deployed and validated Rancher Local Path Provisioner `v0.0.37`.
+- Confirmed `local-path` is the default StorageClass with `Delete` reclaim policy and `WaitForFirstConsumer` binding.
+- Proved dynamic PVC/PV creation, persistence across Pod recreation, and automatic cleanup after test namespace deletion.
 
 ## Quick validation
 
@@ -204,14 +208,14 @@ Generated Talos machine configurations, `talosconfig`, kubeconfig, etcd snapshot
 
 ## Immediate next work
 
-1. Select and deploy the initial Talos-compatible persistent-storage solution.
-2. Deploy Prometheus, Grafana, Alertmanager, Loki, and Grafana Alloy.
+1. Deploy Prometheus, Grafana, Alertmanager, Loki, and Grafana Alloy.
+2. Define metrics/log retention and resource limits suitable for `pve01`.
 3. Expose selected dashboards privately through Tailscale.
 4. Deploy Homepage.
-5. Configure SOPS with age and migrate manually created Kubernetes Secrets to encrypted Git-managed resources.
-6. Perform an isolated VM restore test.
-7. Add Eaton UPS telemetry and graceful-shutdown monitoring.
-
+5. Bring the Local Path Provisioner manifest under Flux reconciliation.
+6. Configure SOPS with age and migrate manually created Kubernetes Secrets to encrypted Git-managed resources.
+7. Perform an isolated VM restore test.
+8. Add Eaton UPS telemetry and graceful-shutdown monitoring.
 ## Repository map
 
 ```text
@@ -254,6 +258,7 @@ dgs-private-cloud/
 │   ├── 14-talos-kubernetes-cluster-bootstrap.md
 │   ├── 15-flux-and-tailscale-operator.md
 │   ├── 16-jenkins-controller-phase1.md
+│   ├── 17-talos-persistent-storage.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -291,9 +296,10 @@ dgs-private-cloud/
 15. [Talos Kubernetes cluster bootstrap](docs/14-talos-kubernetes-cluster-bootstrap.md)
 16. [Flux and Tailscale Operator](docs/15-flux-and-tailscale-operator.md)
 17. [Jenkins Controller Phase 1](docs/16-jenkins-controller-phase1.md)
-18. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
-19. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
-20. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
+18. [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
+19. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
+20. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+21. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 
 ## Security boundary
 

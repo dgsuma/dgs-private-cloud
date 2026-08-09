@@ -91,6 +91,37 @@ talosctl health `
   --endpoints 192.168.1.210
 ```
 
+## Routine persistent-storage check
+
+```powershell
+$CP = "192.168.1.210"
+$W1 = "192.168.1.211"
+$W2 = "192.168.1.212"
+
+kubectl get storageclass
+kubectl get deployment -n local-path-storage
+kubectl get pods -n local-path-storage -o wide
+kubectl get pvc -A
+kubectl get pv
+
+talosctl -e $CP -n $W1 `
+  get volumestatus u-local-path-provisioner
+
+talosctl -e $CP -n $W2 `
+  get volumestatus u-local-path-provisioner
+```
+
+Healthy baseline:
+
+- `local-path` exists and is the default StorageClass.
+- `local-path-provisioner` is `1/1 Available`.
+- Both Talos user volumes report `ready`.
+- No unexpected disposable-test PVC/PV remains.
+- `/var/mnt/local-path-provisioner` remains mounted on both workers.
+
+The current storage is node-local and not replicated. A workload using a
+local PV remains dependent on the worker that owns that PV and, ultimately,
+on the single physical `pve01` host.
 ## Routine Flux check
 
 ```powershell
