@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.8.0] - 2026-08-09
+
+### Added
+
+- Flux-managed `monitoring` namespace and observability Helm repositories.
+- `kube-prometheus-stack` `88.2.0` HelmRelease.
+- Prometheus persistent storage: 50 GiB on `local-path`, 15-day retention, 40 GB retention-size target.
+- Grafana persistent storage: 5 GiB on `local-path`.
+- Alertmanager persistent storage: 2 GiB on `local-path`.
+- Dedicated implementation and troubleshooting document for Prometheus, Grafana, Alertmanager, and Node Exporter.
+
+### Security and compatibility
+
+- Diagnosed Talos/Kubernetes Pod Security Admission blocking the Node Exporter DaemonSet under `baseline`.
+- Added a targeted `monitoring` namespace exception with `pod-security.kubernetes.io/enforce=privileged`.
+- Retained `restricted` Pod Security audit and warning labels for visibility.
+- Kept observability endpoints private; validation used local `kubectl port-forward`.
+- Kept the generated Grafana admin password out of Git.
+
+### Recovered
+
+- Confirmed the Node Exporter DaemonSet progressed from `3 desired / 0 current / 0 ready` to `3/3 Ready`.
+- Reset exhausted Flux Helm remediation state with `flux reconcile helmrelease kube-prometheus-stack --namespace monitoring --with-source --reset`.
+- Confirmed the resulting HelmRelease reports `Ready=True`.
+
+### Verified
+
+- Prometheus, Grafana, Alertmanager, kube-state-metrics, Prometheus Operator, and all three Node Exporter Pods are running.
+- Prometheus, Grafana, and Alertmanager PVCs are `Bound`.
+- Prometheus reports all three Node Exporter targets `UP`.
+- `up{job=~".*node-exporter.*"}` returns three healthy series with value `1`.
+- `node_uname_info` returns all three Talos nodes.
+- `node_memory_MemAvailable_bytes` returns all three Talos nodes.
+- Grafana login succeeds using the generated Kubernetes Secret credential.
+- `Kubernetes / Compute Resources / Cluster` renders live CPU, memory, namespace, Pod, and workload data.
+- Alertmanager is reconciled and available.
+- Chart-provided `PrometheusRule` resources are present.
+
+### Deferred
+
+- Loki installation (Step 5D).
+- Grafana Alloy installation and Kubernetes log collection (Step 5E).
+- Loki Grafana data source and LogQL validation.
+- Grafana private Tailscale ingress.
+- External Alertmanager notification receivers.
+
 ## [0.7.0] - 2026-08-09
 
 ### Added

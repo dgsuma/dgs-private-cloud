@@ -84,7 +84,7 @@
 
 ## Phase 1E — Persistent storage, observability, and dashboard
 
-**Status: In progress — persistent-storage prerequisite complete**
+**Status: In progress — persistent storage and metrics/alerting observability baseline complete**
 - [x] Select a Talos-compatible initial persistent-storage solution.
 - [x] Add dedicated worker data disks and Talos XFS user volumes.
 - [x] Deploy and validate Rancher Local Path Provisioner.
@@ -92,9 +92,9 @@
 - [x] Prove data persistence across Pod deletion/recreation.
 - [x] Validate `Delete` reclaim cleanup for the disposable test.
 - [ ] Bring the provisioner under Flux reconciliation.
-- [ ] Define capacity and retention for metrics, dashboards, and logs.
-- [ ] Deploy Prometheus, Grafana, and Alertmanager.
-- [ ] Deploy Loki and Grafana Alloy.
+- [x] Define initial capacity and retention for Prometheus, Grafana, and Alertmanager.
+- [x] Deploy Prometheus, Grafana, and Alertmanager through Flux.
+- [ ] Deploy Loki and Grafana Alloy; deferred to the next work session.
 - [ ] Expose selected dashboards only through authenticated Tailscale access.
 - [ ] Deploy Homepage.
 - [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.

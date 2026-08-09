@@ -20,6 +20,18 @@
 | Dynamic PVC/PV smoke test | Passed |
 | Pod recreation persistence test | Passed |
 | Test reclaim cleanup | Passed |
+| Observability namespace | `monitoring` |
+| kube-prometheus-stack | `88.2.0`, Flux `Ready=True` |
+| Prometheus | Operational; 50 GiB `local-path` PVC |
+| Grafana | Operational; 5 GiB `local-path` PVC |
+| Alertmanager | Operational; 2 GiB `local-path` PVC |
+| Node Exporter | DaemonSet `3/3 Ready`, one Pod per Talos node |
+| Prometheus Node Exporter targets | `3/3 UP` |
+| Grafana Kubernetes dashboard | Live cluster data verified |
+| Alertmanager rules | PrometheusRule resources loaded |
+| Loki | Pending |
+| Grafana Alloy | Pending |
+| Grafana Tailscale ingress | Pending |
 | Direct Proxmox Tailscale endpoint | Operational |
 | Jenkins Tailscale Serve endpoint | Operational |
 | Jenkins direct LAN `:8080` | Refused by design |
@@ -32,7 +44,7 @@ Exact private tailnet hostnames remain in local operator notes rather than Git.
 <!-- END CURRENT STATE 2026-08-09 -->
 
 
-Verified on `2026-08-09` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, Jenkins Controller Phase 1, and end-to-end Talos persistent-storage validation.
+Verified on `2026-08-09` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, Jenkins Controller Phase 1, end-to-end Talos persistent-storage validation, and successful Prometheus/Grafana/Alertmanager deployment and validation.
 
 ## Hypervisor
 
@@ -122,6 +134,45 @@ The initial provisioner deployment was applied manually from the committed
 Kustomize manifest. Flux reconciliation for this component has not yet been
 configured.
 
+
+## Observability — metrics and alerting baseline
+
+| Property | Value |
+|---|---|
+| Namespace | `monitoring` |
+| Delivery | Flux HelmRelease |
+| Chart | `kube-prometheus-stack` `88.2.0` |
+| HelmRelease | `monitoring/kube-prometheus-stack`, `Ready=True` |
+| Prometheus persistence | 50 GiB `local-path`, retention `15d`, retention size `40GB` |
+| Grafana persistence | 5 GiB `local-path` |
+| Alertmanager persistence | 2 GiB `local-path` |
+| Node Exporter | DaemonSet `3/3 Ready`; control plane + both workers |
+| kube-state-metrics | Running |
+| Prometheus Operator | Running |
+| Prometheus scrape validation | All three Node Exporter targets `UP` |
+| Host metric validation | `node_uname_info` and `node_memory_MemAvailable_bytes` return all three nodes |
+| Grafana validation | `Kubernetes / Compute Resources / Cluster` populated with live data |
+| Alertmanager | One replica reconciled and available; UI reachable by local port-forward |
+| Prometheus rules | Chart-provided PrometheusRule resources present |
+| External alert receivers | Not configured; pending secret-management work |
+| Loki | Deferred to next work session |
+| Grafana Alloy | Deferred to next work session |
+| Grafana Tailscale ingress | Pending |
+
+The initial Helm install was blocked because Talos/Kubernetes Pod Security Admission
+enforced `baseline` in the new namespace while Node Exporter requires host-level
+access (`hostNetwork`, `hostPID`, hostPath mounts, and host port `9100`). The
+trusted `monitoring` namespace now enforces `privileged` while continuing to
+audit and warn against `restricted`. After the policy fix, the Node Exporter
+DaemonSet reached `3/3 Ready`.
+
+The failed install had already exhausted the configured Helm remediation retries.
+The recovery command used `flux reconcile helmrelease ... --reset`, after which
+the release reconciled successfully and reported `Ready=True`.
+
+See [18-observability-prometheus-grafana-alertmanager.md](18-observability-prometheus-grafana-alertmanager.md)
+for the implementation, validation, troubleshooting, and next-session handoff.
+
 ## Jenkins controller
 
 | Property | Value |
@@ -163,11 +214,10 @@ configured.
 
 ## Services not yet deployed
 
-- Prometheus;
-- Grafana;
-- Alertmanager;
 - Loki;
 - Grafana Alloy;
+- Grafana private ingress through Tailscale;
+- external Alertmanager receivers;
 - Homepage;
 - SOPS-encrypted Secret management;
 - UPS telemetry and automated graceful shutdown.

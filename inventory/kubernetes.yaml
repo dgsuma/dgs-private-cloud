@@ -141,9 +141,48 @@ kubernetes:
     flux_managed: false
 
   observability:
-    prometheus_deployed: false
-    grafana_deployed: false
-    alertmanager_deployed: false
-    loki_deployed: false
-    alloy_deployed: false
+    state: metrics_and_alerting_operational
+    namespace: monitoring
+    delivery: flux_helmrelease
+    kube_prometheus_stack:
+      chart_version: 88.2.0
+      helmrelease_ready: true
+    prometheus:
+      deployed: true
+      pvc_gib: 50
+      storage_class: local-path
+      retention: 15d
+      retention_size: 40GB
+      node_exporter_targets_up: 3
+      node_exporter_targets_total: 3
+    grafana:
+      deployed: true
+      pvc_gib: 5
+      storage_class: local-path
+      kubernetes_compute_dashboard_verified: true
+      private_tailscale_ingress_configured: false
+    alertmanager:
+      deployed: true
+      pvc_gib: 2
+      storage_class: local-path
+      reconciled: true
+      available: true
+      external_receivers_configured: false
+    node_exporter:
+      daemonset_ready: true
+      desired: 3
+      ready: 3
+      control_plane_covered: true
+      workers_covered: 2
+    pod_security:
+      enforce: privileged
+      audit: restricted
+      warn: restricted
+      scope: monitoring_namespace_only
+    loki:
+      deployed: false
+      next_step: step_5d
+    alloy:
+      deployed: false
+      next_step: step_5e
     homepage_deployed: false

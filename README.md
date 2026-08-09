@@ -6,29 +6,35 @@
 > The active platform is the Beelink `pve01` Proxmox host. It runs three Talos
 > Kubernetes virtual machines (`210`, `211`, and `212`) plus Ubuntu Server VM
 > `220` (`jenkins-ci`) as the Jenkins controller. Flux, Tailscale private
-> access, Jenkins Controller Phase 1, and the Talos persistent-storage
-> prerequisite are operational.
+> access, Jenkins Controller Phase 1, Talos persistent storage, and the first
+> observability layer are operational.
 >
-> Each Talos worker now has a dedicated 300 GiB `scsi1` data disk. Talos
-> provisions it as XFS user volume `u-local-path-provisioner`, mounted at
-> `/var/mnt/local-path-provisioner`. Rancher Local Path Provisioner `v0.0.37`
-> exposes the default `local-path` StorageClass.
+> `kube-prometheus-stack` `88.2.0` is reconciled by Flux in the `monitoring`
+> namespace. Prometheus, Grafana, Alertmanager, kube-state-metrics, the
+> Prometheus Operator, and one Node Exporter on each Talos node are healthy.
+> Prometheus is using a 50 GiB `local-path` PVC, Grafana 5 GiB, and
+> Alertmanager 2 GiB.
 >
-> Dynamic PVC/PV provisioning, write/read access, persistence across Pod
-> deletion/recreation, and `Delete` reclaim cleanup were verified on
-> 2026-08-09.
+> Prometheus successfully scrapes all three Node Exporter targets. Grafana's
+> Kubernetes compute-resources dashboard is populated with live cluster data,
+> and Alertmanager is operational with the chart-provided Prometheus rules.
 >
-> Exact private tailnet hostnames and Tailscale addresses are intentionally kept
-> out of Git. Tailscale Funnel remains disabled.
+> Loki and Grafana Alloy are intentionally deferred to the next work session.
+> Grafana private ingress through Tailscale and external Alertmanager receiver
+> configuration also remain pending.
 >
-> Persistent-storage documentation:
+> Exact private tailnet hostnames, Tailscale addresses, generated Grafana
+> credentials, and other secrets are intentionally kept out of Git.
+>
+> Current implementation records:
 > - [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
+> - [Prometheus, Grafana and Alertmanager baseline](docs/18-observability-prometheus-grafana-alertmanager.md)
 <!-- END CURRENT CHECKPOINT 2026-08-09 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
 
-> **Current stage:** Talos Kubernetes, Flux GitOps, Tailscale private access, recovery baseline, Jenkins Controller Phase 1, and the Talos persistent-storage prerequisite are operational on the standalone `pve01` host.
+> **Current stage:** Talos Kubernetes, Flux GitOps, Tailscale private access, recovery baseline, Jenkins Controller Phase 1, Talos persistent storage, and the Prometheus/Grafana/Alertmanager observability baseline are operational on the standalone `pve01` host.
 
 ## Current verified state
 
@@ -53,7 +59,11 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Private access | Tailscale Operator chart `1.98.9` connected and healthy |
 | Secret encryption | SOPS with age not yet configured |
 | Kubernetes persistent storage | Operational — Talos user volumes + Rancher Local Path Provisioner |
-| Observability and Homepage | Not yet deployed |
+| Metrics observability | Operational — `kube-prometheus-stack` `88.2.0`, Prometheus, Grafana, Alertmanager, Node Exporter |
+| Metrics PVCs | Prometheus 50 GiB, Grafana 5 GiB, Alertmanager 2 GiB on `local-path` |
+| Logging observability | Loki and Grafana Alloy pending |
+| Grafana private Tailscale ingress | Pending |
+| Homepage | Not yet deployed |
 
 ## Jenkins Controller Phase 1
 
@@ -106,7 +116,8 @@ flowchart TB
     Flux["Flux controllers<br/>flux-system namespace"]
     TS["Tailscale Kubernetes Operator<br/>tailscale namespace<br/>private-service ingress"]
     Backup["Seagate One Touch 2 TB<br/>VM backups + off-cluster etcd snapshots<br/>normally disconnected"]
-    Next["Next platform layer<br/>Prometheus / Grafana / Alertmanager<br/>Loki / Alloy / Homepage"]
+    Mon["Monitoring namespace<br/>Prometheus / Grafana / Alertmanager<br/>Node Exporter on all Talos nodes"]
+    Next["Next platform layer<br/>Loki / Grafana Alloy<br/>Grafana via Tailscale / Homepage"]
 
     Internet --> Router
     UPS --> Router
@@ -123,12 +134,15 @@ flowchart TB
     Flux --> CP
     Flux --> W1
     Flux --> W2
+    Flux --> Mon
+    CP --> Mon
+    W1 --> Mon
+    W2 --> Mon
+    Mon -. next observability layer .-> Next
     TS --> W1
     TS --> W2
     CP -. etcd snapshot .-> Backup
     PVE -. VZDump backups .-> Backup
-    W1 -. future workloads .-> Next
-    W2 -. future workloads .-> Next
 ```
 
 ## Completed milestones
@@ -159,6 +173,15 @@ flowchart TB
 - Deployed and validated Rancher Local Path Provisioner `v0.0.37`.
 - Confirmed `local-path` is the default StorageClass with `Delete` reclaim policy and `WaitForFirstConsumer` binding.
 - Proved dynamic PVC/PV creation, persistence across Pod recreation, and automatic cleanup after test namespace deletion.
+- Added the Flux-managed `monitoring` namespace and Helm repositories for the observability stack.
+- Deployed `kube-prometheus-stack` `88.2.0` through Flux.
+- Persisted Prometheus (50 GiB), Grafana (5 GiB), and Alertmanager (2 GiB) on `local-path`.
+- Resolved Talos Pod Security Admission blocking Node Exporter by limiting a `privileged` enforcement exception to the trusted `monitoring` namespace while retaining `restricted` audit/warn labels.
+- Confirmed the Node Exporter DaemonSet is `3/3 Ready`, with one Pod on each Talos node.
+- Reset exhausted Flux Helm install remediation and confirmed the HelmRelease is `Ready=True`.
+- Verified all three Node Exporter scrape targets are `UP` in Prometheus and return host metrics.
+- Verified Grafana's Kubernetes compute-resources dashboard is populated with live data.
+- Verified Alertmanager is reconciled, available, and loaded with PrometheusRule resources.
 
 ## Quick validation
 
@@ -187,6 +210,13 @@ flux get helmreleases -A
 kubectl get deployment -n tailscale
 kubectl get pods -n tailscale
 kubectl get ingressclass tailscale
+
+kubectl get pods -n monitoring -o wide
+kubectl get pvc -n monitoring -o wide
+kubectl get daemonsets -n monitoring -o wide
+flux get helmreleases -n monitoring
+kubectl get alertmanager -n monitoring
+kubectl get prometheusrules -n monitoring
 ```
 
 ## Backup and recovery state
@@ -208,14 +238,16 @@ Generated Talos machine configurations, `talosconfig`, kubeconfig, etcd snapshot
 
 ## Immediate next work
 
-1. Deploy Prometheus, Grafana, Alertmanager, Loki, and Grafana Alloy.
-2. Define metrics/log retention and resource limits suitable for `pve01`.
-3. Expose selected dashboards privately through Tailscale.
-4. Deploy Homepage.
-5. Bring the Local Path Provisioner manifest under Flux reconciliation.
-6. Configure SOPS with age and migrate manually created Kubernetes Secrets to encrypted Git-managed resources.
-7. Perform an isolated VM restore test.
-8. Add Eaton UPS telemetry and graceful-shutdown monitoring.
+1. Deploy Loki in a small single-cluster mode.
+2. Deploy Grafana Alloy and verify Kubernetes Pod logs/events arrive in Loki.
+3. Add Loki as a Grafana data source and verify LogQL queries.
+4. Expose Grafana privately through the Tailscale Kubernetes Operator.
+5. Configure external Alertmanager receivers only after secret management is ready.
+6. Deploy Homepage.
+7. Bring the Local Path Provisioner manifest under Flux reconciliation.
+8. Configure SOPS with age and migrate manually created Kubernetes Secrets to encrypted Git-managed resources.
+9. Perform an isolated VM restore test.
+10. Add Eaton UPS telemetry and graceful-shutdown monitoring.
 ## Repository map
 
 ```text
@@ -231,6 +263,7 @@ dgs-private-cloud/
 │   └── beelink-talos/
 │       ├── flux-system/
 │       ├── tailscale/
+│       ├── monitoring/
 │       └── kustomization.yaml
 ├── talos/
 │   ├── README.md
@@ -259,6 +292,7 @@ dgs-private-cloud/
 │   ├── 15-flux-and-tailscale-operator.md
 │   ├── 16-jenkins-controller-phase1.md
 │   ├── 17-talos-persistent-storage.md
+│   ├── 18-observability-prometheus-grafana-alertmanager.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -297,9 +331,10 @@ dgs-private-cloud/
 16. [Flux and Tailscale Operator](docs/15-flux-and-tailscale-operator.md)
 17. [Jenkins Controller Phase 1](docs/16-jenkins-controller-phase1.md)
 18. [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
-19. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
-20. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
-21. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
+19. [Prometheus, Grafana and Alertmanager baseline](docs/18-observability-prometheus-grafana-alertmanager.md)
+20. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
+21. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+22. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 
 ## Security boundary
 

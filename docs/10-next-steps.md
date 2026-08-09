@@ -42,14 +42,27 @@ Flux    -> GitOps CD
 
 ## Priority 2 — Observability
 
-After storage validation:
+**Step 5A–5C completed on 2026-08-09. Step 5D–5E deferred to the next work session.**
 
-1. deploy Prometheus, Grafana, and Alertmanager;
-2. deploy Loki in an appropriately small single-cluster mode;
-3. deploy Grafana Alloy for Kubernetes log collection;
-4. define retention and resource limits suitable for the Beelink host;
-5. expose Grafana only through Tailscale;
-6. verify dashboards, alert delivery, and log queries.
+- [x] Create the Flux-managed `monitoring` namespace and Helm repositories.
+- [x] Deploy `kube-prometheus-stack` `88.2.0`.
+- [x] Persist Prometheus on a 50 GiB `local-path` PVC.
+- [x] Persist Grafana on a 5 GiB `local-path` PVC.
+- [x] Persist Alertmanager on a 2 GiB `local-path` PVC.
+- [x] Resolve Node Exporter Pod Security Admission requirements with a targeted `monitoring` namespace policy.
+- [x] Confirm the Node Exporter DaemonSet is `3/3 Ready`.
+- [x] Confirm the Flux HelmRelease is `Ready=True`.
+- [x] Confirm all three Node Exporter scrape targets are `UP`.
+- [x] Confirm real host metrics from all three Talos nodes.
+- [x] Log in to Grafana and verify the Kubernetes compute-resources dashboard.
+- [x] Open Alertmanager and confirm the Alertmanager resource and PrometheusRule objects are present.
+- [ ] **Step 5D:** deploy Loki in an appropriately small single-cluster mode.
+- [ ] **Step 5E:** deploy Grafana Alloy for Kubernetes log/event collection.
+- [ ] Add Loki as a Grafana data source and verify LogQL queries.
+- [ ] Expose Grafana only through authenticated Tailscale access.
+- [ ] Configure external Alertmanager receivers after SOPS/secret handling is ready.
+- [ ] Verify alert delivery to the selected external receiver.
+
 
 ## Priority 3 — Homepage
 
@@ -103,7 +116,7 @@ Store the copy on a second physical device or encrypted off-site location. Never
 
 - [x] Dynamic PVC provisioning works.
 - [x] Data survives a pod deletion/recreation cycle.
-- [ ] Prometheus, Grafana, and Alertmanager are healthy.
+- [x] Prometheus, Grafana, and Alertmanager are healthy.
 - [ ] Loki receives logs through Alloy.
 - [ ] Grafana is reachable privately through Tailscale.
 - [ ] Homepage is deployed privately.
