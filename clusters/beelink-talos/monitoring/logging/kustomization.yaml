@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - loki-helmrelease.yaml
   - grafana-loki-datasource.yaml
+  - alloy-helmrelease.yaml
