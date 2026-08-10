@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.8.0] - 2026-08-10
+
+### Added
+
+- Flux-managed Loki logging backend using chart `18.7.6`.
+- Loki Monolithic deployment with a persistent `20Gi` `local-path` PVC.
+- Grafana Loki datasource provisioned through a labelled ConfigMap.
+- Flux-managed Grafana Alloy using chart `1.11.1`.
+- Alloy DaemonSet log collection across all three Talos nodes.
+- Dedicated observability implementation and validation documentation.
+- Grafana local background port-forward operating procedure.
+
+### Verified
+
+- `kube-prometheus-stack`, `loki`, and `alloy` HelmReleases report `Ready=True`.
+- Alloy DaemonSet reports `3/3` desired/current/ready/available.
+- Loki application `3.7.6` build-information API responds successfully.
+- Loki labels API responds successfully.
+- Loki `20Gi` PVC is `Bound` through `local-path`.
+- Prometheus `50Gi`, Grafana `5Gi`, and Alertmanager `2Gi` PVCs remain `Bound`.
+- Controlled five-line Alloy/Loki smoke test appeared in Grafana Explore.
+- Real logs from `monitoring`, `flux-system`, and `tailscale` are queryable.
+- Grafana severity filtering using `detected_level` returns errors and warnings.
+- Temporary smoke-test pod was removed after validation.
+- Git working tree was clean and synchronized with `origin/main` after infrastructure commits.
+
+### Notes
+
+- Loki remains internal to Kubernetes; its gateway is not publicly exposed.
+- Grafana Tailscale ingress, Loki retention, storage-capacity alerts, and
+  external Alertmanager receivers remain pending.
+- Local Grafana access currently uses a workstation port-forward to
+  `127.0.0.1:3000`.
+
 ## [0.8.0] - 2026-08-09
 
 ### Added

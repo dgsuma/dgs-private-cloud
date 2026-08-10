@@ -1,7 +1,7 @@
 kubernetes:
   cluster_name: dgs-homelab
   state: operational
-  last_verified: 2026-08-09
+  last_verified: 2026-08-10
 
   platform:
     talos_version: v1.13.6
@@ -141,7 +141,7 @@ kubernetes:
     flux_managed: false
 
   observability:
-    state: metrics_and_alerting_operational
+    state: metrics_alerting_and_logging_operational
     namespace: monitoring
     delivery: flux_helmrelease
     kube_prometheus_stack:
@@ -151,6 +151,7 @@ kubernetes:
       deployed: true
       pvc_gib: 50
       storage_class: local-path
+      pvc_bound: true
       retention: 15d
       retention_size: 40GB
       node_exporter_targets_up: 3
@@ -159,12 +160,16 @@ kubernetes:
       deployed: true
       pvc_gib: 5
       storage_class: local-path
+      pvc_bound: true
       kubernetes_compute_dashboard_verified: true
+      loki_datasource_provisioned: true
+      loki_explore_verified: true
       private_tailscale_ingress_configured: false
     alertmanager:
       deployed: true
       pvc_gib: 2
       storage_class: local-path
+      pvc_bound: true
       reconciled: true
       available: true
       external_receivers_configured: false
@@ -180,9 +185,39 @@ kubernetes:
       warn: restricted
       scope: monitoring_namespace_only
     loki:
-      deployed: false
-      next_step: step_5d
+      deployed: true
+      helm_chart_version: 18.7.6
+      application_version: 3.7.6
+      helmrelease_ready: true
+      deployment_mode: monolithic
+      replicas: 1
+      storage_backend: filesystem
+      schema: v13
+      pvc_gib: 20
+      storage_class: local-path
+      pvc_bound: true
+      gateway_enabled: true
+      gateway_service_type: ClusterIP
+      auth_enabled: false
+      retention_configured: false
+      api_buildinfo_verified: true
+      api_labels_verified: true
     alloy:
-      deployed: false
-      next_step: step_5e
+      deployed: true
+      helm_chart_version: 1.11.1
+      application_version: v1.18.1
+      helmrelease_ready: true
+      controller: daemonset
+      desired: 3
+      ready: 3
+      control_plane_covered: true
+      workers_covered: 2
+      collection_method: kubernetes_api
+      source_component: loki.source.kubernetes
+      destination: loki-gateway.monitoring.svc.cluster.local
+      smoke_test_passed: true
+      real_namespace_queries_verified:
+        - monitoring
+        - flux-system
+        - tailscale
     homepage_deployed: false

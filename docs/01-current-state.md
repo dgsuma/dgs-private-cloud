@@ -1,7 +1,7 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-09 -->
-## Current checkpoint — 2026-08-09
+<!-- BEGIN CURRENT STATE 2026-08-10 -->
+## Current checkpoint — 2026-08-10
 | Property | Verified state |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
@@ -13,38 +13,28 @@
 | Flux | Operational |
 | Tailscale Kubernetes Operator | Operational |
 | Kubernetes persistent storage | Operational |
-| Talos worker data disks | 300 GiB `scsi1` on VMs `211` and `212` |
-| Talos user volume | `u-local-path-provisioner`, XFS, `ready` on both workers |
-| Persistent mount | `/var/mnt/local-path-provisioner` |
 | Default StorageClass | `local-path` |
-| Dynamic PVC/PV smoke test | Passed |
-| Pod recreation persistence test | Passed |
-| Test reclaim cleanup | Passed |
-| Observability namespace | `monitoring` |
-| kube-prometheus-stack | `88.2.0`, Flux `Ready=True` |
-| Prometheus | Operational; 50 GiB `local-path` PVC |
-| Grafana | Operational; 5 GiB `local-path` PVC |
-| Alertmanager | Operational; 2 GiB `local-path` PVC |
-| Node Exporter | DaemonSet `3/3 Ready`, one Pod per Talos node |
-| Prometheus Node Exporter targets | `3/3 UP` |
-| Grafana Kubernetes dashboard | Live cluster data verified |
-| Alertmanager rules | PrometheusRule resources loaded |
-| Loki | Pending |
-| Grafana Alloy | Pending |
-| Grafana Tailscale ingress | Pending |
+| Prometheus / Grafana / Alertmanager | Operational |
+| Loki | Operational; chart `18.7.6`, application `3.7.6` |
+| Grafana Alloy | Operational; chart `1.11.1`, application `v1.18.1` |
+| Alloy DaemonSet | `3/3` Ready across control plane and both workers |
+| Loki persistent storage | `20Gi`, `Bound`, `local-path` |
+| Prometheus persistent storage | `50Gi`, `Bound`, `local-path` |
+| Grafana persistent storage | `5Gi`, `Bound`, `local-path` |
+| Alertmanager persistent storage | `2Gi`, `Bound`, `local-path` |
+| Real Kubernetes logs in Grafana | Verified for `monitoring`, `flux-system`, and `tailscale` |
 | Direct Proxmox Tailscale endpoint | Operational |
 | Jenkins Tailscale Serve endpoint | Operational |
-| Jenkins direct LAN `:8080` | Refused by design |
-| Jenkins smoke Pipeline | `jenkins-learning-smoke` Build `#1` `SUCCESS` |
 | Tailscale Funnel | Disabled |
 | External VM backups | Completed for VMs `210`, `211`, and `212` |
 | Talos etcd snapshots | Completed on 2026-07-26 and 2026-08-01 |
 | Temporary ASUS Proxmox node | Retired from active use |
+
 Exact private tailnet hostnames remain in local operator notes rather than Git.
-<!-- END CURRENT STATE 2026-08-09 -->
+<!-- END CURRENT STATE 2026-08-10 -->
 
 
-Verified on `2026-08-09` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, Jenkins Controller Phase 1, end-to-end Talos persistent-storage validation, and successful Prometheus/Grafana/Alertmanager deployment and validation.
+Verified on `2026-08-10` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, Jenkins Controller Phase 1, persistent-storage validation, and the end-to-end observability/logging deployment.
 
 ## Hypervisor
 
@@ -199,6 +189,38 @@ for the implementation, validation, troubleshooting, and next-session handoff.
 | Phase 1 | Complete |
 | Phase 2 | Deferred |
 
+## Observability
+
+| Property | Value |
+|---|---|
+| Namespace | `monitoring` |
+| Delivery | Flux HelmRelease |
+| kube-prometheus-stack chart | `88.2.0` |
+| Prometheus | Operational |
+| Prometheus retention | `15d` / `40GB` size limit |
+| Prometheus PVC | `50Gi`, `local-path`, Bound |
+| Grafana | Operational |
+| Grafana PVC | `5Gi`, `local-path`, Bound |
+| Alertmanager | Operational |
+| Alertmanager PVC | `2Gi`, `local-path`, Bound |
+| Loki chart | `18.7.6` |
+| Loki application | `3.7.6` |
+| Loki deployment mode | Monolithic, single replica |
+| Loki PVC | `20Gi`, `local-path`, Bound |
+| Loki gateway | Internal ClusterIP |
+| Alloy chart | `1.11.1` |
+| Alloy application | `v1.18.1` |
+| Alloy controller | DaemonSet |
+| Alloy readiness | `3/3` |
+| Log collection | Kubernetes API via `loki.source.kubernetes` |
+| End-to-end smoke test | Passed |
+| Real namespace queries | `monitoring`, `flux-system`, `tailscale` verified |
+| Grafana Tailscale ingress | Pending |
+| External Alertmanager receivers | Pending |
+| Loki retention policy | Pending |
+
+See [18-observability-stack.md](18-observability-stack.md) for the implementation
+and validation record.
 ## Recovery baseline
 
 | Item | State |
@@ -214,14 +236,16 @@ for the implementation, validation, troubleshooting, and next-session handoff.
 
 ## Services not yet deployed
 
-- Loki;
-- Grafana Alloy;
-- Grafana private ingress through Tailscale;
-- external Alertmanager receivers;
 - Homepage;
 - SOPS-encrypted Secret management;
 - UPS telemetry and automated graceful shutdown.
 
+Observability hardening still pending:
+
+- Loki retention;
+- PVC/storage-capacity alerting;
+- external Alertmanager notification receivers;
+- authenticated Tailscale access for Grafana.
 ## Current risk statement
 
 The Kubernetes control plane, workers, primary VM disks, and etcd member all depend on the single physical host `pve01`. Backups reduce data-loss risk but do not provide availability. The platform remains a single-host laboratory until permanent additional nodes and tested restores are introduced.

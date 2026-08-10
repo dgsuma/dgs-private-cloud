@@ -1,46 +1,44 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-09 -->
-> **Current checkpoint — 2026-08-09**
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-10 -->
+> **Current checkpoint — 2026-08-10**
 >
 > The active platform is the Beelink `pve01` Proxmox host. It runs three Talos
 > Kubernetes virtual machines (`210`, `211`, and `212`) plus Ubuntu Server VM
 > `220` (`jenkins-ci`) as the Jenkins controller. Flux, Tailscale private
-> access, Jenkins Controller Phase 1, Talos persistent storage, and the first
-> observability layer are operational.
+> access, Jenkins Controller Phase 1, Talos persistent storage, and the Phase 1
+> observability baseline are operational.
 >
-> `kube-prometheus-stack` `88.2.0` is reconciled by Flux in the `monitoring`
-> namespace. Prometheus, Grafana, Alertmanager, kube-state-metrics, the
-> Prometheus Operator, and one Node Exporter on each Talos node are healthy.
-> Prometheus is using a 50 GiB `local-path` PVC, Grafana 5 GiB, and
-> Alertmanager 2 GiB.
+> The `monitoring` namespace now runs `kube-prometheus-stack` `88.2.0`, Loki
+> chart `18.7.6`, and Grafana Alloy chart `1.11.1`. Prometheus, Grafana,
+> Alertmanager, Loki, and Alloy all reconcile successfully through Flux.
 >
-> Prometheus successfully scrapes all three Node Exporter targets. Grafana's
-> Kubernetes compute-resources dashboard is populated with live cluster data,
-> and Alertmanager is operational with the chart-provided Prometheus rules.
+> Persistent observability storage is provided by the default `local-path`
+> StorageClass: Prometheus `50Gi`, Grafana `5Gi`, Alertmanager `2Gi`, and Loki
+> `20Gi`.
 >
-> Loki and Grafana Alloy are intentionally deferred to the next work session.
-> Grafana private ingress through Tailscale and external Alertmanager receiver
-> configuration also remain pending.
+> Alloy runs as a three-pod DaemonSet across `talos-cp-01`,
+> `talos-worker-01`, and `talos-worker-02`. Real monitoring, Flux, and
+> Tailscale logs were verified in Grafana Explore through Loki.
 >
-> Exact private tailnet hostnames, Tailscale addresses, generated Grafana
-> credentials, and other secrets are intentionally kept out of Git.
+> Exact private tailnet hostnames and Tailscale addresses are intentionally kept
+> out of Git. Tailscale Funnel remains disabled.
 >
-> Current implementation records:
+> Implementation documentation:
 > - [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
-> - [Prometheus, Grafana and Alertmanager baseline](docs/18-observability-prometheus-grafana-alertmanager.md)
-<!-- END CURRENT CHECKPOINT 2026-08-09 -->
+> - [Observability baseline](docs/18-observability-stack.md)
+<!-- END CURRENT CHECKPOINT 2026-08-10 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
 
-> **Current stage:** Talos Kubernetes, Flux GitOps, Tailscale private access, recovery baseline, Jenkins Controller Phase 1, Talos persistent storage, and the Prometheus/Grafana/Alertmanager observability baseline are operational on the standalone `pve01` host.
+> **Current stage:** Talos Kubernetes, Flux GitOps, Tailscale private access, recovery baseline, Jenkins Controller Phase 1, persistent storage, and the Prometheus/Grafana/Alertmanager/Loki/Alloy observability baseline are operational on the standalone `pve01` host.
 
 ## Current verified state
 
 | Item | Current value |
 |---|---|
-| Last verified | `2026-08-09` |
+| Last verified | `2026-08-10` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
 | Proxmox VE Manager | `9.2.10` observed in the web interface |
@@ -173,6 +171,11 @@ flowchart TB
 - Deployed and validated Rancher Local Path Provisioner `v0.0.37`.
 - Confirmed `local-path` is the default StorageClass with `Delete` reclaim policy and `WaitForFirstConsumer` binding.
 - Proved dynamic PVC/PV creation, persistence across Pod recreation, and automatic cleanup after test namespace deletion.
+- Deployed and verified `kube-prometheus-stack` `88.2.0` through Flux.
+- Verified Prometheus, Grafana, Alertmanager, and node-exporter across all three Talos nodes.
+- Deployed Loki chart `18.7.6` in Monolithic mode with a persistent `20Gi` `local-path` PVC.
+- Deployed Grafana Alloy chart `1.11.1` as a three-node DaemonSet.
+- Verified controlled and real Kubernetes logs end-to-end through Alloy -> Loki -> Grafana Explore.
 - Added the Flux-managed `monitoring` namespace and Helm repositories for the observability stack.
 - Deployed `kube-prometheus-stack` `88.2.0` through Flux.
 - Persisted Prometheus (50 GiB), Grafana (5 GiB), and Alertmanager (2 GiB) on `local-path`.
@@ -237,17 +240,14 @@ Remaining recovery work:
 Generated Talos machine configurations, `talosconfig`, kubeconfig, etcd snapshots, VM backup archives, private keys, OAuth secrets, and decrypted secret files must never be committed.
 
 ## Immediate next work
-
-1. Deploy Loki in a small single-cluster mode.
-2. Deploy Grafana Alloy and verify Kubernetes Pod logs/events arrive in Loki.
-3. Add Loki as a Grafana data source and verify LogQL queries.
-4. Expose Grafana privately through the Tailscale Kubernetes Operator.
-5. Configure external Alertmanager receivers only after secret management is ready.
-6. Deploy Homepage.
-7. Bring the Local Path Provisioner manifest under Flux reconciliation.
-8. Configure SOPS with age and migrate manually created Kubernetes Secrets to encrypted Git-managed resources.
-9. Perform an isolated VM restore test.
-10. Add Eaton UPS telemetry and graceful-shutdown monitoring.
+1. Define Loki retention and storage-capacity alerting suitable for the `20Gi` Loki PVC.
+2. Configure useful Alertmanager notification receivers.
+3. Expose Grafana privately through authenticated Tailscale access.
+4. Deploy Homepage.
+5. Bring the Local Path Provisioner manifest under Flux reconciliation.
+6. Configure SOPS with age and migrate manually created Kubernetes Secrets to encrypted Git-managed resources.
+7. Perform an isolated VM restore test.
+8. Add Eaton UPS telemetry and graceful-shutdown monitoring.
 ## Repository map
 
 ```text

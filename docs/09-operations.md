@@ -174,6 +174,126 @@ The log message below is informational when a Service is not configured for a Pr
 no ProxyGroup annotation, skipping Tailscale Service provisioning
 ```
 
+<!-- BEGIN OBSERVABILITY OPERATIONS 2026-08-10 -->
+## Observability operations
+
+Routine HelmRelease health:
+
+```powershell
+flux get helmreleases -n monitoring
+```
+
+Expected:
+
+```text
+alloy                   Ready=True
+kube-prometheus-stack   Ready=True
+loki                    Ready=True
+```
+
+Workload and storage checks:
+
+```powershell
+kubectl get daemonset alloy -n monitoring -o wide
+
+kubectl get pods -n monitoring -o wide |
+    Select-String "alloy"
+
+kubectl get pods -n monitoring -o wide |
+    Select-String "loki"
+
+kubectl get pvc -n monitoring
+
+kubectl get svc -n monitoring |
+    Select-String "loki"
+```
+
+Grafana foreground access:
+
+```powershell
+kubectl -n monitoring port-forward `
+    svc/kube-prometheus-stack-grafana `
+    3000:80
+```
+
+Then open:
+
+```text
+http://localhost:3000/
+```
+
+Grafana background access from Windows:
+
+```powershell
+$Kubectl = (Get-Command kubectl).Source
+
+$GrafanaPF = Start-Process `
+    -FilePath $Kubectl `
+    -ArgumentList @(
+        "port-forward",
+        "-n", "monitoring",
+        "svc/kube-prometheus-stack-grafana",
+        "3000:80",
+        "--address", "127.0.0.1"
+    ) `
+    -WindowStyle Hidden `
+    -RedirectStandardOutput "$env:TEMP\grafana-port-forward.out.log" `
+    -RedirectStandardError "$env:TEMP\grafana-port-forward.err.log" `
+    -PassThru
+
+$GrafanaPF.Id | Set-Content "$env:TEMP\grafana-port-forward.pid"
+```
+
+Check the background process:
+
+```powershell
+$GrafanaPid = Get-Content "$env:TEMP\grafana-port-forward.pid"
+Get-Process -Id $GrafanaPid
+
+Get-NetTCPConnection `
+    -LocalPort 3000 `
+    -State Listen
+```
+
+Stop it:
+
+```powershell
+$GrafanaPid = Get-Content "$env:TEMP\grafana-port-forward.pid"
+Stop-Process -Id $GrafanaPid
+Remove-Item "$env:TEMP\grafana-port-forward.pid" -ErrorAction SilentlyContinue
+```
+
+Useful Loki queries:
+
+```logql
+{cluster="beelink-talos", namespace="monitoring"}
+```
+
+```logql
+{cluster="beelink-talos", namespace="flux-system"}
+```
+
+```logql
+{cluster="beelink-talos", namespace="tailscale"}
+```
+
+```logql
+{cluster="beelink-talos", namespace="monitoring"}
+| detected_level="error"
+```
+
+```logql
+{cluster="beelink-talos", namespace="monitoring"}
+| detected_level="error" or detected_level="warn"
+```
+
+The background port-forward binds only to `127.0.0.1`. It survives closing the
+launching PowerShell window but not Windows reboot/logoff or termination of the
+`kubectl` process.
+
+See [18-observability-stack.md](18-observability-stack.md) for the complete
+implementation record.
+<!-- END OBSERVABILITY OPERATIONS 2026-08-10 -->
 ## PowerShell command notes
 
 PowerShell may treat an unquoted comma-separated kubectl resource expression unexpectedly. Prefer separate commands:
