@@ -1,0 +1,65 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: local-path-storage-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: local-path-storage.rules
+      rules:
+        - alert: LocalPathStorageUsageWarning
+          expr: |
+            100 * (
+              1 -
+              node_filesystem_avail_bytes{
+                mountpoint="/var/mnt/local-path-provisioner",
+                fstype="xfs"
+              }
+              /
+              node_filesystem_size_bytes{
+                mountpoint="/var/mnt/local-path-provisioner",
+                fstype="xfs"
+              }
+            ) >= 80
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Local-path storage is above 80% on {{ $labels.instance }}"
+            description: "Persistent storage filesystem {{ $labels.device }} on {{ $labels.instance }} has remained above 80% used for 15 minutes."
+
+        - alert: LocalPathStorageUsageCritical
+          expr: |
+            100 * (
+              1 -
+              node_filesystem_avail_bytes{
+                mountpoint="/var/mnt/local-path-provisioner",
+                fstype="xfs"
+              }
+              /
+              node_filesystem_size_bytes{
+                mountpoint="/var/mnt/local-path-provisioner",
+                fstype="xfs"
+              }
+            ) >= 90
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Local-path storage is above 90% on {{ $labels.instance }}"
+            description: "Persistent storage filesystem {{ $labels.device }} on {{ $labels.instance }} has remained above 90% used for 10 minutes. Immediate capacity action is required."
+
+        - alert: LocalPathStorageReadOnly
+          expr: |
+            node_filesystem_readonly{
+              mountpoint="/var/mnt/local-path-provisioner",
+              fstype="xfs"
+            } == 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Local-path storage became read-only on {{ $labels.instance }}"
+            description: "Persistent storage filesystem {{ $labels.device }} on {{ $labels.instance }} has been read-only for at least 5 minutes."
