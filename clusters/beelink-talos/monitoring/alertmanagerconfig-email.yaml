@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: email-notifications
+  namespace: monitoring
+spec:
+  route:
+    receiver: gmail
+    groupBy:
+      - alertname
+      - namespace
+      - severity
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    routes:
+      - receiver: "null"
+        matchers:
+          - name: alertname
+            value: Watchdog
+            matchType: "="
+
+  receivers:
+    - name: "null"
+
+    - name: gmail
+      emailConfigs:
+        - to: "dumindags@gmail.com"
+          from: "dumindags@gmail.com"
+          smarthost: smtp.gmail.com:587
+          authUsername: "dumindags@gmail.com"
+          authPassword:
+            name: alertmanager-smtp
+            key: gmail-app-password
+          requireTLS: true
+          sendResolved: true

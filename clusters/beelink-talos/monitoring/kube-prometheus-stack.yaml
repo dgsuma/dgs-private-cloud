@@ -73,6 +73,9 @@ spec:
 
     alertmanager:
       alertmanagerSpec:
+        alertmanagerConfigMatcherStrategy:
+          type: OnNamespaceExceptForAlertmanagerNamespace
+
         resources:
           requests:
             cpu: 50m
