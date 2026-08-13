@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.8.0] - 2026-08-13
+
+### Added
+
+- Flux-managed Loki `18.7.6` logging backend.
+- Flux-managed Grafana Alloy `1.11.1` Kubernetes log collection.
+- `AlertmanagerConfig/email-notifications` Gmail receiver.
+- Detailed logging and Alertmanager email completion documentation.
+
+### Changed
+
+- Alertmanager matcher strategy to
+  `OnNamespaceExceptForAlertmanagerNamespace`.
+- `Watchdog` is routed to a null receiver to prevent repetitive email.
+- Current-state, roadmap, next-steps, Kubernetes inventory, and security
+  documentation updated to the 2026-08-13 checkpoint.
+
+### Verified
+
+- Loki and Alloy HelmReleases report `Ready=True`.
+- Grafana/LogQL returns Kubernetes logs and error/warning filtered results.
+- `kube-prometheus-stack` `88.2.0` reports `Ready=True`.
+- Alertmanager Gmail FIRING notification delivered successfully.
+- Alertmanager Gmail RESOLVED notification delivered successfully.
+- Temporary Alertmanager localhost port-forward was stopped and TCP `9093`
+  verified closed afterwards.
+
+### Security
+
+- Gmail App Password remains outside Git in the manually created
+  `monitoring/alertmanager-smtp` Secret.
+- The committed receiver manifest contains only the Secret reference.
+- Grafana private Tailscale ingress and Homepage remain the next tasks.
 ## [0.8.0] - 2026-08-10
 
 ### Added

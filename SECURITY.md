@@ -73,6 +73,17 @@ Never commit:
 
 The repository `.gitignore` must continue to exclude `talos/generated/*`, `git-commands-local.txt`, generated credentials, etcd snapshots, VM archives, and virtual disks.
 
+
+### Alertmanager SMTP credential
+
+Until SOPS/age is configured, the Gmail App Password used by Alertmanager is
+stored only in the manually created Kubernetes Secret
+`monitoring/alertmanager-smtp`.
+
+The Git-managed Alertmanager configuration may reference the Secret name and
+key, but the credential value must never be committed. Treat this Secret as an
+out-of-band recovery prerequisite and migrate it to SOPS-encrypted Git
+management only after Flux decryption has been tested successfully.
 ## Backup confidentiality
 
 An etcd snapshot can contain Kubernetes Secrets. A VM backup can contain operating-system configuration, service credentials, application data, and private keys. Treat both as sensitive data.

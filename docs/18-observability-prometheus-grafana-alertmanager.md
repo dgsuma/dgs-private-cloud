@@ -320,3 +320,23 @@ Continue in this order:
 
 Do not begin Step 5D by deleting or reinstalling the healthy
 `kube-prometheus-stack` release.
+
+## Follow-up checkpoint — 2026-08-13
+
+The original metrics/alerting baseline documented here has now been extended.
+
+Completed after this baseline:
+
+- Loki `18.7.6` deployment;
+- Grafana Alloy `1.11.1` deployment;
+- Loki/LogQL validation in Grafana;
+- Alertmanager Gmail receiver configuration;
+- successful FIRING email validation;
+- successful RESOLVED email validation.
+
+The Gmail App Password is not committed. It remains in the manually created
+`monitoring/alertmanager-smtp` Secret pending SOPS/age adoption.
+
+See
+[19-observability-logging-alertmanager-email.md](19-observability-logging-alertmanager-email.md)
+for the completion record and next-session handoff.

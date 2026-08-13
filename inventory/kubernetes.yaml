@@ -1,7 +1,7 @@
 kubernetes:
   cluster_name: dgs-homelab
   state: operational
-  last_verified: 2026-08-10
+  last_verified: 2026-08-13
 
   platform:
     talos_version: v1.13.6
@@ -172,7 +172,12 @@ kubernetes:
       pvc_bound: true
       reconciled: true
       available: true
-      external_receivers_configured: false
+      external_receivers_configured: true
+      email_receiver_configured: true
+      email_delivery_firing_verified: true
+      email_delivery_resolved_verified: true
+      smtp_secret_name: alertmanager-smtp
+      smtp_secret_managed_in_git: false
     node_exporter:
       daemonset_ready: true
       desired: 3

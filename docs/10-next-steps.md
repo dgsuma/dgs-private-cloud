@@ -42,27 +42,30 @@ Flux    -> GitOps CD
 
 ## Priority 2 — Observability
 
-**Baseline completed on 2026-08-10.**
-
-- [x] Deploy Prometheus, Grafana, and Alertmanager through Flux.
-- [x] Configure persistent local-path storage for Prometheus, Grafana, and Alertmanager.
-- [x] Configure Prometheus `15d` retention and `40GB` retention-size limit.
-- [x] Validate node-exporter across all three Talos nodes.
-- [x] Deploy Loki chart `18.7.6` in Monolithic mode.
-- [x] Configure a persistent `20Gi` `local-path` Loki PVC.
-- [x] Provision the Loki datasource into Grafana.
-- [x] Deploy Grafana Alloy chart `1.11.1` as a DaemonSet.
-- [x] Run one Alloy pod on each Talos node.
-- [x] Verify controlled smoke-test logs end-to-end.
-- [x] Verify real logs from `monitoring`, `flux-system`, and `tailscale`.
-- [x] Verify severity filtering with `detected_level`.
-- [ ] Define Loki retention suitable for the `20Gi` PVC.
-- [ ] Add PVC/storage-capacity alerts.
-- [ ] Configure useful external Alertmanager notification receivers.
-- [ ] Expose Grafana privately through authenticated Tailscale access.
-- [ ] Add a small Kubernetes/logging dashboard if useful.
-
-See [18-observability-stack.md](18-observability-stack.md).
+**Metrics, logging, and Alertmanager email delivery completed through 2026-08-13.**
+- [x] Create the Flux-managed `monitoring` namespace and Helm repositories.
+- [x] Deploy `kube-prometheus-stack` `88.2.0`.
+- [x] Persist Prometheus on a 50 GiB `local-path` PVC.
+- [x] Persist Grafana on a 5 GiB `local-path` PVC.
+- [x] Persist Alertmanager on a 2 GiB `local-path` PVC.
+- [x] Resolve Node Exporter Pod Security Admission requirements with a targeted `monitoring` namespace policy.
+- [x] Confirm the Node Exporter DaemonSet is `3/3 Ready`.
+- [x] Confirm the Flux HelmRelease is `Ready=True`.
+- [x] Confirm all three Node Exporter scrape targets are `UP`.
+- [x] Confirm real host metrics from all three Talos nodes.
+- [x] Log in to Grafana and verify the Kubernetes compute-resources dashboard.
+- [x] Deploy Loki `18.7.6`.
+- [x] Deploy Grafana Alloy `1.11.1`.
+- [x] Verify Kubernetes logs in Grafana through Loki/LogQL.
+- [x] Verify error and warning log filtering.
+- [x] Configure `AlertmanagerConfig/email-notifications`.
+- [x] Keep the Gmail App Password outside Git in `monitoring/alertmanager-smtp`.
+- [x] Route `Watchdog` to a null receiver.
+- [x] Verify Gmail FIRING notification delivery.
+- [x] Verify Gmail RESOLVED notification delivery.
+- [ ] **Next:** expose Grafana only through authenticated Tailscale access.
+- [ ] After Grafana, deploy Homepage and keep it private behind Tailscale.
+- [ ] Migrate manually managed secrets to SOPS/age after encrypted secret management is configured.
 ## Priority 3 — Homepage
 
 1. Deploy Homepage through Flux.

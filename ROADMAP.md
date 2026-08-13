@@ -83,8 +83,7 @@
 - [ ] Migrate `operator-oauth` from a manually created Secret to encrypted Git management.
 
 ## Phase 1E — Persistent storage, observability, and dashboard
-
-**Status: In progress — persistent storage and metrics/alerting observability baseline complete**
+**Status: In progress — storage, metrics, logging, and Alertmanager email are operational; private Grafana and Homepage remain**
 - [x] Select a Talos-compatible initial persistent-storage solution.
 - [x] Add dedicated worker data disks and Talos XFS user volumes.
 - [x] Deploy and validate Rancher Local Path Provisioner.
@@ -94,9 +93,12 @@
 - [ ] Bring the provisioner under Flux reconciliation.
 - [x] Define initial capacity and retention for Prometheus, Grafana, and Alertmanager.
 - [x] Deploy Prometheus, Grafana, and Alertmanager through Flux.
-- [ ] Deploy Loki and Grafana Alloy; deferred to the next work session.
-- [ ] Expose selected dashboards only through authenticated Tailscale access.
-- [ ] Deploy Homepage.
+- [x] Deploy Loki `18.7.6` and Grafana Alloy `1.11.1`.
+- [x] Verify Kubernetes logs in Grafana through Loki/LogQL.
+- [x] Configure Alertmanager Gmail email notifications.
+- [x] Verify Alertmanager FIRING and RESOLVED delivery.
+- [ ] Expose Grafana only through authenticated Tailscale access.
+- [ ] Deploy Homepage and keep it private through Tailscale.
 - [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
 - [ ] Test application and database recovery independently of etcd.
 ## Phase 1F — Jenkins controller and private CI access

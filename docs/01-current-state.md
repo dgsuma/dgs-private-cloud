@@ -1,40 +1,38 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-10 -->
-## Current checkpoint — 2026-08-10
+<!-- BEGIN CURRENT STATE 2026-08-13 -->
+## Current checkpoint — 2026-08-13
 | Property | Verified state |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
-| PVE Manager | `9.2.10` |
-| Proxmox cluster | Standalone host |
-| Talos VMs | `210` control plane, `211` worker 1, `212` worker 2 |
-| Jenkins VM | `220` `jenkins-ci` |
-| Kubernetes | Operational |
+| Talos Kubernetes | Operational; all three nodes `Ready` |
 | Flux | Operational |
 | Tailscale Kubernetes Operator | Operational |
 | Kubernetes persistent storage | Operational |
-| Default StorageClass | `local-path` |
-| Prometheus / Grafana / Alertmanager | Operational |
-| Loki | Operational; chart `18.7.6`, application `3.7.6` |
-| Grafana Alloy | Operational; chart `1.11.1`, application `v1.18.1` |
-| Alloy DaemonSet | `3/3` Ready across control plane and both workers |
-| Loki persistent storage | `20Gi`, `Bound`, `local-path` |
-| Prometheus persistent storage | `50Gi`, `Bound`, `local-path` |
-| Grafana persistent storage | `5Gi`, `Bound`, `local-path` |
-| Alertmanager persistent storage | `2Gi`, `Bound`, `local-path` |
-| Real Kubernetes logs in Grafana | Verified for `monitoring`, `flux-system`, and `tailscale` |
+| kube-prometheus-stack | `88.2.0`, Flux `Ready=True` |
+| Prometheus | Operational; 50 GiB `local-path` PVC |
+| Grafana | Operational; 5 GiB `local-path` PVC |
+| Alertmanager | Operational; 2 GiB `local-path` PVC |
+| Loki | `18.7.6`, Flux `Ready=True`; LogQL validation passed |
+| Grafana Alloy | `1.11.1`, Flux `Ready=True`; Kubernetes log collection operational |
+| LogQL validation | Passed for Kubernetes logs including error/warning filtering |
+| Alertmanager email receiver | Gmail SMTP configured and operational |
+| Alertmanager FIRING delivery | Passed |
+| Alertmanager RESOLVED delivery | Passed |
+| SMTP credential storage | Manual Secret `monitoring/alertmanager-smtp`; not committed |
+| Grafana Tailscale ingress | Pending — next task |
+| Homepage | Pending after Grafana private access |
 | Direct Proxmox Tailscale endpoint | Operational |
 | Jenkins Tailscale Serve endpoint | Operational |
-| Tailscale Funnel | Disabled |
 | External VM backups | Completed for VMs `210`, `211`, and `212` |
 | Talos etcd snapshots | Completed on 2026-07-26 and 2026-08-01 |
-| Temporary ASUS Proxmox node | Retired from active use |
 
-Exact private tailnet hostnames remain in local operator notes rather than Git.
-<!-- END CURRENT STATE 2026-08-10 -->
+Exact private tailnet hostnames and credentials remain in local operator notes
+rather than Git.
+<!-- END CURRENT STATE 2026-08-13 -->
 
 
-Verified on `2026-08-10` after Kubernetes bootstrap, backup completion, Flux/Tailscale deployment, Jenkins Controller Phase 1, persistent-storage validation, and the end-to-end observability/logging deployment.
+Verified on `2026-08-13` after logging-stack validation and successful Alertmanager Gmail FIRING/RESOLVED delivery.
 
 ## Hypervisor
 
@@ -142,11 +140,11 @@ configured.
 | Prometheus scrape validation | All three Node Exporter targets `UP` |
 | Host metric validation | `node_uname_info` and `node_memory_MemAvailable_bytes` return all three nodes |
 | Grafana validation | `Kubernetes / Compute Resources / Cluster` populated with live data |
-| Alertmanager | One replica reconciled and available; UI reachable by local port-forward |
+| Alertmanager | One replica reconciled and available; Gmail receiver configured |
 | Prometheus rules | Chart-provided PrometheusRule resources present |
-| External alert receivers | Not configured; pending secret-management work |
-| Loki | Deferred to next work session |
-| Grafana Alloy | Deferred to next work session |
+| External alert receivers | Gmail SMTP operational; FIRING and RESOLVED notifications verified |
+| Loki | `18.7.6`, Flux `Ready=True`; LogQL validation passed |
+| Grafana Alloy | `1.11.1`, Flux `Ready=True`; Kubernetes log collection operational |
 | Grafana Tailscale ingress | Pending |
 
 The initial Helm install was blocked because Talos/Kubernetes Pod Security Admission
@@ -162,6 +160,8 @@ the release reconciled successfully and reported `Ready=True`.
 
 See [18-observability-prometheus-grafana-alertmanager.md](18-observability-prometheus-grafana-alertmanager.md)
 for the implementation, validation, troubleshooting, and next-session handoff.
+
+See [19-observability-logging-alertmanager-email.md](19-observability-logging-alertmanager-email.md) for the logging and external email receiver completion record.
 
 ## Jenkins controller
 
@@ -236,16 +236,10 @@ and validation record.
 
 ## Services not yet deployed
 
+- Grafana private ingress through Tailscale;
 - Homepage;
 - SOPS-encrypted Secret management;
 - UPS telemetry and automated graceful shutdown.
-
-Observability hardening still pending:
-
-- Loki retention;
-- PVC/storage-capacity alerting;
-- external Alertmanager notification receivers;
-- authenticated Tailscale access for Grafana.
 ## Current risk statement
 
 The Kubernetes control plane, workers, primary VM disks, and etcd member all depend on the single physical host `pve01`. Backups reduce data-loss risk but do not provide availability. The platform remains a single-host laboratory until permanent additional nodes and tested restores are introduced.

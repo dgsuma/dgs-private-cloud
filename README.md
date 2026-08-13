@@ -1,33 +1,34 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-10 -->
-> **Current checkpoint — 2026-08-10**
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-13 -->
+> **Current checkpoint — 2026-08-13**
 >
-> The active platform is the Beelink `pve01` Proxmox host. It runs three Talos
-> Kubernetes virtual machines (`210`, `211`, and `212`) plus Ubuntu Server VM
-> `220` (`jenkins-ci`) as the Jenkins controller. Flux, Tailscale private
-> access, Jenkins Controller Phase 1, Talos persistent storage, and the Phase 1
-> observability baseline are operational.
+> The active platform is the Beelink `pve01` Proxmox host. Talos Kubernetes,
+> Flux GitOps, Tailscale private administration, Jenkins Controller Phase 1,
+> Talos persistent storage, metrics observability, Kubernetes logging, and
+> Alertmanager email notifications are operational.
 >
-> The `monitoring` namespace now runs `kube-prometheus-stack` `88.2.0`, Loki
-> chart `18.7.6`, and Grafana Alloy chart `1.11.1`. Prometheus, Grafana,
-> Alertmanager, Loki, and Alloy all reconcile successfully through Flux.
+> `kube-prometheus-stack` `88.2.0`, Loki `18.7.6`, and Grafana Alloy `1.11.1`
+> are reconciled by Flux in the `monitoring` namespace. Prometheus, Grafana,
+> Alertmanager, Node Exporter, Loki, and Alloy are healthy.
 >
-> Persistent observability storage is provided by the default `local-path`
-> StorageClass: Prometheus `50Gi`, Grafana `5Gi`, Alertmanager `2Gi`, and Loki
-> `20Gi`.
+> Loki-backed LogQL queries were verified in Grafana. Alertmanager now uses a
+> Git-managed `AlertmanagerConfig` with a Gmail SMTP receiver. Both FIRING and
+> RESOLVED delivery were verified end-to-end. The Gmail App Password remains in
+> the manually created `monitoring/alertmanager-smtp` Secret and is not stored
+> in Git.
 >
-> Alloy runs as a three-pod DaemonSet across `talos-cp-01`,
-> `talos-worker-01`, and `talos-worker-02`. Real monitoring, Flux, and
-> Tailscale logs were verified in Grafana Explore through Loki.
+> Grafana private ingress through the Tailscale Kubernetes Operator is the next
+> task. Homepage installation/private Tailscale access follows after Grafana.
 >
-> Exact private tailnet hostnames and Tailscale addresses are intentionally kept
-> out of Git. Tailscale Funnel remains disabled.
+> Exact private tailnet hostnames, Tailscale addresses, generated credentials,
+> Gmail App Passwords, and other secrets are intentionally kept out of Git.
 >
-> Implementation documentation:
+> Current implementation records:
 > - [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
-> - [Observability baseline](docs/18-observability-stack.md)
-<!-- END CURRENT CHECKPOINT 2026-08-10 -->
+> - [Prometheus, Grafana and Alertmanager baseline](docs/18-observability-prometheus-grafana-alertmanager.md)
+> - [Logging and Alertmanager email notifications](docs/19-observability-logging-alertmanager-email.md)
+<!-- END CURRENT CHECKPOINT 2026-08-13 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
@@ -38,7 +39,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 
 | Item | Current value |
 |---|---|
-| Last verified | `2026-08-10` |
+| Last verified | `2026-08-13` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
 | Proxmox VE Manager | `9.2.10` observed in the web interface |
@@ -58,9 +59,10 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Secret encryption | SOPS with age not yet configured |
 | Kubernetes persistent storage | Operational — Talos user volumes + Rancher Local Path Provisioner |
 | Metrics observability | Operational — `kube-prometheus-stack` `88.2.0`, Prometheus, Grafana, Alertmanager, Node Exporter |
+| Alertmanager email receiver | Operational — Gmail SMTP; FIRING and RESOLVED delivery verified |
 | Metrics PVCs | Prometheus 50 GiB, Grafana 5 GiB, Alertmanager 2 GiB on `local-path` |
-| Logging observability | Loki and Grafana Alloy pending |
-| Grafana private Tailscale ingress | Pending |
+| Logging observability | Operational — Loki `18.7.6` + Grafana Alloy `1.11.1`; LogQL validation passed |
+| Grafana private Tailscale ingress | Pending — next task |
 | Homepage | Not yet deployed |
 
 ## Jenkins Controller Phase 1
@@ -186,6 +188,11 @@ flowchart TB
 - Verified Grafana's Kubernetes compute-resources dashboard is populated with live data.
 - Verified Alertmanager is reconciled, available, and loaded with PrometheusRule resources.
 
+- Deployed Loki `18.7.6` and Grafana Alloy `1.11.1` through Flux.
+- Verified Kubernetes logs in Grafana using Loki/LogQL, including error and warning filtering.
+- Configured the Flux-managed Alertmanager Gmail receiver through `AlertmanagerConfig/email-notifications`.
+- Kept the Gmail App Password out of Git in the manually created `monitoring/alertmanager-smtp` Secret.
+- Verified Alertmanager Gmail FIRING and RESOLVED notifications end-to-end.
 ## Quick validation
 
 ```powershell
@@ -240,12 +247,12 @@ Remaining recovery work:
 Generated Talos machine configurations, `talosconfig`, kubeconfig, etcd snapshots, VM backup archives, private keys, OAuth secrets, and decrypted secret files must never be committed.
 
 ## Immediate next work
-1. Define Loki retention and storage-capacity alerting suitable for the `20Gi` Loki PVC.
-2. Configure useful Alertmanager notification receivers.
-3. Expose Grafana privately through authenticated Tailscale access.
-4. Deploy Homepage.
+1. Expose Grafana privately through the Tailscale Kubernetes Operator.
+2. Validate Grafana from an authorised tailnet client without local port-forwarding.
+3. Deploy Homepage through Flux.
+4. Keep Homepage private behind Tailscale.
 5. Bring the Local Path Provisioner manifest under Flux reconciliation.
-6. Configure SOPS with age and migrate manually created Kubernetes Secrets to encrypted Git-managed resources.
+6. Configure SOPS with age and migrate manually created Kubernetes Secrets, including `alertmanager-smtp`, to encrypted Git-managed resources.
 7. Perform an isolated VM restore test.
 8. Add Eaton UPS telemetry and graceful-shutdown monitoring.
 ## Repository map
@@ -293,6 +300,7 @@ dgs-private-cloud/
 │   ├── 16-jenkins-controller-phase1.md
 │   ├── 17-talos-persistent-storage.md
 │   ├── 18-observability-prometheus-grafana-alertmanager.md
+│   ├── 19-observability-logging-alertmanager-email.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
