@@ -10,3 +10,4 @@ resources:
   - alertmanagerconfig-email.yaml
   - prometheusrule-local-path-storage.yaml
   - ./logging
+  - grafana-tailscale-ingress.yaml
