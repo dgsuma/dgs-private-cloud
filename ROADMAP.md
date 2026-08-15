@@ -175,3 +175,24 @@ Status: **Implemented and externally verified**
 - [ ] Complete full reboot and power-recovery testing.
 - [ ] Configure the Raspberry Pi 5 as a separate subnet router.
 <!-- END TAILSCALE ROADMAP 2026-08-03 -->
+
+## 2026-08-15 checkpoint
+
+Completed:
+
+- [x] Alertmanager Gmail FIRING notification verification.
+- [x] Alertmanager Gmail RESOLVED notification verification.
+- [x] Private Grafana HTTPS access through the Tailscale Kubernetes Operator.
+- [x] Grafana access without local port-forwarding.
+- [x] Remote Android mobile-data Grafana validation.
+- [x] Tailscale-disconnected privacy validation.
+- [x] Flux/GitOps management of the Grafana Tailscale Ingress.
+
+Next:
+
+- [ ] Deploy Homepage through Flux.
+- [ ] Keep Homepage private behind Tailscale.
+- [ ] Bring Local Path Provisioner configuration fully under Flux.
+- [ ] Configure SOPS with age and migrate manual Secret workflows.
+- [ ] Perform an isolated VM restore test.
+- [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.

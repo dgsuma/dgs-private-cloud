@@ -218,3 +218,15 @@ Next work session:
 3. deploy Homepage through Flux;
 4. keep Homepage private through Tailscale;
 5. later configure SOPS/age and migrate manually managed Secrets.
+
+## 2026-08-15 — End-to-end Alertmanager validation complete
+
+Alertmanager email notification validation is complete.
+
+- FIRING notification delivery through Gmail SMTP was verified.
+- RESOLVED notification delivery through Gmail SMTP was verified.
+- The receiver remains declared through the Git-managed `AlertmanagerConfig`.
+- The Gmail App Password remains outside Git in the manually created Kubernetes Secret.
+- No SMTP password or other credential was added to repository content.
+
+Alertmanager email notifications are now considered operational.

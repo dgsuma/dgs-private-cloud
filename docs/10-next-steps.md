@@ -126,3 +126,25 @@ Store the copy on a second physical device or encrypted off-site location. Never
 - [ ] Homepage is deployed privately.
 - [ ] At least one Secret is managed with SOPS.
 - [ ] One isolated VM restore completes successfully.
+
+## 2026-08-15 reprioritisation
+
+Completed:
+
+- Alertmanager FIRING notification verification.
+- Alertmanager RESOLVED notification verification.
+- Private Grafana exposure through the Tailscale Kubernetes Operator.
+- Remote Grafana validation without `kubectl port-forward`.
+- Mobile-data Grafana validation from an authorised tailnet device.
+- Tailscale-disconnected privacy validation.
+- Flux/GitOps adoption of the Grafana Tailscale Ingress.
+
+Immediate next priorities:
+
+1. Deploy Homepage through Flux.
+2. Expose Homepage privately through Tailscale.
+3. Bring the Local Path Provisioner manifest fully under Flux reconciliation.
+4. Configure SOPS with age.
+5. Migrate manually created Secrets, including the Alertmanager SMTP Secret, to encrypted Git-managed resources.
+6. Perform an isolated VM restore test.
+7. Add Eaton UPS telemetry and graceful-shutdown monitoring.

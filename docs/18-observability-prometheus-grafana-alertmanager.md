@@ -340,3 +340,25 @@ The Gmail App Password is not committed. It remains in the manually created
 See
 [19-observability-logging-alertmanager-email.md](19-observability-logging-alertmanager-email.md)
 for the completion record and next-session handoff.
+
+## 2026-08-15 — Private Grafana access
+
+Grafana private remote access is complete.
+
+A `tailscale` class Kubernetes Ingress publishes Grafana only to authorised Tailscale clients. The Grafana Service remains `ClusterIP`, and the Tailscale operator supplies the private HTTPS ingress proxy.
+
+Validation completed:
+
+- Ingress reconciliation succeeded.
+- Dedicated Tailscale proxy Pod reached `1/1 Running`.
+- HTTPS request returned a Grafana `/login` redirect.
+- Browser access succeeded without `kubectl port-forward`.
+- Android mobile-data access succeeded through Tailscale.
+- Access failed after disconnecting the Android device from Tailscale.
+- Access returned after reconnecting Tailscale.
+- `tailscale serve status` reported `tailnet only`.
+- Flux successfully adopted the Ingress.
+- `kustomize-controller` appears in Kubernetes managed fields.
+- The Ingress appears in `flux tree kustomization flux-system`.
+
+See `docs/20-grafana-private-tailscale-access.md` for the complete implementation and validation record.

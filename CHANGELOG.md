@@ -360,3 +360,19 @@ All notable documentation and infrastructure-state changes are recorded here.
 
 - First Proxmox node installed and operational.
 - No VMs or containers deployed.
+
+## 2026-08-15 — Alertmanager completion and private Grafana access
+
+- Verified Alertmanager Gmail FIRING notification delivery end-to-end.
+- Verified Alertmanager Gmail RESOLVED notification delivery end-to-end.
+- Deployed a private Grafana Ingress through the Tailscale Kubernetes Operator.
+- Confirmed Grafana remains behind its internal Kubernetes `ClusterIP` Service.
+- Verified HTTPS Grafana access from the administration workstation without `kubectl port-forward`.
+- Verified Grafana access from an authorised Android device over mobile data.
+- Verified the Grafana hostname is unavailable when the Android device disconnects from Tailscale.
+- Confirmed the Tailscale proxy reports `tailnet only`.
+- Added the Grafana Ingress to the monitoring Kustomization and reconciled it through Flux.
+- Confirmed `kustomize-controller` manages the Grafana Ingress.
+- Confirmed the Grafana Ingress appears in the Flux resource tree.
+- Added `docs/20-grafana-private-tailscale-access.md`.
+- No tailnet hostname, Tailscale address, credential, Gmail App Password, or other secret was intentionally added to Git.

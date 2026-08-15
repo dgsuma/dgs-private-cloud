@@ -64,7 +64,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Metrics PVCs | Prometheus 50 GiB, Grafana 5 GiB, Alertmanager 2 GiB on `local-path` |
 | Logging observability | Operational — Loki `18.7.6` + Grafana Alloy `1.11.1`; LogQL validation passed |
 | Mobile Kubernetes access | Operational — Android Termux + Tailscale + read-only RBAC |
-| Grafana private Tailscale ingress | Pending — next task |
+| Grafana private Tailscale ingress | Operational — Flux-managed Tailscale Ingress; workstation and mobile-data validation passed |
 | Homepage | Not yet deployed |
 
 ## Jenkins Controller Phase 1
@@ -370,3 +370,17 @@ Never commit:
 Copyright © 2026 Duminda Sumanasinghe. All rights reserved.
 
 This is proprietary project documentation. See [LICENSE.md](LICENSE.md).
+
+## 2026-08-15 checkpoint — private Grafana access
+
+- Alertmanager Gmail FIRING and RESOLVED notifications were verified end-to-end.
+- Private Grafana HTTPS access through the Tailscale Kubernetes Operator is operational.
+- Grafana access was verified from the administration workstation without `kubectl port-forward`.
+- Grafana access was verified from an authorised Android device over mobile data.
+- Access failed as expected when Tailscale was disconnected and returned after reconnection.
+- `tailscale serve status` confirmed the Grafana endpoint is `tailnet only`.
+- Grafana remains behind its internal Kubernetes `ClusterIP` Service.
+- The Grafana Tailscale Ingress is managed by Flux/GitOps.
+- See `docs/20-grafana-private-tailscale-access.md`.
+
+Immediate next application task: deploy Homepage through Flux and keep it private behind Tailscale.

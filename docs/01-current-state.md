@@ -246,3 +246,20 @@ and validation record.
 ## Current risk statement
 
 The Kubernetes control plane, workers, primary VM disks, and etcd member all depend on the single physical host `pve01`. Backups reduce data-loss risk but do not provide availability. The platform remains a single-host laboratory until permanent additional nodes and tested restores are introduced.
+
+## 2026-08-15 update — private observability access
+
+The observability baseline is now remotely usable through the private tailnet.
+
+- Alertmanager Gmail FIRING delivery: verified.
+- Alertmanager Gmail RESOLVED delivery: verified.
+- Grafana private Tailscale Ingress: operational.
+- Grafana Tailscale Ingress: Flux/GitOps managed.
+- Grafana Kubernetes Service: remains `ClusterIP`.
+- Administration-workstation access without port-forwarding: verified.
+- Android mobile-data access through Tailscale: verified.
+- Access after disconnecting Tailscale: failed as expected.
+- Tailscale proxy state: `tailnet only`.
+- Public Grafana exposure: not configured.
+
+The next application-layer task is Homepage deployment through Flux with private Tailscale access.
