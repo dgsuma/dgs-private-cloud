@@ -1,7 +1,7 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-13 -->
-> **Current checkpoint — 2026-08-13**
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-15 -->
+> **Current checkpoint — 2026-08-15**
 >
 > The active platform is the Beelink `pve01` Proxmox host. Talos Kubernetes,
 > Flux GitOps, Tailscale private administration, Jenkins Controller Phase 1,
@@ -28,7 +28,8 @@
 > - [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
 > - [Prometheus, Grafana and Alertmanager baseline](docs/18-observability-prometheus-grafana-alertmanager.md)
 > - [Logging and Alertmanager email notifications](docs/19-observability-logging-alertmanager-email.md)
-<!-- END CURRENT CHECKPOINT 2026-08-13 -->
+> - [Secure mobile Kubernetes access through Tailscale](docs/20-kubernetes-mobile-access-tailscale.md)
+<!-- END CURRENT CHECKPOINT 2026-08-15 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
@@ -39,7 +40,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 
 | Item | Current value |
 |---|---|
-| Last verified | `2026-08-13` |
+| Last verified | `2026-08-15` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
 | Proxmox VE Manager | `9.2.10` observed in the web interface |
@@ -55,13 +56,14 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Proxmox VM backups | VMs `210`, `211`, and `212` backed up on `2026-08-01` |
 | Backup media state | `usb-backup-2tb` safely disabled, unmounted, and disconnected |
 | GitOps | Flux `v2.9.3` bootstrapped from `clusters/beelink-talos` |
-| Private access | Tailscale Operator chart `1.98.9` connected and healthy |
+| Private access | Tailscale Operator chart `1.98.9` connected; Android Termux read-only Kubernetes access verified |
 | Secret encryption | SOPS with age not yet configured |
 | Kubernetes persistent storage | Operational — Talos user volumes + Rancher Local Path Provisioner |
 | Metrics observability | Operational — `kube-prometheus-stack` `88.2.0`, Prometheus, Grafana, Alertmanager, Node Exporter |
 | Alertmanager email receiver | Operational — Gmail SMTP; FIRING and RESOLVED delivery verified |
 | Metrics PVCs | Prometheus 50 GiB, Grafana 5 GiB, Alertmanager 2 GiB on `local-path` |
 | Logging observability | Operational — Loki `18.7.6` + Grafana Alloy `1.11.1`; LogQL validation passed |
+| Mobile Kubernetes access | Operational — Android Termux + Tailscale + read-only RBAC |
 | Grafana private Tailscale ingress | Pending — next task |
 | Homepage | Not yet deployed |
 
@@ -301,6 +303,7 @@ dgs-private-cloud/
 │   ├── 17-talos-persistent-storage.md
 │   ├── 18-observability-prometheus-grafana-alertmanager.md
 │   ├── 19-observability-logging-alertmanager-email.md
+│   ├── 20-kubernetes-mobile-access-tailscale.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -340,9 +343,11 @@ dgs-private-cloud/
 17. [Jenkins Controller Phase 1](docs/16-jenkins-controller-phase1.md)
 18. [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
 19. [Prometheus, Grafana and Alertmanager baseline](docs/18-observability-prometheus-grafana-alertmanager.md)
-20. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
-21. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
-22. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
+20. [Logging and Alertmanager email notifications](docs/19-observability-logging-alertmanager-email.md)
+21. [Secure mobile Kubernetes access through Tailscale](docs/20-kubernetes-mobile-access-tailscale.md)
+22. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
+23. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+24. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 
 ## Security boundary
 

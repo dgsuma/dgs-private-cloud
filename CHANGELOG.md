@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.9.0] - 2026-08-15
+
+### Added
+
+- Secure read-only Kubernetes access from Android Termux through Tailscale.
+- GitOps-managed `tailscale-mobile-readonly` RBAC.
+- Dedicated `tailscale-mobile-node-reader` ClusterRole for Node visibility.
+- Detailed mobile Kubernetes access documentation in `docs/20-kubernetes-mobile-access-tailscale.md`.
+
+### Changed
+
+- Enabled the Tailscale Kubernetes API server proxy and impersonation.
+- Extended the mobile Tailscale identity with `get`, `list`, and `watch` access to Nodes.
+- Kept mobile Kubernetes access deliberately read-only.
+
+### Verified
+
+- `kubectl get nodes` succeeds remotely from the Moto G84.
+- All three Talos nodes report `Ready`.
+- `kubectl get pods -A` succeeds from Android Termux.
+- `kubectl get pods -A -o wide` succeeds from Android Termux.
+- `kubectl get deployments -A` succeeds from Android Termux.
+- Mobile identity can list and get Nodes.
+- Mobile identity cannot delete Nodes.
+- Mobile identity cannot read Kubernetes Secrets.
+- Flux successfully reconciled the RBAC changes.
+
+### Security
+
+- Kubernetes API access remains private through Tailscale.
+- Mobile identity does not have `cluster-admin`.
+- Talos administrator kubeconfig is not stored on the phone.
+- Mobile kubeconfig and authentication material remain outside Git.
+
 ## [0.8.0] - 2026-08-13
 
 ### Added

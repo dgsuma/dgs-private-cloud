@@ -1,13 +1,13 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-13 -->
-## Current checkpoint — 2026-08-13
+<!-- BEGIN CURRENT STATE 2026-08-15 -->
+## Current checkpoint — 2026-08-15
 | Property | Verified state |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Talos Kubernetes | Operational; all three nodes `Ready` |
 | Flux | Operational |
-| Tailscale Kubernetes Operator | Operational |
+| Tailscale Kubernetes Operator | Operational; Kubernetes API proxy enabled |
 | Kubernetes persistent storage | Operational |
 | kube-prometheus-stack | `88.2.0`, Flux `Ready=True` |
 | Prometheus | Operational; 50 GiB `local-path` PVC |
@@ -20,6 +20,7 @@
 | Alertmanager FIRING delivery | Passed |
 | Alertmanager RESOLVED delivery | Passed |
 | SMTP credential storage | Manual Secret `monitoring/alertmanager-smtp`; not committed |
+| Mobile Kubernetes access | Operational — Android Termux + Tailscale + read-only RBAC |
 | Grafana Tailscale ingress | Pending — next task |
 | Homepage | Pending after Grafana private access |
 | Direct Proxmox Tailscale endpoint | Operational |
@@ -29,7 +30,7 @@
 
 Exact private tailnet hostnames and credentials remain in local operator notes
 rather than Git.
-<!-- END CURRENT STATE 2026-08-13 -->
+<!-- END CURRENT STATE 2026-08-15 -->
 
 
 Verified on `2026-08-13` after logging-stack validation and successful Alertmanager Gmail FIRING/RESOLVED delivery.
@@ -97,7 +98,7 @@ Verified on `2026-08-13` after logging-stack validation and successful Alertmana
 | Operator machine | `beelink-talos-operator` |
 | Operator tag | `tag:k8s-operator` |
 | OAuth Secret | `tailscale/operator-oauth`, manually created and not committed |
-| Kubernetes API proxy | Disabled |
+| Kubernetes API proxy | Enabled through Tailscale; impersonation enabled |
 
 ## Persistent storage
 
@@ -162,6 +163,8 @@ See [18-observability-prometheus-grafana-alertmanager.md](18-observability-prome
 for the implementation, validation, troubleshooting, and next-session handoff.
 
 See [19-observability-logging-alertmanager-email.md](19-observability-logging-alertmanager-email.md) for the logging and external email receiver completion record.
+
+See [20-kubernetes-mobile-access-tailscale.md](20-kubernetes-mobile-access-tailscale.md) for the secure Android/Termux Kubernetes access implementation.
 
 ## Jenkins controller
 

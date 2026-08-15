@@ -63,6 +63,8 @@ Flux    -> GitOps CD
 - [x] Route `Watchdog` to a null receiver.
 - [x] Verify Gmail FIRING notification delivery.
 - [x] Verify Gmail RESOLVED notification delivery.
+- [x] Configure secure read-only Android/Termux Kubernetes access through the Tailscale API proxy.
+- [x] Verify mobile access to Nodes, Pods, and Deployments while denying Node deletion and Secret access.
 - [ ] **Next:** expose Grafana only through authenticated Tailscale access.
 - [ ] After Grafana, deploy Homepage and keep it private behind Tailscale.
 - [ ] Migrate manually managed secrets to SOPS/age after encrypted secret management is configured.
@@ -119,7 +121,7 @@ Store the copy on a second physical device or encrypted off-site location. Never
 - [x] Dynamic PVC provisioning works.
 - [x] Data survives a pod deletion/recreation cycle.
 - [x] Prometheus, Grafana, and Alertmanager are healthy.
-- [ ] Loki receives logs through Alloy.
+- [x] Loki receives logs through Alloy.
 - [ ] Grafana is reachable privately through Tailscale.
 - [ ] Homepage is deployed privately.
 - [ ] At least one Secret is managed with SOPS.
