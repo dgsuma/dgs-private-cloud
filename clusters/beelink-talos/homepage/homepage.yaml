@@ -5,6 +5,8 @@ metadata:
   namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
+secrets:
+  - name: homepage
 ---
 apiVersion: v1
 kind: Secret
@@ -54,6 +56,7 @@ data:
         target: _blank
 
   docker.yaml: ""
+  proxmox.yaml: ""
   custom.css: ""
   custom.js: ""
 ---
@@ -78,6 +81,14 @@ rules:
       - networking.k8s.io
     resources:
       - ingresses
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - metrics.k8s.io
+    resources:
+      - nodes
+      - pods
     verbs:
       - get
       - list
@@ -151,11 +162,27 @@ spec:
             seccompProfile:
               type: RuntimeDefault
 
-          envFrom:
-            - secretRef:
-                name: homepage-runtime
-
           env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+            - name: HOMEPAGE_EXTERNAL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: homepage-runtime
+                  key: HOMEPAGE_EXTERNAL_HOST
+
+            - name: HOMEPAGE_VAR_GRAFANA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: homepage-runtime
+                  key: HOMEPAGE_VAR_GRAFANA_URL
+
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: "$(MY_POD_IP):3000,$(HOMEPAGE_EXTERNAL_HOST)"
+
             - name: LOG_TARGETS
               value: stdout
 
@@ -168,21 +195,19 @@ spec:
             httpGet:
               path: /api/healthcheck
               port: http
-              httpHeaders:
-                - name: Host
-                  value: localhost:3000
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
 
           livenessProbe:
             httpGet:
               path: /api/healthcheck
               port: http
-              httpHeaders:
-                - name: Host
-                  value: localhost:3000
-            initialDelaySeconds: 15
-            periodSeconds: 20
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
 
           resources:
             requests:
@@ -206,6 +231,9 @@ spec:
               mountPath: /app/config/docker.yaml
               subPath: docker.yaml
             - name: homepage-config
+              mountPath: /app/config/proxmox.yaml
+              subPath: proxmox.yaml
+            - name: homepage-config
               mountPath: /app/config/kubernetes.yaml
               subPath: kubernetes.yaml
             - name: homepage-config
@@ -217,8 +245,12 @@ spec:
             - name: homepage-config
               mountPath: /app/config/widgets.yaml
               subPath: widgets.yaml
+            - mountPath: /app/config/logs
+              name: logs
 
       volumes:
         - name: homepage-config
           configMap:
             name: homepage
+        - name: logs
+          emptyDir: {}
