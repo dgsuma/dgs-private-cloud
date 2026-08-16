@@ -56,9 +56,9 @@ data:
       Websites:
         style: row
         columns: 2
-      GitOps:
+      DevOps & GitOps:
         style: row
-        columns: 2
+        columns: 3
 
   services.yaml: |
     - Infrastructure:
@@ -105,11 +105,23 @@ data:
             href: https://nokzeo.com/
             description: Premium strawberry farm
 
+    - DevOps & GitOps:
+        - Jenkins:
+            icon: jenkins.png
+            href: https://jenkins-ci.tail499e7c.ts.net/
+            description: CI pipelines and automation
+
+        - FluxCD:
+            icon: flux-cd.png
+            description: Kubernetes GitOps reconciliation
+
+        - GitHub:
+            icon: github.png
+            href: https://github.com/dgsuma/dgs-private-cloud
+            description: DGS Private Cloud repository
+
   bookmarks.yaml: |
-    - GitOps:
-        - DGS Private Cloud:
-            - abbr: GH
-              href: https://github.com/dgsuma/dgs-private-cloud
+    []
 
   widgets.yaml: |
     - search:
