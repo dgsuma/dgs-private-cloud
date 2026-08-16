@@ -83,7 +83,7 @@
 - [ ] Migrate `operator-oauth` from a manually created Secret to encrypted Git management.
 
 ## Phase 1E — Persistent storage, observability, and dashboard
-**Status: In progress — storage, metrics, logging, and Alertmanager email are operational; private Grafana and Homepage remain**
+**Status: In progress — storage, metrics, logging, Alertmanager email, private Grafana, and Homepage are operational; Flux-managed storage, encrypted secrets, UPS telemetry, and recovery testing remain**
 - [x] Select a Talos-compatible initial persistent-storage solution.
 - [x] Add dedicated worker data disks and Talos XFS user volumes.
 - [x] Deploy and validate Rancher Local Path Provisioner.
@@ -97,8 +97,8 @@
 - [x] Verify Kubernetes logs in Grafana through Loki/LogQL.
 - [x] Configure Alertmanager Gmail email notifications.
 - [x] Verify Alertmanager FIRING and RESOLVED delivery.
-- [ ] Expose Grafana only through authenticated Tailscale access.
-- [ ] Deploy Homepage and keep it private through Tailscale.
+- [x] Expose Grafana only through authenticated Tailscale access.
+- [x] Deploy Homepage and keep it private through Tailscale.
 - [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
 - [ ] Test application and database recovery independently of etcd.
 ## Phase 1F — Jenkins controller and private CI access
@@ -176,23 +176,26 @@ Status: **Implemented and externally verified**
 - [ ] Configure the Raspberry Pi 5 as a separate subnet router.
 <!-- END TAILSCALE ROADMAP 2026-08-03 -->
 
-## 2026-08-15 checkpoint
+## 2026-08-16 checkpoint
 
 Completed:
 
-- [x] Alertmanager Gmail FIRING notification verification.
-- [x] Alertmanager Gmail RESOLVED notification verification.
+- [x] Alertmanager Gmail FIRING and RESOLVED notification verification.
 - [x] Private Grafana HTTPS access through the Tailscale Kubernetes Operator.
-- [x] Grafana access without local port-forwarding.
-- [x] Remote Android mobile-data Grafana validation.
-- [x] Tailscale-disconnected privacy validation.
+- [x] Grafana access without local port-forwarding and remote Android mobile-data validation.
 - [x] Flux/GitOps management of the Grafana Tailscale Ingress.
+- [x] Homepage `v1.13.2` deployment through Flux.
+- [x] Homepage internal `ClusterIP` Service and private Tailscale Ingress.
+- [x] Homepage validation from the LG Gram and Moto G84 over mobile data.
+- [x] Homepage `CrashLoopBackOff` root-cause analysis and recovery after `/app/config/proxmox.yaml` permission failure.
+- [x] Homepage writable log path and allowed-host health-probe configuration.
+- [x] Stable Homepage Pod with zero restarts and 20 consecutive HTTP `200` checks.
+- [x] Real `KubePodCrashLooping` Alertmanager email observed during the incident.
 
 Next:
 
-- [ ] Deploy Homepage through Flux.
-- [ ] Keep Homepage private behind Tailscale.
 - [ ] Bring Local Path Provisioner configuration fully under Flux.
-- [ ] Configure SOPS with age and migrate manual Secret workflows.
+- [ ] Configure SOPS with age and migrate manual Secret workflows, including `operator-oauth`, `alertmanager-smtp`, and `homepage-runtime`.
 - [ ] Perform an isolated VM restore test.
 - [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
+- [ ] Enrich Homepage with least-privilege service links/widgets without committing credentials.

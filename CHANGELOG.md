@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.10.0] - 2026-08-16
+
+### Added
+
+- Flux-managed Homepage `v1.13.2` application resources in `clusters/beelink-talos/homepage/`.
+- Dedicated `homepage` namespace, ServiceAccount/RBAC, ConfigMap, Deployment, internal `ClusterIP` Service, and private Tailscale Ingress.
+- Out-of-band `homepage/homepage-runtime` Secret contract for the external private hostname and Grafana private URL; secret values remain outside Git.
+- Writable `emptyDir` for `/app/config/logs` and an explicit `proxmox.yaml` ConfigMap entry required by the container startup path.
+- Detailed Homepage deployment, private-access, validation, and incident-recovery record in `docs/21-homepage-private-tailscale.md`.
+
+### Changed
+
+- Added Homepage to the active `clusters/beelink-talos` Flux reconciliation path.
+- Built `HOMEPAGE_ALLOWED_HOSTS` from the Pod IP and an out-of-band private hostname value so health checks and Tailscale access are both accepted without committing the tailnet DNS suffix.
+- Updated readiness/liveness probes to `/api/healthcheck` with explicit timeout and failure thresholds.
+- Extended Homepage read-only RBAC for Kubernetes metrics discovery while keeping write access absent.
+- Updated README, roadmap, current-state, next-steps, security policy, and Kubernetes inventory to the 2026-08-16 checkpoint.
+
+### Fixed
+
+- Resolved Homepage `CrashLoopBackOff` caused by `EACCES` when the application attempted to copy its skeleton `proxmox.yaml` into the ConfigMap-backed, read-only `/app/config` path.
+- Removed the resulting intermittent private HTTP `502` symptom by restoring a continuously healthy Homepage backend.
+
+### Verified
+
+- Flux `flux-system` Kustomization reconciled the Homepage configuration successfully.
+- Homepage Deployment reached `1/1` Ready and Available.
+- Replacement Homepage Pod remained `1/1 Running` with zero restarts after the fix.
+- Runtime `HOMEPAGE_ALLOWED_HOSTS` expanded to the Pod IP plus the private external hostname without storing the actual hostname in Git.
+- Twenty consecutive private HTTPS requests returned HTTP `200` with no `502` responses.
+- Homepage loaded successfully from the LG Gram and from the Moto G84 over mobile data through Tailscale.
+- Grafana remained independently reachable through its private Tailscale ingress during the Homepage incident.
+- Alertmanager detected the failing Homepage Pod as `KubePodCrashLooping` and delivered the warning by Gmail.
+
+### Security
+
+- Homepage remains exposed only through its internal `ClusterIP` Service and private Tailscale Ingress; Tailscale Funnel is not enabled.
+- Exact `.ts.net` hostnames and Homepage runtime values are not committed.
+- No plaintext application credentials were added to Homepage configuration.
+
 ## [0.9.0] - 2026-08-15
 
 ### Added

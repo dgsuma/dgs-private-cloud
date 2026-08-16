@@ -42,7 +42,7 @@ Flux    -> GitOps CD
 
 ## Priority 2 — Observability
 
-**Metrics, logging, and Alertmanager email delivery completed through 2026-08-13.**
+**Metrics, logging, Alertmanager email delivery, private Grafana, and the first private Homepage application are operational through 2026-08-16.**
 - [x] Create the Flux-managed `monitoring` namespace and Helm repositories.
 - [x] Deploy `kube-prometheus-stack` `88.2.0`.
 - [x] Persist Prometheus on a 50 GiB `local-path` PVC.
@@ -65,16 +65,27 @@ Flux    -> GitOps CD
 - [x] Verify Gmail RESOLVED notification delivery.
 - [x] Configure secure read-only Android/Termux Kubernetes access through the Tailscale API proxy.
 - [x] Verify mobile access to Nodes, Pods, and Deployments while denying Node deletion and Secret access.
-- [ ] **Next:** expose Grafana only through authenticated Tailscale access.
-- [ ] After Grafana, deploy Homepage and keep it private behind Tailscale.
+- [x] Expose Grafana only through authenticated Tailscale access.
+- [x] Deploy Homepage through Flux and keep it private behind Tailscale.
 - [ ] Migrate manually managed secrets to SOPS/age after encrypted secret management is configured.
 ## Priority 3 — Homepage
 
-1. Deploy Homepage through Flux.
-2. Keep Homepage private behind Tailscale.
-3. Add links for Proxmox, Grafana, Flux status, and future services.
-4. Do not place plaintext credentials in Homepage configuration.
-5. Add Kubernetes service discovery only with minimum required RBAC.
+**Baseline completed on 2026-08-16.**
+
+- [x] Deploy Homepage `v1.13.2` through Flux.
+- [x] Keep the Kubernetes Service internal as `ClusterIP` on port `3000`.
+- [x] Expose Homepage only through a private Tailscale Ingress.
+- [x] Verify access from the LG Gram without local port-forwarding.
+- [x] Verify access from the Moto G84 over mobile data through Tailscale.
+- [x] Resolve the initial `CrashLoopBackOff` caused by the read-only `/app/config/proxmox.yaml` path.
+- [x] Provide a writable `/app/config/logs` `emptyDir` while retaining the non-root security context.
+- [x] Configure Pod-IP plus external-host validation for Kubernetes probes and private Tailscale access.
+- [x] Keep exact tailnet hostnames and Homepage runtime values out of Git.
+- [x] Keep `homepage-runtime` as an out-of-band Secret until SOPS/age is ready.
+- [x] Keep Kubernetes permissions read-only and limited to dashboard discovery/metrics needs.
+- [ ] Add Proxmox integration only after a least-privilege API credential design is documented; never commit the credential.
+- [ ] Add Flux/Kubernetes status and future service links/widgets incrementally.
+- [ ] Enable resource widgets only after confirming the required Kubernetes metrics API and RBAC behaviour.
 
 ## Priority 4 — SOPS and secret lifecycle
 
@@ -122,29 +133,29 @@ Store the copy on a second physical device or encrypted off-site location. Never
 - [x] Data survives a pod deletion/recreation cycle.
 - [x] Prometheus, Grafana, and Alertmanager are healthy.
 - [x] Loki receives logs through Alloy.
-- [ ] Grafana is reachable privately through Tailscale.
-- [ ] Homepage is deployed privately.
+- [x] Grafana is reachable privately through Tailscale.
+- [x] Homepage is deployed privately.
 - [ ] At least one Secret is managed with SOPS.
 - [ ] One isolated VM restore completes successfully.
 
-## 2026-08-15 reprioritisation
+## 2026-08-16 reprioritisation
 
 Completed:
 
-- Alertmanager FIRING notification verification.
-- Alertmanager RESOLVED notification verification.
+- Alertmanager FIRING and RESOLVED notification verification.
 - Private Grafana exposure through the Tailscale Kubernetes Operator.
 - Remote Grafana validation without `kubectl port-forward`.
-- Mobile-data Grafana validation from an authorised tailnet device.
-- Tailscale-disconnected privacy validation.
-- Flux/GitOps adoption of the Grafana Tailscale Ingress.
+- Homepage `v1.13.2` deployment through Flux.
+- Homepage private Tailscale ingress and mobile-data validation.
+- Homepage `CrashLoopBackOff` root-cause analysis and recovery.
+- Stable Homepage validation with zero restarts and 20 consecutive HTTP `200` responses.
+- Real `KubePodCrashLooping` Alertmanager email observed during the Homepage incident.
 
 Immediate next priorities:
 
-1. Deploy Homepage through Flux.
-2. Expose Homepage privately through Tailscale.
-3. Bring the Local Path Provisioner manifest fully under Flux reconciliation.
-4. Configure SOPS with age.
-5. Migrate manually created Secrets, including the Alertmanager SMTP Secret, to encrypted Git-managed resources.
-6. Perform an isolated VM restore test.
-7. Add Eaton UPS telemetry and graceful-shutdown monitoring.
+1. Bring the Local Path Provisioner manifest fully under Flux reconciliation.
+2. Configure SOPS with age and validate Flux decryption.
+3. Migrate manually created Secrets, including `tailscale/operator-oauth`, `monitoring/alertmanager-smtp`, and `homepage/homepage-runtime`, to encrypted Git-managed resources.
+4. Perform an isolated VM restore test.
+5. Add Eaton UPS telemetry and graceful-shutdown monitoring.
+6. Enrich Homepage with least-privilege service links/widgets without adding plaintext credentials.

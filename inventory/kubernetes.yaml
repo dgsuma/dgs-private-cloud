@@ -1,7 +1,7 @@
 kubernetes:
   cluster_name: dgs-homelab
   state: operational
-  last_verified: 2026-08-13
+  last_verified: 2026-08-16
 
   platform:
     talos_version: v1.13.6
@@ -119,7 +119,7 @@ kubernetes:
     proxy_tag: tag:k8s
     oauth_secret_name: operator-oauth
     oauth_secret_managed_in_git: false
-    kubernetes_api_proxy_enabled: false
+    kubernetes_api_proxy_enabled: true
 
   storage:
     state: operational
@@ -164,7 +164,7 @@ kubernetes:
       kubernetes_compute_dashboard_verified: true
       loki_datasource_provisioned: true
       loki_explore_verified: true
-      private_tailscale_ingress_configured: false
+      private_tailscale_ingress_configured: true
     alertmanager:
       deployed: true
       pvc_gib: 2
@@ -225,4 +225,26 @@ kubernetes:
         - monitoring
         - flux-system
         - tailscale
-    homepage_deployed: false
+    homepage:
+      deployed: true
+      application_version: v1.13.2
+      namespace: homepage
+      delivery: flux_kustomize
+      deployment_ready: true
+      replicas: 1
+      service_type: ClusterIP
+      service_port: 3000
+      tailscale_ingress_configured: true
+      public_exposure_configured: false
+      funnel_enabled: false
+      runtime_secret_name: homepage-runtime
+      runtime_secret_managed_in_git: false
+      configmap_managed: true
+      proxmox_config_stub_mounted: true
+      writable_logs_emptydir: true
+      pod_security_run_as_non_root: true
+      crashloopbackoff_resolved: true
+      restart_count_after_fix: 0
+      repeated_http_200_validation_passed: true
+      workstation_access_verified: true
+      mobile_data_access_verified: true

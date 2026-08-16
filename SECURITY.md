@@ -84,6 +84,25 @@ The Git-managed Alertmanager configuration may reference the Secret name and
 key, but the credential value must never be committed. Treat this Secret as an
 out-of-band recovery prerequisite and migrate it to SOPS-encrypted Git
 management only after Flux decryption has been tested successfully.
+### Homepage runtime values
+
+Homepage private access requires environment values that are intentionally kept
+outside Git until SOPS/age is operational. They are stored in the manually
+created Kubernetes Secret `homepage/homepage-runtime`.
+
+The current key names are:
+
+- `HOMEPAGE_EXTERNAL_HOST` — the private Tailscale hostname used by authorised clients;
+- `HOMEPAGE_VAR_GRAFANA_URL` — the private Grafana URL used by the Homepage service card.
+
+The Secret name and key names may be documented, but their actual values and the
+private tailnet DNS suffix must not be committed. Treat this Secret as an
+out-of-band recovery prerequisite and migrate it to SOPS-encrypted Git management
+only after Flux decryption has been proven.
+
+Homepage must remain behind an internal Kubernetes `ClusterIP` Service and a
+private Tailscale Ingress. Tailscale Funnel is prohibited for Homepage.
+
 ## Backup confidentiality
 
 An etcd snapshot can contain Kubernetes Secrets. A VM backup can contain operating-system configuration, service credentials, application data, and private keys. Treat both as sensitive data.

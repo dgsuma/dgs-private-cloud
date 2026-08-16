@@ -1,7 +1,7 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-15 -->
-## Current checkpoint — 2026-08-15
+<!-- BEGIN CURRENT STATE 2026-08-16 -->
+## Current checkpoint — 2026-08-16
 | Property | Verified state |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
@@ -21,8 +21,8 @@
 | Alertmanager RESOLVED delivery | Passed |
 | SMTP credential storage | Manual Secret `monitoring/alertmanager-smtp`; not committed |
 | Mobile Kubernetes access | Operational — Android Termux + Tailscale + read-only RBAC |
-| Grafana Tailscale ingress | Pending — next task |
-| Homepage | Pending after Grafana private access |
+| Grafana Tailscale ingress | Operational — Flux-managed; workstation and mobile-data validation passed |
+| Homepage | Operational — `v1.13.2`, Flux-managed, internal `ClusterIP`, private Tailscale Ingress |
 | Direct Proxmox Tailscale endpoint | Operational |
 | Jenkins Tailscale Serve endpoint | Operational |
 | External VM backups | Completed for VMs `210`, `211`, and `212` |
@@ -30,10 +30,10 @@
 
 Exact private tailnet hostnames and credentials remain in local operator notes
 rather than Git.
-<!-- END CURRENT STATE 2026-08-15 -->
+<!-- END CURRENT STATE 2026-08-16 -->
 
 
-Verified on `2026-08-13` after logging-stack validation and successful Alertmanager Gmail FIRING/RESOLVED delivery.
+Verified on `2026-08-16` after private Grafana and Homepage validation, Homepage CrashLoopBackOff recovery, repeated HTTP `200` checks, and successful mobile-data access through Tailscale.
 
 ## Hypervisor
 
@@ -146,7 +146,7 @@ configured.
 | External alert receivers | Gmail SMTP operational; FIRING and RESOLVED notifications verified |
 | Loki | `18.7.6`, Flux `Ready=True`; LogQL validation passed |
 | Grafana Alloy | `1.11.1`, Flux `Ready=True`; Kubernetes log collection operational |
-| Grafana Tailscale ingress | Pending |
+| Grafana Tailscale ingress | Operational — Flux-managed private access verified |
 
 The initial Helm install was blocked because Talos/Kubernetes Pod Security Admission
 enforced `baseline` in the new namespace while Node Exporter requires host-level
@@ -165,6 +165,65 @@ for the implementation, validation, troubleshooting, and next-session handoff.
 See [19-observability-logging-alertmanager-email.md](19-observability-logging-alertmanager-email.md) for the logging and external email receiver completion record.
 
 See [20-kubernetes-mobile-access-tailscale.md](20-kubernetes-mobile-access-tailscale.md) for the secure Android/Termux Kubernetes access implementation.
+
+## Homepage private application dashboard
+
+| Property | Value |
+|---|---|
+| Namespace | `homepage` |
+| Delivery | Flux Kustomize from `clusters/beelink-talos/homepage/` |
+| Application | Homepage `v1.13.2` |
+| Deployment | `homepage`, `1/1` Ready after recovery |
+| Service | `homepage`, internal `ClusterIP`, TCP `3000` |
+| Private ingress | `homepage-tailscale`, `ingressClassName: tailscale` |
+| Public exposure | None; Tailscale Funnel not enabled |
+| Pod security | Non-root UID/GID `1000`, privilege escalation disabled, all Linux capabilities dropped, RuntimeDefault seccomp |
+| Configuration | Git-managed ConfigMap with Homepage YAML/config files |
+| Runtime Secret | `homepage/homepage-runtime`, created out-of-band and not committed |
+| Runtime Secret keys | `HOMEPAGE_EXTERNAL_HOST`, `HOMEPAGE_VAR_GRAFANA_URL` |
+| Health endpoint | `/api/healthcheck` for readiness and liveness |
+| Post-fix Pod state | `1/1 Running`, zero restarts during validation |
+| Repeated HTTPS validation | 20 consecutive HTTP `200` responses |
+| Workstation validation | LG Gram through private Tailscale HTTPS — passed |
+| Mobile validation | Moto G84 over mobile data through Tailscale — passed |
+
+### CrashLoopBackOff incident and fix
+
+The first Homepage rollout initially rendered successfully, then became
+intermittently unavailable through the Tailscale ingress with HTTP `502`.
+Kubernetes showed the Homepage Pod in `CrashLoopBackOff` after 12 restarts while
+Grafana continued to work through its independent private Tailscale ingress.
+
+Previous-container logs provided the root-cause evidence:
+
+```text
+Failed to initialize required config: /app/config/proxmox.yaml
+Reason: EACCES: permission denied, copyfile '/app/src/skeleton/proxmox.yaml' -> '/app/config/proxmox.yaml'
+Hint: Make /app/config writable or manually place the config file.
+```
+
+The GitOps recovery made the container layout explicit rather than weakening the
+security context:
+
+- added an empty `proxmox.yaml` entry to the Homepage ConfigMap and mounted it at `/app/config/proxmox.yaml`;
+- mounted `/app/config/logs` from a writable `emptyDir`;
+- kept the container non-root with privilege escalation disabled and capabilities dropped;
+- changed runtime host handling so `HOMEPAGE_ALLOWED_HOSTS` contains the Pod IP/port used by Kubernetes health probes plus the private external hostname supplied from `homepage-runtime`;
+- retained readiness and liveness checks on `/api/healthcheck` with explicit timeout/failure thresholds;
+- associated the service-account token Secret explicitly with the Homepage ServiceAccount;
+- retained read-only RBAC and added `metrics.k8s.io` read access for future dashboard metrics.
+
+After Flux reconciliation, the replacement Pod remained stable with zero
+restarts and repeated private HTTPS access returned HTTP `200`. The earlier
+`502` was therefore a downstream symptom of an unavailable Homepage backend,
+not a general Tailscale failure.
+
+The incident also generated a real `KubePodCrashLooping` alert and Gmail warning,
+which validated the chain from kube-state-metrics through Prometheus and
+Alertmanager to the external email receiver.
+
+See [21-homepage-private-tailscale.md](21-homepage-private-tailscale.md) for the
+complete implementation, incident, validation, and recovery record.
 
 ## Jenkins controller
 
@@ -218,8 +277,8 @@ See [20-kubernetes-mobile-access-tailscale.md](20-kubernetes-mobile-access-tails
 | Log collection | Kubernetes API via `loki.source.kubernetes` |
 | End-to-end smoke test | Passed |
 | Real namespace queries | `monitoring`, `flux-system`, `tailscale` verified |
-| Grafana Tailscale ingress | Pending |
-| External Alertmanager receivers | Pending |
+| Grafana Tailscale ingress | Operational — Flux-managed private access verified |
+| External Alertmanager receivers | Gmail SMTP operational; FIRING and RESOLVED delivery verified |
 | Loki retention policy | Pending |
 
 See [18-observability-stack.md](18-observability-stack.md) for the implementation
@@ -237,29 +296,31 @@ and validation record.
 | Talos DR rehearsal | Pending |
 | Encrypted second copy | Pending |
 
-## Services not yet deployed
+## Services and controls still pending
 
-- Grafana private ingress through Tailscale;
-- Homepage;
-- SOPS-encrypted Secret management;
-- UPS telemetry and automated graceful shutdown.
+- Local Path Provisioner configuration fully reconciled by Flux;
+- SOPS/age encrypted Secret management and migration of manual Secrets;
+- isolated VM restore and Talos recovery rehearsal;
+- UPS telemetry and automated graceful shutdown;
+- additional least-privilege Homepage integrations/widgets.
 ## Current risk statement
 
 The Kubernetes control plane, workers, primary VM disks, and etcd member all depend on the single physical host `pve01`. Backups reduce data-loss risk but do not provide availability. The platform remains a single-host laboratory until permanent additional nodes and tested restores are introduced.
 
-## 2026-08-15 update — private observability access
+## 2026-08-16 update — Homepage private application access
 
-The observability baseline is now remotely usable through the private tailnet.
+The private application layer now includes a Flux-managed Homepage dashboard.
 
-- Alertmanager Gmail FIRING delivery: verified.
-- Alertmanager Gmail RESOLVED delivery: verified.
-- Grafana private Tailscale Ingress: operational.
-- Grafana Tailscale Ingress: Flux/GitOps managed.
-- Grafana Kubernetes Service: remains `ClusterIP`.
-- Administration-workstation access without port-forwarding: verified.
-- Android mobile-data access through Tailscale: verified.
-- Access after disconnecting Tailscale: failed as expected.
-- Tailscale proxy state: `tailnet only`.
-- Public Grafana exposure: not configured.
-
-The next application-layer task is Homepage deployment through Flux with private Tailscale access.
+- Private Grafana Tailscale Ingress: operational.
+- Homepage `v1.13.2`: operational through Flux.
+- Homepage Kubernetes Service: internal `ClusterIP` only.
+- Homepage private Tailscale Ingress: operational.
+- LG Gram access through Tailscale: verified.
+- Moto G84 mobile-data access through Tailscale: verified.
+- Initial Homepage `CrashLoopBackOff`: resolved.
+- Root cause: `EACCES` while the application attempted to create `/app/config/proxmox.yaml` on a read-only ConfigMap-backed path.
+- Corrective action: explicit `proxmox.yaml`, writable log `emptyDir`, and corrected allowed-host/health-probe environment handling.
+- Post-fix Pod state: `1/1 Running`, zero restarts during validation.
+- Repeated private HTTPS test: 20 consecutive HTTP `200` responses.
+- Alertmanager `KubePodCrashLooping` Gmail warning: observed during the incident.
+- Exact private tailnet hostnames and runtime Secret values: kept outside Git.
