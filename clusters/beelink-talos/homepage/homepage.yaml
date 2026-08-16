@@ -46,6 +46,10 @@ data:
     fullWidth: true
     useEqualHeights: true
     layout:
+      Infrastructure:
+        style: row
+        columns: 3
+
       Observability:
         style: row
         columns: 3
@@ -57,6 +61,21 @@ data:
         columns: 2
 
   services.yaml: |
+    - Infrastructure:
+        - Proxmox VE:
+            icon: proxmox.png
+            href: https://mel-pve01.tail499e7c.ts.net/
+            description: Virtualization platform
+
+        - Kubernetes:
+            icon: kubernetes.png
+            description: Talos Kubernetes cluster
+
+        - Tailscale:
+            icon: tailscale.png
+            href: https://login.tailscale.com/admin/machines
+            description: Private network access
+
     - Observability:
         - Grafana:
             icon: grafana.png
