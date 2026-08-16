@@ -52,7 +52,7 @@ data:
 
       Observability:
         style: row
-        columns: 3
+        columns: 4
       Websites:
         style: row
         columns: 2
@@ -81,6 +81,18 @@ data:
             icon: grafana.png
             href: "{{HOMEPAGE_VAR_GRAFANA_URL}}"
             description: Metrics, logs and alerts
+
+        - Prometheus:
+            icon: prometheus.png
+            description: Metrics collection and PromQL
+
+        - Alertmanager:
+            icon: alertmanager.png
+            description: Alert routing and notifications
+
+        - Loki:
+            icon: loki.png
+            description: Centralized log aggregation
 
     - Websites:
         - Duminda Sumanasinghe:
