@@ -6,3 +6,4 @@ resources:
   - ./tailscale
   - ./monitoring
   - ./homepage
+  - ./kubelet-serving-cert-approver
