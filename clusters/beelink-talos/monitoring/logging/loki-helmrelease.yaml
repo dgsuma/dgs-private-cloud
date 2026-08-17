@@ -101,3 +101,7 @@ spec:
 
     lokiCanary:
       enabled: true
+
+    monitoring:
+      serviceMonitor:
+        enabled: true
