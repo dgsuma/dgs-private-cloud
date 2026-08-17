@@ -133,6 +133,28 @@ data:
         - Loki:
             icon: loki.png
             description: Centralized log aggregation
+            widget:
+              type: prometheusmetric
+              url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+              refreshInterval: 10000
+              metrics:
+                - label: Ingest
+                  query: 'sum(rate(loki_distributor_bytes_received_total[5m])) or vector(0)'
+                  format:
+                    type: byterate
+                - label: Lines
+                  query: 'sum(rate(loki_distributor_lines_received_total[5m])) or vector(0)'
+                  format:
+                    type: number
+                    suffix: "/s"
+                    options:
+                      maximumFractionDigits: 1
+                - label: Missing
+                  query: 'sum(increase(loki_canary_missing_entries_total[5m])) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
 
     - Websites:
         - Duminda Sumanasinghe:
