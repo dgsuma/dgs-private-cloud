@@ -95,6 +95,13 @@ data:
         - Prometheus:
             icon: prometheus.png
             description: Metrics collection and PromQL
+            widget:
+              type: prometheus
+              url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+              fields:
+                - targets_up
+                - targets_down
+                - targets_total
 
         - Alertmanager:
             icon: alertmanager.png
