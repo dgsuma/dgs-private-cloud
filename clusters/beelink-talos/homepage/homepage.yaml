@@ -151,6 +151,25 @@ data:
         provider: duckduckgo
         target: _blank
 
+    - openmeteo:
+        label: Melbourne
+        latitude: -37.8136
+        longitude: 144.9631
+        timezone: Australia/Melbourne
+        units: metric
+        cache: 5
+        format:
+          maximumFractionDigits: 1
+
+    - datetime:
+        text_size: md
+        locale: en-AU
+        format:
+          dateStyle: medium
+          timeStyle: short
+          hour12: true
+          timeZone: Australia/Melbourne
+
   docker.yaml: ""
   proxmox.yaml: ""
   custom.css: ""
