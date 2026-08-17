@@ -38,9 +38,7 @@ data:
     disableIndexing: true
     theme: dark
     color: slate
-    background:
-      image: https://images.unsplash.com/photo-1502790671504-542ad42d5189?auto=format&fit=crop&w=2560&q=80
-      opacity: 35
+    background: ""
     cardBlur: md
     headerStyle: clean
     fullWidth: true
@@ -225,16 +223,56 @@ data:
   docker.yaml: ""
   proxmox.yaml: ""
   custom.css: |
-    /* DGS Private Cloud — Stage 4A glass polish */
+    /* DGS Private Cloud — Stage 4B cyber infrastructure theme */
+
+    body {
+      background:
+        radial-gradient(circle at 50% 18%, rgba(14, 165, 233, 0.18), transparent 30%),
+        radial-gradient(circle at 77% 34%, rgba(239, 68, 68, 0.08), transparent 22%),
+        linear-gradient(180deg, #020617 0%, #061422 48%, #020617 100%) !important;
+      background-attachment: fixed !important;
+    }
+
+    #page_wrapper::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.12) 72%, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.12) 72%, transparent);
+    }
+
+    #page_wrapper::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 16% 31%, rgba(56, 189, 248, 0.10), transparent 14%),
+        radial-gradient(circle at 83% 29%, rgba(14, 165, 233, 0.09), transparent 16%),
+        radial-gradient(circle at 66% 47%, rgba(239, 68, 68, 0.055), transparent 13%);
+      mix-blend-mode: screen;
+    }
+
+    #inner_wrapper {
+      position: relative;
+      z-index: 1;
+    }
 
     .service-card {
-      background: rgba(15, 23, 42, 0.48) !important;
-      border: 1px solid rgba(148, 163, 184, 0.13);
+      background: rgba(7, 18, 32, 0.62) !important;
+      border: 1px solid rgba(125, 211, 252, 0.14);
       box-shadow:
-        0 12px 32px rgba(2, 6, 23, 0.24),
+        0 14px 34px rgba(2, 6, 23, 0.32),
         inset 0 1px 0 rgba(255, 255, 255, 0.035);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       transition:
         transform 180ms ease,
         border-color 180ms ease,
@@ -244,17 +282,18 @@ data:
 
     .service-card:hover {
       transform: translateY(-2px);
-      background: rgba(30, 41, 59, 0.58) !important;
-      border-color: rgba(125, 211, 252, 0.24);
+      background: rgba(10, 28, 48, 0.74) !important;
+      border-color: rgba(56, 189, 248, 0.28);
       box-shadow:
-        0 16px 38px rgba(2, 6, 23, 0.34),
-        0 0 22px rgba(56, 189, 248, 0.055);
+        0 18px 42px rgba(2, 6, 23, 0.42),
+        0 0 24px rgba(56, 189, 248, 0.07);
     }
 
     .service-group-name {
-      letter-spacing: 0.02em;
+      letter-spacing: 0.025em;
       font-weight: 600 !important;
-      text-shadow: 0 2px 12px rgba(2, 6, 23, 0.45);
+      color: rgb(186 230 253) !important;
+      text-shadow: 0 2px 14px rgba(14, 165, 233, 0.18);
     }
 
     .service-name {
@@ -268,7 +307,7 @@ data:
 
     .service-icon img,
     .service-icon svg {
-      filter: drop-shadow(0 4px 8px rgba(2, 6, 23, 0.28));
+      filter: drop-shadow(0 4px 9px rgba(2, 6, 23, 0.32));
     }
 
     @media (prefers-reduced-motion: reduce) {
