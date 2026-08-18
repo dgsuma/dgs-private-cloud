@@ -38,7 +38,9 @@ data:
     disableIndexing: true
     theme: dark
     color: slate
-    background: ""
+    background:
+      image: /images/background.jpg
+      opacity: 55
     cardBlur: md
     headerStyle: clean
     fullWidth: true
@@ -226,19 +228,13 @@ data:
     /* DGS Private Cloud — Stage 4B cyber infrastructure theme */
 
     body {
-      background-image:
-        linear-gradient(
-          180deg,
-          rgba(2, 6, 23, 0.34) 0%,
-          rgba(2, 6, 23, 0.46) 48%,
-          rgba(2, 6, 23, 0.62) 100%
-        ),
-        url("/images/background.jpg") !important;
-      background-size: cover, cover !important;
-      background-position: center center, center 42% !important;
-      background-repeat: no-repeat, no-repeat !important;
-      background-attachment: fixed, fixed !important;
       background-color: #020617 !important;
+    }
+
+    #background {
+      background-size: cover !important;
+      background-position: center 40% !important;
+      background-repeat: no-repeat !important;
     }
 
     #page_wrapper::before {
