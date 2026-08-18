@@ -226,11 +226,19 @@ data:
     /* DGS Private Cloud — Stage 4B cyber infrastructure theme */
 
     body {
-      background:
-        radial-gradient(circle at 50% 18%, rgba(14, 165, 233, 0.18), transparent 30%),
-        radial-gradient(circle at 77% 34%, rgba(239, 68, 68, 0.08), transparent 22%),
-        linear-gradient(180deg, #020617 0%, #061422 48%, #020617 100%) !important;
-      background-attachment: fixed !important;
+      background-image:
+        linear-gradient(
+          180deg,
+          rgba(2, 6, 23, 0.34) 0%,
+          rgba(2, 6, 23, 0.46) 48%,
+          rgba(2, 6, 23, 0.62) 100%
+        ),
+        url("/images/background.jpg") !important;
+      background-size: cover, cover !important;
+      background-position: center center, center 42% !important;
+      background-repeat: no-repeat, no-repeat !important;
+      background-attachment: fixed, fixed !important;
+      background-color: #020617 !important;
     }
 
     #page_wrapper::before {
@@ -491,6 +499,10 @@ spec:
               memory: 512Mi
 
           volumeMounts:
+            - name: homepage-background
+              mountPath: /app/public/images/background.jpg
+              subPath: background.jpg
+              readOnly: true
             - name: homepage-config
               mountPath: /app/config/custom.js
               subPath: custom.js
@@ -522,6 +534,9 @@ spec:
               name: logs
 
       volumes:
+        - name: homepage-background
+          configMap:
+            name: homepage-background
         - name: homepage-config
           configMap:
             name: homepage
