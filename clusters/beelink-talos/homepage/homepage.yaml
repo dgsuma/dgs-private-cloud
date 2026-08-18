@@ -38,9 +38,7 @@ data:
     disableIndexing: true
     theme: dark
     color: slate
-    background:
-      image: /images/background.jpg
-      opacity: 65
+    background: ""
     cardBlur: md
     headerStyle: clean
     fullWidth: true
@@ -493,10 +491,6 @@ spec:
               memory: 512Mi
 
           volumeMounts:
-            - name: homepage-background
-              mountPath: /app/public/images/background.jpg
-              subPath: background.jpg
-              readOnly: true
             - name: homepage-config
               mountPath: /app/config/custom.js
               subPath: custom.js
@@ -528,9 +522,6 @@ spec:
               name: logs
 
       volumes:
-        - name: homepage-background
-          configMap:
-            name: homepage-background
         - name: homepage-config
           configMap:
             name: homepage

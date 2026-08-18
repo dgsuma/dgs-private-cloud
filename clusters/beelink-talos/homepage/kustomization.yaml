@@ -5,4 +5,3 @@ resources:
   - namespace.yaml
   - homepage.yaml
   - homepage-tailscale-ingress.yaml
-  - background-configmap.yaml
