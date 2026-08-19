@@ -82,7 +82,7 @@ data:
             description: Talos Kubernetes cluster
 
         - Tailscale:
-            icon: tailscale.png
+            icon: "si-tailscale-#e2e8f0"
             href: https://login.tailscale.com/admin/machines
             description: Private network access
 
@@ -178,7 +178,7 @@ data:
             description: Kubernetes GitOps reconciliation
 
         - GitHub:
-            icon: github.png
+            icon: "si-github-#f8fafc"
             href: https://github.com/dgsuma/dgs-private-cloud
             description: DGS Private Cloud repository
 
