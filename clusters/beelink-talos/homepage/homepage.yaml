@@ -237,6 +237,16 @@ data:
       background-repeat: no-repeat !important;
     }
 
+    /* DGS Private Cloud — reserve space for upper-left branding */
+    #information-widgets {
+      margin-top: 80px !important;
+    }
+
+    @media (max-width: 900px) {
+      #information-widgets {
+        margin-top: 36px !important;
+      }
+    }
     #page_wrapper::before {
       content: "";
       position: fixed;
