@@ -240,7 +240,7 @@ data:
     /* DGS Private Cloud — responsive brand-safe header */
 
     #inner_wrapper {
-      padding-top: 120px !important;
+      padding-top: 165px !important;
       box-sizing: border-box !important;
     }
 
@@ -254,7 +254,7 @@ data:
 
     @media (max-width: 900px) {
       #inner_wrapper {
-        padding-top: 105px !important;
+        padding-top: 150px !important;
       }
 
       #background {
