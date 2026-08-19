@@ -1,5 +1,42 @@
 # Changelog
 
+<!-- BEGIN HOMEPAGE FINAL CHANGELOG 2026-08-19 -->
+## [0.11.0] - 2026-08-19
+
+### Added
+
+- Final responsive DGS Private Cloud Homepage visual design.
+- Git-managed `homepage-background` ConfigMap with the compressed dashboard JPEG.
+- Native Homepage background rendering through `/images/background.jpg`.
+- Responsive brand-safe spacing for desktop and mobile layouts.
+- High-contrast Tailscale and GitHub service icons.
+- Dedicated Homepage Private Cloud Dashboard documentation.
+
+### Changed
+
+- Moved exact Proxmox and Jenkins tailnet URLs out of Git-managed `services.yaml` and into the out-of-band `homepage-runtime` Secret.
+- Updated Homepage to reference private service URLs through `HOMEPAGE_VAR_*` variables.
+- Updated current-state, next-step, roadmap, README, and Kubernetes inventory documentation to reflect completed storage, observability, Metrics API, and Homepage work.
+
+### Verified
+
+- Flux Kustomization `Ready=True`.
+- Homepage Deployment `1/1`.
+- Homepage pod `1/1 Running` with zero restarts at final validation.
+- `homepage-background` ConfigMap present.
+- `homepage-tailscale` Ingress present through the `tailscale` IngressClass.
+- Homepage application starts successfully with Next.js `16.2.6`.
+- Live Talos/Kubernetes, Proxmox, Prometheus, Alertmanager, and Loki dashboard data render correctly.
+- Final presentation validated on desktop, narrow-browser, and mobile/portrait layouts.
+
+### Security
+
+- Homepage remains private through Tailscale; Funnel is not used.
+- Exact private tailnet hostnames are kept out of Git.
+- Runtime URLs and Proxmox credentials remain in Kubernetes Secrets.
+- Final screenshots containing tailnet DNS names remain outside tracked documentation.
+<!-- END HOMEPAGE FINAL CHANGELOG 2026-08-19 -->
+
 ## [0.10.0] - 2026-08-16
 
 ### Added

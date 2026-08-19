@@ -1,42 +1,28 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-16 -->
-> **Current checkpoint — 2026-08-16**
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-19 -->
+> **Current checkpoint — 2026-08-19**
 >
-> The active platform is the Beelink `pve01` Proxmox host. Talos Kubernetes,
-> Flux GitOps, Tailscale private administration, Jenkins Controller Phase 1,
-> Talos persistent storage, the complete observability stack, private Grafana,
-> and the Homepage application dashboard are operational.
+> The single-host DGS Private Cloud now has the Talos Kubernetes cluster, Flux
+> GitOps, Tailscale private access, local-path persistent storage, the
+> Prometheus/Grafana/Alertmanager/Loki/Alloy observability stack, Jenkins
+> Controller Phase 1, Kubernetes Metrics API, and the private Homepage dashboard
+> operational.
 >
-> Homepage `v1.13.2` is deployed declaratively from
-> `clusters/beelink-talos/homepage/`. It uses an internal `ClusterIP` Service and
-> a Flux-managed Tailscale Ingress. Private HTTPS access was verified from the
-> LG Gram and from the Moto G84 over mobile data.
+> Homepage is reconciled by Flux, exposed only through the Tailscale
+> IngressClass, and validated on desktop and mobile/portrait layouts. The final
+> dashboard provides live Talos/Kubernetes, Proxmox, Prometheus, Alertmanager,
+> and Loki data over a responsive DGS Private Cloud background.
 >
-> The first Homepage rollout exposed a real operational fault: the container
-> entered `CrashLoopBackOff` because `/app/config` was read-only and Homepage
-> could not create its required `proxmox.yaml`. The final GitOps configuration
-> explicitly provides that file, gives `/app/config/logs` a writable `emptyDir`,
-> and supplies health-probe host validation through runtime environment values.
-> The replacement Pod remained `1/1 Running` with zero restarts and 20 repeated
-> private HTTPS checks returned HTTP `200`.
+> SOPS/age secret management, isolated recovery testing, UPS telemetry, and the
+> Jenkins build-agent phase remain outstanding.
 >
-> Alertmanager detected the incident as `KubePodCrashLooping` and delivered the
-> warning by Gmail, providing an unplanned end-to-end validation of the
-> observability and alerting chain.
+> Exact private tailnet hostnames and credential values are intentionally kept
+> out of Git.
 >
-> Exact private tailnet hostnames, Tailscale addresses, generated credentials,
-> Gmail App Passwords, Homepage runtime values, and other secrets are
-> intentionally kept out of Git.
->
-> Current implementation records:
-> - [Talos persistent storage prerequisite](docs/17-talos-persistent-storage.md)
-> - [Prometheus, Grafana and Alertmanager baseline](docs/18-observability-prometheus-grafana-alertmanager.md)
-> - [Logging and Alertmanager email notifications](docs/19-observability-logging-alertmanager-email.md)
-> - [Private Grafana access through Tailscale](docs/20-grafana-private-tailscale-access.md)
-> - [Secure mobile Kubernetes access through Tailscale](docs/20-kubernetes-mobile-access-tailscale.md)
-> - [Homepage through Flux and private Tailscale access](docs/21-homepage-private-tailscale.md)
-<!-- END CURRENT CHECKPOINT 2026-08-16 -->
+> Homepage documentation:
+> - [Homepage Private Cloud Dashboard](docs/22-homepage-private-cloud-dashboard.md)
+<!-- END CURRENT CHECKPOINT 2026-08-19 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.

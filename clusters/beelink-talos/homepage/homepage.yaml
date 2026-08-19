@@ -64,7 +64,7 @@ data:
     - Infrastructure:
         - Proxmox VE:
             icon: proxmox.png
-            href: https://mel-pve01.tail499e7c.ts.net/
+            href: "{{HOMEPAGE_VAR_PROXMOX_URL}}"
             description: Virtualization platform
             widget:
               type: proxmox
@@ -170,7 +170,7 @@ data:
     - DevOps & GitOps:
         - Jenkins:
             icon: jenkins.png
-            href: https://jenkins-ci.tail499e7c.ts.net/
+            href: "{{HOMEPAGE_VAR_JENKINS_URL}}"
             description: CI pipelines and automation
 
         - FluxCD:
@@ -468,6 +468,18 @@ spec:
                 secretKeyRef:
                   name: homepage-runtime
                   key: HOMEPAGE_VAR_GRAFANA_URL
+
+            - name: HOMEPAGE_VAR_PROXMOX_URL
+              valueFrom:
+                secretKeyRef:
+                  name: homepage-runtime
+                  key: HOMEPAGE_VAR_PROXMOX_URL
+
+            - name: HOMEPAGE_VAR_JENKINS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: homepage-runtime
+                  key: HOMEPAGE_VAR_JENKINS_URL
 
             - name: HOMEPAGE_VAR_PROXMOX_TOKEN_ID
               valueFrom:

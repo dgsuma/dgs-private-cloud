@@ -1,5 +1,25 @@
 # Next Steps
 
+<!-- BEGIN COMPLETED PLATFORM CHECKPOINT 2026-08-19 -->
+## Milestone checkpoint — 2026-08-19
+
+Completed since the earlier plan:
+
+- persistent storage baseline and dynamic provisioning;
+- Prometheus, Grafana, Alertmanager, Loki, and Grafana Alloy;
+- private Grafana access through Tailscale;
+- Metrics API support for Homepage cluster/node widgets;
+- private Homepage deployment through Flux;
+- responsive DGS Private Cloud dashboard visual-facelift.
+
+Remaining priorities:
+
+1. SOPS with age and encrypted Secret lifecycle.
+2. Isolated VM restore validation and later Talos DR rehearsal.
+3. UPS telemetry and graceful-shutdown automation.
+4. Jenkins build agent / CI-to-GitOps work when Phase 2 resumes.
+<!-- END COMPLETED PLATFORM CHECKPOINT 2026-08-19 -->
+
 
 ## Jenkins Phase 2 — deferred
 
@@ -22,7 +42,7 @@ Target responsibility split:
 Jenkins -> CI
 Flux    -> GitOps CD
 ```
-## Priority 1 — Persistent storage
+## Completed — Persistent storage
 
 **Prerequisite completed on 2026-08-09.**
 
@@ -40,7 +60,7 @@ Flux    -> GitOps CD
 - [x] Documented the node-local/non-replicated storage limitation.
 - [ ] Add Local Path Provisioner to the active Flux reconciliation path.
 
-## Priority 2 — Observability
+## Completed — Observability
 
 **Metrics, logging, Alertmanager email delivery, private Grafana, and the first private Homepage application are operational through 2026-08-16.**
 - [x] Create the Flux-managed `monitoring` namespace and Helm repositories.
@@ -68,7 +88,7 @@ Flux    -> GitOps CD
 - [x] Expose Grafana only through authenticated Tailscale access.
 - [x] Deploy Homepage through Flux and keep it private behind Tailscale.
 - [ ] Migrate manually managed secrets to SOPS/age after encrypted secret management is configured.
-## Priority 3 — Homepage
+## Completed — Homepage
 
 **Baseline completed on 2026-08-16.**
 

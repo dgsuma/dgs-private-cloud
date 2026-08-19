@@ -1,39 +1,34 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-16 -->
-## Current checkpoint — 2026-08-16
+<!-- BEGIN CURRENT STATE 2026-08-19 -->
+## Current checkpoint — 2026-08-19
+
 | Property | Verified state |
 |---|---|
 | Active Proxmox node | `pve01` on Beelink GTi12 |
-| Talos Kubernetes | Operational; all three nodes `Ready` |
-| Flux | Operational |
-| Tailscale Kubernetes Operator | Operational; Kubernetes API proxy enabled |
-| Kubernetes persistent storage | Operational |
-| kube-prometheus-stack | `88.2.0`, Flux `Ready=True` |
-| Prometheus | Operational; 50 GiB `local-path` PVC |
-| Grafana | Operational; 5 GiB `local-path` PVC |
-| Alertmanager | Operational; 2 GiB `local-path` PVC |
-| Loki | `18.7.6`, Flux `Ready=True`; LogQL validation passed |
-| Grafana Alloy | `1.11.1`, Flux `Ready=True`; Kubernetes log collection operational |
-| LogQL validation | Passed for Kubernetes logs including error/warning filtering |
-| Alertmanager email receiver | Gmail SMTP configured and operational |
-| Alertmanager FIRING delivery | Passed |
-| Alertmanager RESOLVED delivery | Passed |
-| SMTP credential storage | Manual Secret `monitoring/alertmanager-smtp`; not committed |
-| Mobile Kubernetes access | Operational — Android Termux + Tailscale + read-only RBAC |
-| Grafana Tailscale ingress | Operational — Flux-managed; workstation and mobile-data validation passed |
-| Homepage | Operational — `v1.13.2`, Flux-managed, internal `ClusterIP`, private Tailscale Ingress |
-| Direct Proxmox Tailscale endpoint | Operational |
-| Jenkins Tailscale Serve endpoint | Operational |
-| External VM backups | Completed for VMs `210`, `211`, and `212` |
-| Talos etcd snapshots | Completed on 2026-07-26 and 2026-08-01 |
+| Talos Kubernetes | Operational; one control plane and two workers |
+| Flux | Operational; Kustomization `Ready=True` |
+| Tailscale Kubernetes Operator | Operational |
+| Local persistent storage | Operational; `local-path` default StorageClass |
+| Metrics API | Operational |
+| Prometheus / Grafana / Alertmanager | Operational |
+| Loki / Grafana Alloy | Operational |
+| Grafana private access | Operational through Tailscale |
+| Homepage | Operational; `1/1` Deployment |
+| Homepage private access | Operational through Tailscale Ingress |
+| Homepage background | `homepage-background` ConfigMap mounted at `/app/public/images/background.jpg` |
+| Homepage responsive validation | Desktop, narrow-browser, and mobile/portrait passed |
+| Jenkins Controller Phase 1 | Complete |
+| Tailscale Funnel | Disabled |
+| SOPS | Not configured |
+| Isolated VM restore test | Pending |
+| UPS telemetry | Pending |
 
-Exact private tailnet hostnames and credentials remain in local operator notes
-rather than Git.
-<!-- END CURRENT STATE 2026-08-16 -->
+Exact private tailnet hostnames remain in local operator notes rather than Git.
+<!-- END CURRENT STATE 2026-08-19 -->
 
 
-Verified on `2026-08-16` after private Grafana and Homepage validation, Homepage CrashLoopBackOff recovery, repeated HTTP `200` checks, and successful mobile-data access through Tailscale.
+Verified on `2026-08-19` after storage, observability, Metrics API, private Grafana, Homepage, responsive-dashboard, and GitOps validation.
 
 ## Hypervisor
 
