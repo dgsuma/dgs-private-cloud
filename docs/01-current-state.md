@@ -1,7 +1,7 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-19 -->
-## Current checkpoint — 2026-08-19
+<!-- BEGIN CURRENT STATE 2026-08-21 -->
+## Current checkpoint — 2026-08-21
 
 | Property | Verified state |
 |---|---|
@@ -9,6 +9,10 @@
 | Talos Kubernetes | Operational; one control plane and two workers |
 | Flux | Operational; Kustomization `Ready=True` |
 | Tailscale Kubernetes Operator | Operational |
+| Remote Kubernetes administration | Operational through the Tailscale Kubernetes API proxy from LG Gram WSL2 |
+| Remote Talos administration | Operational through `mel-pve01` advertising `192.168.1.0/24` |
+| Remote Proxmox administration | Operational through direct Tailscale SSH and TCP `8006` |
+| Travel validation | Passed from alternate Wi-Fi and Moto G84 mobile-data hotspot |
 | Local persistent storage | Operational; `local-path` default StorageClass |
 | Metrics API | Operational |
 | Prometheus / Grafana / Alertmanager | Operational |
@@ -25,10 +29,26 @@
 | UPS telemetry | Pending |
 
 Exact private tailnet hostnames remain in local operator notes rather than Git.
-<!-- END CURRENT STATE 2026-08-19 -->
+<!-- END CURRENT STATE 2026-08-21 -->
 
 
-Verified on `2026-08-19` after storage, observability, Metrics API, private Grafana, Homepage, responsive-dashboard, and GitOps validation.
+Verified on `2026-08-21` after storage, observability, Metrics API, private Grafana, Homepage, responsive-dashboard, GitOps, WSL2 travel-workstation, remote Kubernetes API proxy, Tailscale subnet routing, remote Talos administration, and Proxmox recovery-access validation.
+
+## Remote travel administration
+
+The LG Gram is validated for remote administration outside the Melbourne LAN.
+
+| Layer | Verified path |
+|---|---|
+| Kubernetes | MobaXterm / WSL2 -> Windows Tailscale -> Kubernetes API proxy -> `kubectl` |
+| Talos | MobaXterm / WSL2 -> Windows Tailscale -> `mel-pve01` subnet router -> `192.168.1.0/24` -> TCP `50000` -> `talosctl` |
+| Proxmox | LG Gram -> Windows Tailscale -> `mel-pve01` -> SSH / TCP `8006` |
+
+`pve01` has persistent IPv4/IPv6 forwarding enabled and advertises only `192.168.1.0/24`. It is not an exit node.
+
+The full path was validated from both alternate Wi-Fi and the Moto G84 mobile-data hotspot. Exact Tailscale addresses and private DNS suffixes remain outside Git.
+
+See [Remote Travel Administration Through Tailscale](23-remote-travel-administration.md).
 
 ## Hypervisor
 

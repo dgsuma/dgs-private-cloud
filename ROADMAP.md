@@ -68,7 +68,7 @@
 
 ## Phase 1D — GitOps and private access
 
-**Status: Operational baseline complete; SOPS remains**
+**Status: Operational baseline and travel administration complete; SOPS remains**
 
 - [x] Bootstrap Flux `v2.9.3` from the private `dgs-private-cloud` repository.
 - [x] Configure the active Flux path as `clusters/beelink-talos`.
@@ -78,6 +78,11 @@
 - [x] Confirm `beelink-talos-operator` is connected with `tag:k8s-operator`.
 - [x] Install the Tailscale IngressClass and CRDs.
 - [x] Keep Proxmox and Kubernetes administration private.
+- [x] Validate LG Gram travel administration through WSL2 mirrored networking and Windows Tailscale.
+- [x] Validate Kubernetes administration through the Tailscale Kubernetes API proxy from external networks.
+- [x] Configure `mel-pve01` as the `192.168.1.0/24` Tailscale subnet router.
+- [x] Validate remote `talosctl health` and multi-node `talosctl service` through TCP `50000`.
+- [x] Validate direct remote Proxmox SSH and TCP `8006` recovery access.
 - [ ] Generate an age identity and configure SOPS.
 - [ ] Store only SOPS-encrypted Kubernetes Secrets in Git.
 - [ ] Migrate `operator-oauth` from a manually created Secret to encrypted Git management.
@@ -173,7 +178,7 @@ Status: **Implemented and externally verified**
 - [ ] Enable and test Proxmox two-factor authentication.
 - [ ] Verify key-expiry settings for remote infrastructure devices.
 - [ ] Complete full reboot and power-recovery testing.
-- [ ] Configure the Raspberry Pi 5 as a separate subnet router.
+- [x] Use `mel-pve01` as the active `192.168.1.0/24` subnet router; a separate Raspberry Pi router is no longer required for the current travel-access design.
 <!-- END TAILSCALE ROADMAP 2026-08-03 -->
 
 ## 2026-08-16 checkpoint

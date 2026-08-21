@@ -196,4 +196,12 @@ Required controls:
 Tailscale Serve is private to authorised tailnet members. Tailscale Funnel,
 which can expose a service to the broader internet, is prohibited for the
 Proxmox management interface.
+### Travel administration additions
+
+- Kubernetes travel administration uses the Tailscale Kubernetes API proxy.
+- `mel-pve01` advertises only `192.168.1.0/24` for authenticated Talos access.
+- The subnet router is not an exit node and does not advertise `0.0.0.0/0`.
+- Talos TCP `50000`, Kubernetes TCP `6443`, Proxmox TCP `8006`, and SSH remain closed to public router forwarding.
+- Travel kubeconfig, Talos credentials, exact tailnet DNS suffixes, Tailscale IP addresses, and private screenshots remain outside Git.
+
 <!-- END TAILSCALE SECURITY BOUNDARY -->

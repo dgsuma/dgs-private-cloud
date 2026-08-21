@@ -61,6 +61,33 @@ Ubuntu remains configured for DHCP. The router consistently assigns `192.168.1.2
 
 `pve01` and `web-test01` share one physical Ethernet cable, but Proxmox `vmbr0` is a Layer-2 bridge. The VM has its own virtual MAC address and therefore appears to the router as a separate LAN client.
 
+## Tailscale remote-management routing
+
+`pve01` provides the authenticated private route from trusted Tailscale clients to the Melbourne LAN.
+
+```text
+Tailscale client -> mel-pve01 -> 192.168.1.0/24
+                                    |
+                                    +-> Talos API 192.168.1.210-212:50000
+```
+
+Persistent forwarding on `pve01` is configured in `/etc/sysctl.d/99-tailscale.conf`:
+
+```text
+net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = 1
+```
+
+The route is advertised with:
+
+```bash
+tailscale set --advertise-routes=192.168.1.0/24
+```
+
+and approved in the Tailscale administration console.
+
+`pve01` is not an exit node. Exact Tailscale addresses and private DNS suffixes are intentionally omitted from Git.
+
 ## Verification commands
 
 On `pve01`:

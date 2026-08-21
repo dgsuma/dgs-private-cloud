@@ -1,7 +1,7 @@
 # Next Steps
 
-<!-- BEGIN COMPLETED PLATFORM CHECKPOINT 2026-08-19 -->
-## Milestone checkpoint — 2026-08-19
+<!-- BEGIN COMPLETED PLATFORM CHECKPOINT 2026-08-21 -->
+## Milestone checkpoint — 2026-08-21
 
 Completed since the earlier plan:
 
@@ -11,6 +11,7 @@ Completed since the earlier plan:
 - Metrics API support for Homepage cluster/node widgets;
 - private Homepage deployment through Flux;
 - responsive DGS Private Cloud dashboard visual-facelift.
+- remote travel administration from the LG Gram through WSL2 mirrored networking and Tailscale, including Kubernetes, Talos, and Proxmox recovery paths.
 
 Remaining priorities:
 
@@ -18,7 +19,7 @@ Remaining priorities:
 2. Isolated VM restore validation and later Talos DR rehearsal.
 3. UPS telemetry and graceful-shutdown automation.
 4. Jenkins build agent / CI-to-GitOps work when Phase 2 resumes.
-<!-- END COMPLETED PLATFORM CHECKPOINT 2026-08-19 -->
+<!-- END COMPLETED PLATFORM CHECKPOINT 2026-08-21 -->
 
 
 ## Jenkins Phase 2 — deferred

@@ -13,6 +13,47 @@
 
 Do not expose management ports directly to the internet.
 
+## Travel workstation and remote recovery
+
+Remote administration is validated outside the Melbourne LAN.
+
+### Kubernetes
+
+```bash
+KUBECONFIG="$HOME/.kube/dgs-travel-kubeconfig" kubectl get nodes
+KUBECONFIG="$HOME/.kube/dgs-travel-kubeconfig" kubectl get pods -A
+KUBECONFIG="$HOME/.kube/dgs-travel-kubeconfig" kubectl top nodes
+```
+
+### Talos
+
+`mel-pve01` advertises `192.168.1.0/24`.
+
+```bash
+talosctl --endpoints 192.168.1.210 health
+
+talosctl \
+  --endpoints 192.168.1.210 \
+  --nodes 192.168.1.210,192.168.1.211,192.168.1.212 \
+  service
+```
+
+### Proxmox break-glass access
+
+Use direct authenticated Tailscale access to `mel-pve01` for SSH and TCP `8006`.
+
+### WSL recovery
+
+If Windows Tailscale works but WSL reports `no route to host`:
+
+```bash
+powershell.exe -NoProfile -Command "wsl --shutdown"
+```
+
+Reopen MobaXterm and retry.
+
+See [Remote Travel Administration Through Tailscale](23-remote-travel-administration.md).
+
 ## Jenkins controller operations
 
 Jenkins runs on VM `220` (`jenkins-ci`) at `192.168.1.213`. The browser interface is intentionally not exposed directly on LAN TCP `8080`.
@@ -402,8 +443,7 @@ Operational requirements:
 
 - Tailscale Funnel remains disabled.
 - No public forwarding of TCP `8006`, `22`, or `6443`.
-- The direct Tailscale endpoint on `mel-pve01` remains available even after a
-  separate Raspberry Pi subnet router is added.
+- `mel-pve01` is the active subnet router for `192.168.1.0/24` and remains directly reachable as a Tailscale peer for Proxmox recovery.
 - Major network changes are not performed while Tailscale is the only
   administrative path.
 - Reboot and recovery tests are performed while physically present in

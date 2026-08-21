@@ -20,6 +20,12 @@ network:
     bridge_port: nic0
     management_port: 8006
     mac_address_recorded_privately: true
+    subnet_router:
+      provider: tailscale
+      advertised_route: 192.168.1.0/24
+      ipv4_forwarding: true
+      ipv6_forwarding: true
+      exit_node: false
 
   talos:
     api_endpoint: 192.168.1.210
@@ -61,4 +67,9 @@ network:
   administration:
     device: LG Gram
     path: trusted_lan_or_authenticated_tailscale_private_access
+    travel_client: LG_Gram_WSL2_via_Windows_Tailscale
+    kubernetes_remote_method: tailscale_operator_api_proxy
+    talos_remote_method: tailscale_subnet_route
+    proxmox_remote_method: direct_tailscale
+    external_network_validation: alternate_wifi_and_mobile_hotspot
     direct_public_exposure_allowed: false

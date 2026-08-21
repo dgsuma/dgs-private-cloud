@@ -1,7 +1,7 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-19 -->
-> **Current checkpoint — 2026-08-19**
+<!-- BEGIN CURRENT CHECKPOINT 2026-08-21 -->
+> **Current checkpoint — 2026-08-21**
 >
 > The single-host DGS Private Cloud now has the Talos Kubernetes cluster, Flux
 > GitOps, Tailscale private access, local-path persistent storage, the
@@ -22,7 +22,9 @@
 >
 > Homepage documentation:
 > - [Homepage Private Cloud Dashboard](docs/22-homepage-private-cloud-dashboard.md)
-<!-- END CURRENT CHECKPOINT 2026-08-19 -->
+> - [Remote Travel Administration](docs/23-remote-travel-administration.md)
+
+<!-- END CURRENT CHECKPOINT 2026-08-21 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
@@ -33,7 +35,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 
 | Item | Current value |
 |---|---|
-| Last verified | `2026-08-16` |
+| Last verified | `2026-08-21` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
 | Proxmox VE Manager | `9.2.10` observed in the web interface |
@@ -50,6 +52,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Backup media state | `usb-backup-2tb` safely disabled, unmounted, and disconnected |
 | GitOps | Flux `v2.9.3` bootstrapped from `clusters/beelink-talos` |
 | Private access | Tailscale Operator chart `1.98.9` connected; Android Termux read-only Kubernetes access verified |
+| Travel administration | Operational — Kubernetes API proxy + `mel-pve01` subnet router + remote `talosctl` + Proxmox recovery; alternate Wi-Fi and Moto G84 validation passed |
 | Secret encryption | SOPS with age not yet configured |
 | Kubernetes persistent storage | Operational — Talos user volumes + Rancher Local Path Provisioner |
 | Metrics observability | Operational — `kube-prometheus-stack` `88.2.0`, Prometheus, Grafana, Alertmanager, Node Exporter |
@@ -197,6 +200,9 @@ flowchart TB
 - Verified the replacement Homepage Pod at `1/1 Running` with zero restarts and 20 consecutive private HTTPS responses of HTTP `200`.
 - Verified Homepage from the LG Gram and the Moto G84 over mobile data through Tailscale.
 - Confirmed Alertmanager detected the failed Homepage Pod as `KubePodCrashLooping` and sent the warning through Gmail.
+- Enabled WSL2 mirrored networking on the LG Gram for reliable Windows Tailscale routing.
+- Configured `mel-pve01` as the Tailscale subnet router for `192.168.1.0/24`.
+- Verified remote Kubernetes, Talos, and Proxmox administration from alternate Wi-Fi and Moto G84 mobile data.
 ## Quick validation
 
 ```powershell
@@ -307,6 +313,8 @@ dgs-private-cloud/
 │   ├── 20-grafana-private-tailscale-access.md
 │   ├── 20-kubernetes-mobile-access-tailscale.md
 │   ├── 21-homepage-private-tailscale.md
+│   ├── 22-homepage-private-cloud-dashboard.md
+│   ├── 23-remote-travel-administration.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -350,9 +358,12 @@ dgs-private-cloud/
 21. [Private Grafana access through Tailscale](docs/20-grafana-private-tailscale-access.md)
 22. [Secure mobile Kubernetes access through Tailscale](docs/20-kubernetes-mobile-access-tailscale.md)
 23. [Homepage through Flux and private Tailscale access](docs/21-homepage-private-tailscale.md)
-24. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
-25. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
-26. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
+24. [Homepage Private Cloud Dashboard](docs/22-homepage-private-cloud-dashboard.md)
+25. [Remote Travel Administration](docs/23-remote-travel-administration.md)
+
+26. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
+27. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+28. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 
 ## Security boundary
 

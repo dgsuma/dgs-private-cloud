@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.12.0] - 2026-08-21
+
+### Added
+
+- LG Gram travel-administration workstation using MobaXterm, Ubuntu WSL2, `kubectl`, and `talosctl`.
+- WSL2 mirrored networking for reliable Windows Tailscale routing.
+- Dedicated travel kubeconfig outside Git for the Tailscale Kubernetes API proxy.
+- `mel-pve01` Tailscale subnet routing for `192.168.1.0/24`.
+- Persistent IPv4 and IPv6 forwarding on `pve01`.
+- `docs/23-remote-travel-administration.md`.
+
+### Changed
+
+- `mel-pve01` is now the active subnet router for authenticated remote Talos access.
+- Current-state, operations, networking, roadmap, next-steps, security, README, and network inventory documentation record the completed travel-management design.
+
+### Verified
+
+- Remote `kubectl get nodes`, `kubectl get pods -A`, and `kubectl top nodes`.
+- Remote Talos TCP `50000`, `talosctl health`, and multi-node `talosctl service`.
+- Remote SSH to `mel-pve01` and Proxmox TCP `8006`.
+- Complete Kubernetes, Talos, and Proxmox access from alternate Wi-Fi and a Moto G84 mobile-data hotspot.
+
+### Security
+
+- No public forwarding was added for TCP `22`, `6443`, `50000`, or `8006`.
+- Tailscale Funnel remains disabled for management services.
+- Exact Tailscale IPs, tailnet DNS suffixes, kubeconfig, talosconfig, and authentication material remain outside Git.
+- `mel-pve01` advertises only `192.168.1.0/24` and is not used as an exit node.
+
 <!-- BEGIN HOMEPAGE FINAL CHANGELOG 2026-08-19 -->
 ## [0.11.0] - 2026-08-19
 
