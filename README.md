@@ -38,7 +38,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Last verified | `2026-08-23` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
-| Proxmox VE Manager | `9.2.10` observed in the web interface |
+| Proxmox VE Manager | `9.2.11` observed in the web interface |
 | Proxmox topology | One standalone physical host |
 | Primary guest storage | Samsung 990 PRO 2 TB as `vmdata` |
 | Talos version | `v1.13.6` |
