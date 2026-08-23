@@ -14,8 +14,8 @@
 > dashboard provides live Talos/Kubernetes, Proxmox, Prometheus, Alertmanager,
 > and Loki data over a responsive DGS Private Cloud background.
 >
-> SOPS/age secret management, isolated recovery testing, UPS telemetry, and the
-> Jenkins build-agent phase remain outstanding.
+> SOPS/age secret management, isolated recovery testing, and the Jenkins build-agent phase remain outstanding.
+> Eaton UPS telemetry and automated graceful shutdown are operational and production-tested.
 >
 > Exact private tailnet hostnames and credential values are intentionally kept
 > out of Git.
@@ -35,7 +35,7 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 
 | Item | Current value |
 |---|---|
-| Last verified | `2026-08-21` |
+| Last verified | `2026-08-23` |
 | Active Proxmox node | `pve01` on Beelink GTi12 |
 | Proxmox management address | `192.168.1.201/24` |
 | Proxmox VE Manager | `9.2.10` observed in the web interface |
@@ -102,7 +102,7 @@ All Talos VM disks are on `vmdata`, all network interfaces use VirtIO on `vmbr0`
 ```mermaid
 flowchart TB
     Internet["Vodafone 5G / IPv4 WAN"]
-    UPS["Eaton UPS<br/>hardware protection active<br/>telemetry pending"]
+    UPS["Eaton 5E UPS<br/>NUT monitoring active<br/>graceful shutdown verified"]
     Router["TP-Link Archer NX200<br/>192.168.1.1<br/>LAN 192.168.1.0/24"]
     Admin["LG Gram<br/>administration workstation<br/>kubectl / talosctl / flux"]
     PVE["Beelink GTi12<br/>pve01.home.arpa<br/>192.168.1.201<br/>Proxmox VE"]
@@ -203,6 +203,9 @@ flowchart TB
 - Enabled WSL2 mirrored networking on the LG Gram for reliable Windows Tailscale routing.
 - Configured `mel-pve01` as the Tailscale subnet router for `192.168.1.0/24`.
 - Verified remote Kubernetes, Talos, and Proxmox administration from alternate Wi-Fi and Moto G84 mobile data.
+- Connected the Eaton 5E 1200 AU G2 to `pve01` over USB and deployed NUT in standalone mode.
+- Configured and production-tested a 600-second sustained-outage graceful-shutdown path with cancellation on restored line power and immediate low-battery handling.
+- Verified post-recovery NUT health and automatic startup of production VMs `210`, `211`, `212`, and `220`.
 ## Quick validation
 
 ```powershell
@@ -260,8 +263,7 @@ Generated Talos machine configurations, `talosconfig`, kubeconfig, etcd snapshot
 1. Bring the Local Path Provisioner manifest fully under Flux reconciliation.
 2. Configure SOPS with age and migrate manually created Secrets, including `operator-oauth`, `alertmanager-smtp`, and `homepage-runtime`, to encrypted Git-managed resources.
 3. Perform an isolated VM restore test.
-4. Add Eaton UPS telemetry and graceful-shutdown monitoring.
-5. Enrich Homepage with least-privilege links/widgets for Proxmox, Flux/Kubernetes status, Jenkins, storage, and future services without committing credentials.
+4. Enrich Homepage with least-privilege links/widgets for Proxmox, Flux/Kubernetes status, Jenkins, storage, and future services without committing credentials.
 
 ## Repository map
 
@@ -315,6 +317,7 @@ dgs-private-cloud/
 │   ├── 21-homepage-private-tailscale.md
 │   ├── 22-homepage-private-cloud-dashboard.md
 │   ├── 23-remote-travel-administration.md
+│   ├── 24-proxmox-ups-nut-graceful-shutdown.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -401,4 +404,4 @@ This is proprietary project documentation. See [LICENSE.md](LICENSE.md).
 - Alertmanager generated and delivered a `KubePodCrashLooping` warning during the incident, validating the monitoring-to-email path.
 - See [docs/21-homepage-private-tailscale.md](docs/21-homepage-private-tailscale.md).
 
-Immediate next platform work: bring Local Path Provisioner fully under Flux, configure SOPS/age and migrate manual Secrets, then continue recovery and UPS work.
+Immediate next platform work: bring Local Path Provisioner fully under Flux, configure SOPS/age and migrate manual Secrets, then continue isolated recovery testing and least-privilege dashboard integration.

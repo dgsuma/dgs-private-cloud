@@ -1,7 +1,7 @@
 # Current State
 
-<!-- BEGIN CURRENT STATE 2026-08-21 -->
-## Current checkpoint — 2026-08-21
+<!-- BEGIN CURRENT STATE 2026-08-23 -->
+## Current checkpoint — 2026-08-23
 
 | Property | Verified state |
 |---|---|
@@ -26,13 +26,13 @@
 | Tailscale Funnel | Disabled |
 | SOPS | Not configured |
 | Isolated VM restore test | Pending |
-| UPS telemetry | Pending |
+| UPS telemetry and graceful shutdown | Operational — Eaton 5E USB telemetry + NUT + 600-second automation production-tested |
 
 Exact private tailnet hostnames remain in local operator notes rather than Git.
-<!-- END CURRENT STATE 2026-08-21 -->
+<!-- END CURRENT STATE 2026-08-23 -->
 
 
-Verified on `2026-08-21` after storage, observability, Metrics API, private Grafana, Homepage, responsive-dashboard, GitOps, WSL2 travel-workstation, remote Kubernetes API proxy, Tailscale subnet routing, remote Talos administration, and Proxmox recovery-access validation.
+Verified on `2026-08-23` after storage, observability, Metrics API, private Grafana, Homepage, responsive-dashboard, GitOps, WSL2 travel-workstation, remote Kubernetes API proxy, Tailscale subnet routing, remote Talos administration, and Proxmox recovery-access validation.
 
 ## Remote travel administration
 
@@ -60,7 +60,7 @@ See [Remote Travel Administration Through Tailscale](23-remote-travel-administra
 | PVE Manager | `9.2.10` observed in the web interface |
 | Running mode | Standalone, headless |
 | Primary guest storage | `vmdata` on Samsung 990 PRO 2 TB |
-| UPS | Eaton hardware protection active; telemetry pending |
+| UPS | Eaton 5E 1200 AU G2; USB NUT telemetry and automated graceful shutdown operational |
 
 ## Kubernetes
 
@@ -316,8 +316,16 @@ and validation record.
 - Local Path Provisioner configuration fully reconciled by Flux;
 - SOPS/age encrypted Secret management and migration of manual Secrets;
 - isolated VM restore and Talos recovery rehearsal;
-- UPS telemetry and automated graceful shutdown;
 - additional least-privilege Homepage integrations/widgets.
+## UPS power-failure automation
+
+The Eaton 5E 1200 AU G2 protecting `pve01` is monitored by NUT over USB.
+`ONBATT` starts a 600-second grace timer, `ONLINE` cancels it, and
+`LOWBATT` invokes the shutdown path immediately. A safe 30-second test proved
+the timer/handler chain before a sustained real mains-failure test proved
+orderly Proxmox guest shutdown, host shutdown, and production VM recovery.
+
+See [24-proxmox-ups-nut-graceful-shutdown.md](24-proxmox-ups-nut-graceful-shutdown.md).
 ## Current risk statement
 
 The Kubernetes control plane, workers, primary VM disks, and etcd member all depend on the single physical host `pve01`. Backups reduce data-loss risk but do not provide availability. The platform remains a single-host laboratory until permanent additional nodes and tested restores are introduced.

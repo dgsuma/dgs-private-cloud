@@ -1,3 +1,33 @@
+## 2026-08-23 — Eaton UPS NUT graceful-shutdown automation
+
+### Added
+
+- Connected the Eaton 5E 1200 AU G2 UPS to `pve01` over USB and configured
+  Network UPS Tools in standalone mode.
+- Added a 600-second sustained-outage timer, cancellation on restored line
+  power, and immediate low-battery handling.
+- Added [docs/24-proxmox-ups-nut-graceful-shutdown.md](docs/24-proxmox-ups-nut-graceful-shutdown.md).
+
+### Fixed
+
+- Corrected the upssched handler ownership to `root:nut` with mode `750`
+  after the safe timer test exposed exit status `126`.
+
+### Verified
+
+- Safe 30-second physical timer/handler test passed without shutdown.
+- Real sustained mains failure reached the production 600-second threshold.
+- NUT initiated forced shutdown and Proxmox stopped all running VMs and CTs
+  before host shutdown.
+- Production VMs `210`, `211`, `212`, and `220` returned after host
+  recovery; test LXC `230` remained stopped as intended.
+- NUT returned to healthy `OL` monitoring after recovery.
+- Talos QEMU Guest Agent timeout messages did not prevent successful guest
+  shutdown.
+
+### Security
+
+- The NUT monitor password remains host-local and is not committed.
 # Changelog
 
 ## [0.12.0] - 2026-08-21

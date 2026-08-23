@@ -88,7 +88,7 @@
 - [ ] Migrate `operator-oauth` from a manually created Secret to encrypted Git management.
 
 ## Phase 1E — Persistent storage, observability, and dashboard
-**Status: In progress — storage, metrics, logging, Alertmanager email, private Grafana, and Homepage are operational; Flux-managed storage, encrypted secrets, UPS telemetry, and recovery testing remain**
+**Status: In progress — storage, metrics, logging, Alertmanager email, private Grafana, and Homepage are operational; Flux-managed storage, encrypted secrets, and recovery testing remain**
 - [x] Select a Talos-compatible initial persistent-storage solution.
 - [x] Add dedicated worker data disks and Talos XFS user volumes.
 - [x] Deploy and validate Rancher Local Path Provisioner.
@@ -104,7 +104,7 @@
 - [x] Verify Alertmanager FIRING and RESOLVED delivery.
 - [x] Expose Grafana only through authenticated Tailscale access.
 - [x] Deploy Homepage and keep it private through Tailscale.
-- [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
+- [x] Add Eaton UPS telemetry and graceful-shutdown monitoring.
 - [ ] Test application and database recovery independently of etcd.
 ## Phase 1F — Jenkins controller and private CI access
 
@@ -177,7 +177,7 @@ Status: **Implemented and externally verified**
 - [x] Validate the private Serve URL from the Moto G84 over mobile data.
 - [ ] Enable and test Proxmox two-factor authentication.
 - [ ] Verify key-expiry settings for remote infrastructure devices.
-- [ ] Complete full reboot and power-recovery testing.
+- [x] Complete full reboot and power-recovery testing.
 - [x] Use `mel-pve01` as the active `192.168.1.0/24` subnet router; a separate Raspberry Pi router is no longer required for the current travel-access design.
 <!-- END TAILSCALE ROADMAP 2026-08-03 -->
 
@@ -202,5 +202,5 @@ Next:
 - [ ] Bring Local Path Provisioner configuration fully under Flux.
 - [ ] Configure SOPS with age and migrate manual Secret workflows, including `operator-oauth`, `alertmanager-smtp`, and `homepage-runtime`.
 - [ ] Perform an isolated VM restore test.
-- [ ] Add Eaton UPS telemetry and graceful-shutdown monitoring.
+- [x] Add Eaton UPS telemetry and graceful-shutdown monitoring.
 - [ ] Enrich Homepage with least-privilege service links/widgets without committing credentials.

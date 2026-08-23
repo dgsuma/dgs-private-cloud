@@ -17,8 +17,7 @@ Remaining priorities:
 
 1. SOPS with age and encrypted Secret lifecycle.
 2. Isolated VM restore validation and later Talos DR rehearsal.
-3. UPS telemetry and graceful-shutdown automation.
-4. Jenkins build agent / CI-to-GitOps work when Phase 2 resumes.
+3. Jenkins build agent / CI-to-GitOps work when Phase 2 resumes.
 <!-- END COMPLETED PLATFORM CHECKPOINT 2026-08-21 -->
 
 
@@ -140,13 +139,20 @@ Create an encrypted second copy of:
 
 Store the copy on a second physical device or encrypted off-site location. Never commit it.
 
-## Priority 7 — UPS telemetry and graceful shutdown
+## Priority 7 — UPS telemetry and graceful shutdown — COMPLETE
 
-- Add Eaton UPS telemetry.
-- Alert on mains failure, low battery, communication loss, and runtime threshold.
-- Define the guest shutdown order.
-- Shut down `pve01` only after Kubernetes workloads and Talos VMs are handled safely.
-- Test the procedure without risking data corruption.
+**Completed and production-tested on 2026-08-23.**
+
+- [x] Eaton 5E USB telemetry through NUT.
+- [x] 600-second `ONBATT` grace timer.
+- [x] Timer cancellation on `ONLINE`.
+- [x] Immediate `LOWBATT` shutdown path.
+- [x] Safe 30-second physical timer/handler validation.
+- [x] Production sustained-outage shutdown test.
+- [x] All running VMs and CTs stopped before host shutdown.
+- [x] Production VM recovery and post-boot NUT health verified.
+
+See [24-proxmox-ups-nut-graceful-shutdown.md](24-proxmox-ups-nut-graceful-shutdown.md).
 
 ## Exit criteria for the next milestone
 
@@ -178,5 +184,4 @@ Immediate next priorities:
 2. Configure SOPS with age and validate Flux decryption.
 3. Migrate manually created Secrets, including `tailscale/operator-oauth`, `monitoring/alertmanager-smtp`, and `homepage/homepage-runtime`, to encrypted Git-managed resources.
 4. Perform an isolated VM restore test.
-5. Add Eaton UPS telemetry and graceful-shutdown monitoring.
-6. Enrich Homepage with least-privilege service links/widgets without adding plaintext credentials.
+5. Enrich Homepage with least-privilege service links/widgets without adding plaintext credentials.
