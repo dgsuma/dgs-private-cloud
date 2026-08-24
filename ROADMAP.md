@@ -125,18 +125,37 @@
 
 ## Phase 1G — Jenkins build agent and CI-to-GitOps workflow
 
-**Status: Deferred**
+**Status: Baseline complete — 2026-08-24**
 
-- [ ] Create VM `221` `jenkins-agent01`.
-- [ ] Install Java, Git, Docker/BuildKit, and CI/security tooling.
-- [ ] Connect the agent to the Jenkins controller.
-- [ ] Set built-in controller executors to `0`.
-- [ ] Move the test Pipeline into a repository `Jenkinsfile`.
-- [ ] Build and scan a container image.
-- [ ] Push the image to GHCR.
-- [ ] Integrate image release with the GitOps source.
-- [ ] Let Flux perform Kubernetes continuous delivery.
+- [x] Create dedicated VM `221` `jenkins-agent-01`.
+- [x] Reserve `192.168.1.214/24`.
+- [x] Install Ubuntu Server 26.04 LTS.
+- [x] Install OpenJDK 21, Git, Docker, and QEMU Guest Agent.
+- [x] Create a locked dedicated `jenkins` operating-system account.
+- [x] Permit the trusted Jenkins account to use Docker.
+- [x] Configure fingerprint-verified controller-to-agent SSH.
+- [x] Register `jenkins-agent-01` as a permanent Jenkins node.
+- [x] Configure labels `linux docker gitops` and two executors.
+- [x] Run the distributed Java/Git/Docker smoke Pipeline successfully.
+- [x] Set the built-in Jenkins controller executor count to `0`.
+- [x] Create a separate repository-scoped GitHub write deploy key for Jenkins.
+- [x] Verify GitHub SSH host identity before trusting `github.com`.
+- [x] Prove authenticated repository read access.
+- [x] Prove repository clone and local Git commit creation.
+- [x] Prove write access on temporary branch `jenkins/gitops-smoke-1`.
+- [x] Delete the temporary write-test branch.
+- [x] Add a harmless Flux-managed CI-to-GitOps smoke resource.
+- [x] Push Jenkins commit `77bc93b` to `main`.
+- [x] Confirm Flux automatically reconciles the Jenkins commit.
+- [x] Confirm the live Kubernetes ConfigMap reflects the Jenkins-authored values.
 
+The validated responsibility split is `Jenkins -> CI/Git` and
+`Flux -> GitOps CD/Kubernetes`.
+
+**Follow-on:** build, scan, and publish a real application image to GHCR, then
+update an immutable image tag/digest in Git and let Flux deploy it. Add branch
+protection or a pull-request workflow before direct automated writes to `main`
+become the normal application-delivery pattern.
 ## Phase 2 — IoT and wellness data platform
 
 **Status: Planned**

@@ -1,3 +1,43 @@
+<!-- BEGIN CHANGELOG JENKINS PHASE 1G 2026-08-24 -->
+## 2026-08-24 — Jenkins build agent and CI-to-GitOps baseline
+
+### Added
+
+- Created VM `221` `jenkins-agent-01` as a dedicated Jenkins build agent.
+- Installed Ubuntu Server 26.04 LTS, OpenJDK 21, Git, Docker, and QEMU Guest
+  Agent.
+- Added a locked `jenkins` OS account with trusted Docker access.
+- Added fingerprint-verified controller-to-agent SSH.
+- Registered a permanent Jenkins node with labels `linux docker gitops` and two
+  executors.
+- Added a dedicated repository-scoped GitHub write deploy key and Jenkins
+  credential.
+- Added the Flux-managed `ci-gitops-smoke` namespace and ConfigMap validation
+  fixture.
+- Added `docs/25-jenkins-build-agent-ci-gitops.md`.
+
+### Changed
+
+- Set the Jenkins built-in controller executor count to `0`.
+- Established the responsibility split `Jenkins -> CI/Git` and
+  `Flux -> GitOps CD/Kubernetes`.
+
+### Verified
+
+- `jenkins-agent-smoke` completed successfully on VM `221`.
+- Jenkins authenticated to GitHub over SSH and cloned the repository.
+- Jenkins created a local Git commit without pushing.
+- Jenkins pushed and verified temporary branch `jenkins/gitops-smoke-1`, then
+  the branch was deleted.
+- Baseline smoke resource commit `ec665690` reconciled successfully.
+- Jenkins pushed commit `77bc93b` to `main`.
+- Flux automatically detected and applied `main@sha1:77bc93b`.
+- Live Kubernetes ConfigMap values changed to `updated-by-jenkins`, build `1`,
+  source `jenkins`.
+- Local workstation fast-forwarded to the Jenkins commit and returned to a
+  clean working tree.
+<!-- END CHANGELOG JENKINS PHASE 1G 2026-08-24 -->
+
 ## 2026-08-23 — Eaton UPS NUT graceful-shutdown automation
 
 ### Added

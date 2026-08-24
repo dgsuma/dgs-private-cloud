@@ -298,6 +298,37 @@ complete implementation, incident, validation, and recovery record.
 
 See [18-observability-stack.md](18-observability-stack.md) for the implementation
 and validation record.
+<!-- BEGIN JENKINS PHASE 1G CURRENT STATE -->
+## Jenkins build agent and CI-to-GitOps — verified 2026-08-24
+
+| Property | Verified state |
+|---|---|
+| Build-agent VM | `221` `jenkins-agent-01` |
+| Agent address | `192.168.1.214/24` |
+| Agent OS | Ubuntu Server 26.04 LTS |
+| Agent compute | 4 vCPU, 8 GiB RAM |
+| Agent disk | 80 GiB on `vmdata` |
+| Java | OpenJDK `21.0.11` |
+| Git | `2.53.0` |
+| Docker | `29.1.3` |
+| Jenkins OS account | `jenkins`, password locked |
+| Jenkins node | Online |
+| Agent executors | `2` |
+| Agent labels | `linux docker gitops` |
+| Controller executors | `0` |
+| Controller-to-agent transport | SSH with Known Hosts verification |
+| GitHub Jenkins credential | Dedicated repository-scoped SSH write credential |
+| Temporary write-test branch | Deleted after successful validation |
+| End-to-end Jenkins commit | `77bc93b` |
+| Flux reconciliation | Automatically applied `main@sha1:77bc93b` |
+| Kubernetes proof | `ci-gitops-smoke` ConfigMap updated by Flux |
+| Responsibility split | Jenkins changes Git; Flux changes Kubernetes |
+| Phase 1G baseline | Complete |
+
+No kubeconfig, `talosconfig`, Flux private key, or Kubernetes administrator
+credential is required on the Jenkins build agent for the normal GitOps path.
+<!-- END JENKINS PHASE 1G CURRENT STATE -->
+
 ## Recovery baseline
 
 | Item | State |

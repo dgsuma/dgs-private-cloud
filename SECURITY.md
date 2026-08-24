@@ -38,6 +38,37 @@ Flux reads this repository by SSH deploy key.
 - Before changing repository visibility, run a secret scan and inspect the Git history.
 - GitOps manifests must be declarative and reproducible without containing plaintext credentials.
 
+<!-- BEGIN JENKINS CI GITOPS SECURITY -->
+## Jenkins CI-to-GitOps trust boundary
+
+Jenkins uses two separate SSH trust relationships:
+
+1. controller-to-agent SSH for VM `221`; and
+2. a repository-scoped GitHub deploy key with write access for controlled
+   GitOps commits.
+
+Required controls:
+
+- never reuse the Flux deploy key as the Jenkins write key;
+- never reuse the controller-to-agent key as a GitHub key;
+- keep both private keys out of Git and screenshots;
+- store the GitHub private key only in the Jenkins credential store or an
+  approved out-of-band recovery store;
+- verify SSH host fingerprints before adding hosts to `known_hosts`;
+- keep the Jenkins controller at zero normal build executors;
+- restrict Docker-enabled agents to trusted workloads;
+- do not place kubeconfig, `talosconfig`, Flux private keys, Kubernetes
+  administrator tokens, or Proxmox administrator credentials on the agent for
+  the normal CI-to-GitOps path;
+- Jenkins may change Git, but Flux remains the component authorised to
+  reconcile Kubernetes;
+- revoke and replace a deploy key immediately if exposure is suspected.
+
+Direct automated writes to `main` were used for the controlled Phase 1G smoke
+test. For normal application delivery, prefer branch protection and a
+pull-request or similarly controlled promotion policy.
+<!-- END JENKINS CI GITOPS SECURITY -->
+
 ## Tailscale trust boundary
 
 The Tailscale Operator uses:

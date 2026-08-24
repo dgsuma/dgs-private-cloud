@@ -384,6 +384,28 @@ Never commit:
 - passwords, tokens, private keys, or VPN profiles;
 - VM backup archives, virtual disks, ISO images, or router exports.
 
+<!-- BEGIN JENKINS PHASE 1G 2026-08-24 -->
+## Jenkins build agent and CI-to-GitOps — Phase 1G
+
+**Verified 2026-08-24: baseline complete.**
+
+- VM `221` `jenkins-agent-01` is the dedicated Jenkins build agent at
+  `192.168.1.214/24`.
+- The agent runs Ubuntu Server 26.04 LTS with 4 vCPU, 8 GiB RAM, an 80 GiB disk,
+  OpenJDK 21, Git, and Docker.
+- Jenkins connects to the agent over fingerprint-verified SSH.
+- The agent has two executors; the built-in controller has zero executors.
+- Jenkins uses a separate repository-scoped GitHub write credential.
+- Jenkins-to-GitHub read, clone, local-commit, temporary-branch write, and
+  end-to-end GitOps tests all succeeded.
+- Commit `77bc93b` was pushed by Jenkins to `main`; Flux automatically reconciled
+  the same revision and updated the live `ci-gitops-smoke` ConfigMap.
+- Jenkins changes Git; Flux remains responsible for Kubernetes reconciliation.
+
+See
+[Jenkins Build Agent and CI-to-GitOps Workflow](docs/25-jenkins-build-agent-ci-gitops.md).
+<!-- END JENKINS PHASE 1G 2026-08-24 -->
+
 ## Licence
 
 Copyright © 2026 Duminda Sumanasinghe. All rights reserved.

@@ -836,3 +836,19 @@ Flux    -> GitOps CD
 ```
 
 Jenkins should not be given broad Kubernetes `cluster-admin` credentials merely to perform direct `kubectl apply` deployments.
+
+<!-- BEGIN JENKINS PHASE 1G FOLLOW-ON -->
+## Follow-on — dedicated build agent and GitOps workflow
+
+The controller-only Phase 1 design was extended on `2026-08-24` with VM `221`
+`jenkins-agent-01`.
+
+Normal build execution now occurs on the dedicated agent and the built-in
+controller executor count is `0`. Jenkins has also been validated to make a
+controlled Git change that Flux automatically reconciles into Kubernetes.
+
+See
+[`25-jenkins-build-agent-ci-gitops.md`](25-jenkins-build-agent-ci-gitops.md)
+for the implementation, validation evidence, security boundary, and rebuild
+notes.
+<!-- END JENKINS PHASE 1G FOLLOW-ON -->

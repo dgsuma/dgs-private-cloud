@@ -21,26 +21,41 @@ Remaining priorities:
 <!-- END COMPLETED PLATFORM CHECKPOINT 2026-08-21 -->
 
 
-## Jenkins Phase 2 — deferred
+## Jenkins Phase 1G — completed
 
-Jenkins Controller Phase 1 is complete. The next Jenkins exercise will use a separate build agent rather than placing normal build workloads on the controller.
+The dedicated build-agent and CI-to-GitOps baseline was completed on
+`2026-08-24`.
 
-1. Create VM `221` `jenkins-agent01`.
-2. Install Java, Git, Docker/BuildKit, and CI/security tooling.
-3. Connect the agent to Jenkins.
-4. Run a Pipeline on the agent.
-5. Set the built-in controller executor count to `0`.
-6. Create a disposable GitHub application repository with a `Jenkinsfile`.
-7. Build and scan a container image.
-8. Push the image to GHCR.
-9. Update the GitOps source.
-10. Let Flux reconcile the Kubernetes deployment.
+Completed:
 
-Target responsibility split:
+1. VM `221` `jenkins-agent-01` created and hardened as the build executor.
+2. Java 21, Git, and Docker validated on the agent.
+3. Secure controller-to-agent SSH validated.
+4. Jenkins distributed builds validated on the agent.
+5. Built-in controller executors set to `0`.
+6. Dedicated repository-scoped GitHub write credential validated.
+7. Read, clone, local-commit, and temporary-branch write tests completed.
+8. Jenkins commit `77bc93b` pushed to `main`.
+9. Flux automatically reconciled the Jenkins commit.
+10. Live Kubernetes state verified from the Flux-managed smoke ConfigMap.
+
+Next Jenkins/application-delivery work:
+
+1. create or select a real application repository;
+2. add a version-controlled `Jenkinsfile`;
+3. build and test a container image on `jenkins-agent-01`;
+4. add vulnerability/image scanning;
+5. publish an immutable image to GHCR;
+6. update a GitOps image tag or digest;
+7. let Flux perform deployment;
+8. introduce branch protection or a pull-request workflow for normal automated
+   changes.
+
+Target responsibility split remains:
 
 ```text
-Jenkins -> CI
-Flux    -> GitOps CD
+Jenkins -> CI and Git changes
+Flux    -> GitOps CD and Kubernetes reconciliation
 ```
 ## Completed — Persistent storage
 
