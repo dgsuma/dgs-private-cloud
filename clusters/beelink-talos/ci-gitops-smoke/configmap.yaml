@@ -4,6 +4,6 @@ metadata:
   name: ci-gitops-smoke
   namespace: ci-gitops-smoke
 data:
-  message: "baseline-manual"
-  build: "0"
-  source: "manual"
+  message: "updated-by-jenkins"
+  build: "1"
+  source: "jenkins"
