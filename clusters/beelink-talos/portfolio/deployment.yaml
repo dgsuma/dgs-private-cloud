@@ -22,6 +22,9 @@ spec:
         app.kubernetes.io/name: enhanced-portfolio
 
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+
       containers:
         - name: portfolio
           image: ghcr.io/dgsuma/enhanced-portfolio-site:bootstrap

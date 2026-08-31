@@ -9,3 +9,4 @@ resources:
   - ./kubelet-serving-cert-approver
   - ./metrics-server
   - ./ci-gitops-smoke
+  - ./portfolio
