@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: enhanced-portfolio
+  namespace: portfolio
+spec:
+  type: ClusterIP
+
+  selector:
+    app.kubernetes.io/name: enhanced-portfolio
+
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
