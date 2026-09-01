@@ -9,4 +9,4 @@ resources:
 
 images:
   - name: ghcr.io/dgsuma/enhanced-portfolio-site
-    newTag: 72f3c0ea02d4
+    newTag: e7b98dd0901a
