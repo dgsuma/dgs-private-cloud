@@ -1,30 +1,29 @@
 # DGS Private Cloud
 
-<!-- BEGIN CURRENT CHECKPOINT 2026-08-21 -->
-> **Current checkpoint — 2026-08-21**
+<!-- BEGIN CURRENT CHECKPOINT 2026-09-01 -->
+> **Current checkpoint — 2026-09-01**
 >
-> The single-host DGS Private Cloud now has the Talos Kubernetes cluster, Flux
-> GitOps, Tailscale private access, local-path persistent storage, the
-> Prometheus/Grafana/Alertmanager/Loki/Alloy observability stack, Jenkins
-> Controller Phase 1, Kubernetes Metrics API, and the private Homepage dashboard
-> operational.
+> The single-host DGS Private Cloud now has a verified private application
+> delivery workflow in addition to Talos Kubernetes, Flux GitOps, Tailscale
+> private access, persistent storage, observability, Homepage, Jenkins, remote
+> travel administration, and UPS/NUT graceful shutdown.
 >
-> Homepage is reconciled by Flux, exposed only through the Tailscale
-> IngressClass, and validated on desktop and mobile/portrait layouts. The final
-> dashboard provides live Talos/Kubernetes, Proxmox, Prometheus, Alertmanager,
-> and Loki data over a responsive DGS Private Cloud background.
+> The real `enhanced-portfolio-site` application is sourced from a private
+> GitHub repository. Jenkins detects source changes, builds and smoke-tests the
+> container, runs Trivy, publishes an immutable Git-SHA-tagged image to private
+> GHCR, and updates the private `dgs-private-cloud` GitOps repository. Flux then
+> performs the Kubernetes rollout. Jenkins does not hold Kubernetes or Talos
+> administrator credentials for this path.
 >
-> SOPS/age secret management, isolated recovery testing, and the Jenkins build-agent phase remain outstanding.
-> Eaton UPS telemetry and automated graceful shutdown are operational and production-tested.
+> The portfolio runs as two Kubernetes replicas and is exposed only through a
+> private Tailscale Ingress. The former `ci-gitops-smoke` workload was retired
+> after the real application workflow passed end-to-end and Flux pruning was
+> verified.
 >
-> Exact private tailnet hostnames and credential values are intentionally kept
-> out of Git.
->
-> Homepage documentation:
-> - [Homepage Private Cloud Dashboard](docs/22-homepage-private-cloud-dashboard.md)
-> - [Remote Travel Administration](docs/23-remote-travel-administration.md)
-
-<!-- END CURRENT CHECKPOINT 2026-08-21 -->
+> Application-delivery documentation:
+> - [Jenkins Build Agent and CI-to-GitOps Workflow](docs/25-jenkins-build-agent-ci-gitops.md)
+> - [Private Portfolio CI, GHCR, GitOps and Flux Delivery](docs/26-private-portfolio-ci-ghcr-gitops-flux.md)
+<!-- END CURRENT CHECKPOINT 2026-09-01 -->
 
 
 Infrastructure-as-code, GitOps configuration, architecture decisions, inventories, recovery procedures, and operating documentation for the DGS home-lab/private-cloud platform.
@@ -62,6 +61,9 @@ Infrastructure-as-code, GitOps configuration, architecture decisions, inventorie
 | Mobile Kubernetes access | Operational — Android Termux + Tailscale + read-only RBAC |
 | Grafana private Tailscale ingress | Operational — Flux-managed Tailscale Ingress; workstation and mobile-data validation passed |
 | Homepage | Operational — `v1.13.2`, Flux-managed, internal `ClusterIP`, private Tailscale Ingress; workstation and mobile-data validation passed |
+| Jenkins build agent | Operational — VM `221` `jenkins-agent-01`; controller executors remain `0` |
+| Private portfolio delivery | Operational — private source -> Jenkins -> private GHCR -> private GitOps -> Flux |
+| Portfolio runtime | Operational — `portfolio/enhanced-portfolio`, `2/2` Ready, private Tailscale Ingress |
 
 ## Jenkins Controller Phase 1
 
@@ -260,11 +262,17 @@ Remaining recovery work:
 Generated Talos machine configurations, `talosconfig`, kubeconfig, etcd snapshots, VM backup archives, private keys, OAuth secrets, and decrypted secret files must never be committed.
 
 ## Immediate next work
-1. Bring the Local Path Provisioner manifest fully under Flux reconciliation.
-2. Configure SOPS with age and migrate manually created Secrets, including `operator-oauth`, `alertmanager-smtp`, and `homepage-runtime`, to encrypted Git-managed resources.
-3. Perform an isolated VM restore test.
-4. Enrich Homepage with least-privilege links/widgets for Proxmox, Flux/Kubernetes status, Jenkins, storage, and future services without committing credentials.
 
+1. Configure SOPS with age and migrate manually created Secrets, including the
+   private GHCR pull Secret, to encrypted Git-managed resources.
+2. Refresh the portfolio runtime base image/packages and clear the currently
+   reported HIGH OpenSSL findings.
+3. Perform an isolated VM restore test and later Talos disaster-recovery
+   rehearsal.
+4. Consider branch protection or a pull-request promotion workflow for
+   automated GitOps image updates.
+5. Continue least-privilege Homepage/service integration without committing
+   credentials.
 ## Repository map
 
 ```text
@@ -282,6 +290,7 @@ dgs-private-cloud/
 │       ├── tailscale/
 │       ├── monitoring/
 │       ├── homepage/
+│       ├── portfolio/
 │       └── kustomization.yaml
 ├── talos/
 │   ├── README.md
@@ -318,6 +327,8 @@ dgs-private-cloud/
 │   ├── 22-homepage-private-cloud-dashboard.md
 │   ├── 23-remote-travel-administration.md
 │   ├── 24-proxmox-ups-nut-graceful-shutdown.md
+│   ├── 25-jenkins-build-agent-ci-gitops.md
+│   ├── 26-private-portfolio-ci-ghcr-gitops-flux.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -363,11 +374,12 @@ dgs-private-cloud/
 23. [Homepage through Flux and private Tailscale access](docs/21-homepage-private-tailscale.md)
 24. [Homepage Private Cloud Dashboard](docs/22-homepage-private-cloud-dashboard.md)
 25. [Remote Travel Administration](docs/23-remote-travel-administration.md)
-
-26. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
-27. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
-28. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
-
+26. [Proxmox UPS/NUT graceful shutdown](docs/24-proxmox-ups-nut-graceful-shutdown.md)
+27. [Jenkins Build Agent and CI-to-GitOps Workflow](docs/25-jenkins-build-agent-ci-gitops.md)
+28. [Private Portfolio CI, GHCR, GitOps and Flux Delivery](docs/26-private-portfolio-ci-ghcr-gitops-flux.md)
+29. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
+30. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+31. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 ## Security boundary
 
 Proxmox management, the Talos API, the Kubernetes API, and observability endpoints remain private. Do not expose TCP `8006`, TCP `50000`, TCP `6443`, Jenkins TCP `8080`, SSH, or dashboards directly to the public internet.
@@ -405,6 +417,33 @@ Never commit:
 See
 [Jenkins Build Agent and CI-to-GitOps Workflow](docs/25-jenkins-build-agent-ci-gitops.md).
 <!-- END JENKINS PHASE 1G 2026-08-24 -->
+
+<!-- BEGIN JENKINS PHASE 1H 2026-09-01 -->
+## Jenkins private application delivery — Phase 1H
+
+**Verified 2026-09-01: real application workflow complete.**
+
+- `enhanced-portfolio-site` is private and Jenkins reads it through a dedicated
+  read-only repository deploy key.
+- Jenkins automatically detects `main` changes through SCM polling.
+- The Pipeline performs lint/build, an in-container health smoke test, and
+  Trivy vulnerability scanning on `jenkins-agent-01`.
+- Images are published to private GHCR using a 12-character Git-SHA tag.
+- Rebuilding the same commit does not overwrite an existing GHCR tag.
+- GHCR authentication uses an ephemeral per-build Docker config that is deleted
+  during Pipeline cleanup.
+- Jenkins updates only the portfolio image tag in the private
+  `dgs-private-cloud` GitOps repository.
+- Flux performs the Kubernetes rollout; Jenkins does not require Kubernetes or
+  Talos administrator credentials.
+- `portfolio/enhanced-portfolio` is verified at `2/2` Ready and exposed only
+  through a private Tailscale Ingress.
+- The earlier `ci-gitops-smoke` workload was removed after the real workflow
+  passed and Flux pruning was verified.
+
+See
+[Private Portfolio CI, GHCR, GitOps and Flux Delivery](docs/26-private-portfolio-ci-ghcr-gitops-flux.md).
+<!-- END JENKINS PHASE 1H 2026-09-01 -->
 
 ## Licence
 

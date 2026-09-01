@@ -70,6 +70,57 @@
 - The NUT monitor password remains host-local and is not committed.
 # Changelog
 
+<!-- BEGIN CHANGELOG PRIVATE PORTFOLIO 2026-09-01 -->
+## 2026-09-01 — Private portfolio CI/CD and GitOps delivery complete
+
+### Added
+
+- Added the Flux-managed `portfolio` application manifests.
+- Added a private GHCR pull path through the manually managed
+  `portfolio/ghcr-pull` Secret.
+- Added private Tailscale Ingress access for the portfolio.
+- Added a real Jenkins application Pipeline using the private
+  `enhanced-portfolio-site` source repository.
+- Added a dedicated read-only source deploy key for Jenkins.
+- Added immutable 12-character Git-SHA image tagging and existing-tag
+  overwrite protection.
+- Added ephemeral build-scoped GHCR Docker authentication and cleanup.
+- Added `docs/26-private-portfolio-ci-ghcr-gitops-flux.md`.
+
+### Verified
+
+- Jenkins SCM polling automatically detected changes in the private source
+  repository.
+- Application lint/build and container `/healthz` smoke testing passed.
+- Trivy security scanning completed with `HIGH: 4`, `CRITICAL: 0` at the final
+  validation checkpoint.
+- Jenkins published the private GHCR image and updated the private GitOps
+  repository.
+- Flux automatically reconciled the Jenkins-generated GitOps commit.
+- Kubernetes completed the rolling portfolio Deployment at `2/2` Ready.
+- A visible application text change propagated from private-source `git push`
+  through Jenkins, GHCR, GitOps, Flux, and Kubernetes to the private Tailscale
+  site.
+- A repeated build of the same source commit did not overwrite the existing
+  GHCR tag.
+- Flux pruning remained enabled and successfully removed the obsolete
+  `ci-gitops-smoke` workload.
+
+### Changed
+
+- Application source access is now private and repository-scoped.
+- GHCR remains private; Kubernetes pulls with authenticated registry access.
+- Jenkins GHCR authentication no longer persists in
+  `/home/jenkins/.docker/config.json`.
+- The real portfolio workflow replaces the earlier ConfigMap-only CI/GitOps
+  smoke proof.
+
+### Removed
+
+- Removed `clusters/beelink-talos/ci-gitops-smoke/`.
+- Removed the `./ci-gitops-smoke` root Kustomization reference.
+<!-- END CHANGELOG PRIVATE PORTFOLIO 2026-09-01 -->
+
 ## [0.12.0] - 2026-08-21
 
 ### Added

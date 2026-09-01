@@ -404,3 +404,26 @@ The next application-level CI iteration can build on this baseline:
 The current `ci-gitops-smoke` resource is a validation fixture. It can be
 removed later with a normal GitOps commit after its evidence is no longer
 needed.
+
+<!-- BEGIN PHASE 1H FOLLOW-ON 2026-09-01 -->
+## Phase 1H follow-on — real private application delivery
+
+The Phase 1G smoke proof documented above has now been superseded by a real
+application workflow.
+
+On 2026-09-01:
+
+- the private `enhanced-portfolio-site` repository was connected to Jenkins
+  through a dedicated read-only deploy key;
+- Jenkins built, smoke-tested, and scanned the application container;
+- private GHCR publication was verified;
+- immutable Git-SHA tag behaviour was verified;
+- Jenkins updated the private `dgs-private-cloud` image tag;
+- Flux performed the real Kubernetes rollout;
+- a visible application change propagated end-to-end automatically;
+- ephemeral GHCR authentication replaced persistent Docker login state;
+- the obsolete `ci-gitops-smoke` workload was removed and Flux-pruned.
+
+The current application-delivery implementation is documented in
+[26-private-portfolio-ci-ghcr-gitops-flux.md](26-private-portfolio-ci-ghcr-gitops-flux.md).
+<!-- END PHASE 1H FOLLOW-ON 2026-09-01 -->

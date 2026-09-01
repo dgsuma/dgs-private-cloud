@@ -32,7 +32,7 @@ Exact private tailnet hostnames remain in local operator notes rather than Git.
 <!-- END CURRENT STATE 2026-08-23 -->
 
 
-Verified on `2026-08-23` after storage, observability, Metrics API, private Grafana, Homepage, responsive-dashboard, GitOps, WSL2 travel-workstation, remote Kubernetes API proxy, Tailscale subnet routing, remote Talos administration, and Proxmox recovery-access validation.
+Verified on `2026-09-01` after storage, observability, Metrics API, private Grafana, Homepage, responsive-dashboard, GitOps, WSL2 travel-workstation, remote Kubernetes API proxy, Tailscale subnet routing, remote Talos administration, and Proxmox recovery-access validation.
 
 ## Remote travel administration
 
@@ -328,6 +328,53 @@ and validation record.
 No kubeconfig, `talosconfig`, Flux private key, or Kubernetes administrator
 credential is required on the Jenkins build agent for the normal GitOps path.
 <!-- END JENKINS PHASE 1G CURRENT STATE -->
+
+<!-- BEGIN JENKINS PHASE 1H CURRENT STATE -->
+## Private portfolio application delivery — verified 2026-09-01
+
+| Property | Verified state |
+|---|---|
+| Source repository | `dgsuma/enhanced-portfolio-site`, private |
+| Source branch | `main` |
+| Jenkins job | `enhanced-portfolio-ci` |
+| Trigger | SCM polling; automatic private-source change detection verified |
+| Source authentication | Dedicated read-only SSH deploy key |
+| Source Jenkins credential | `github-enhanced-portfolio-read` |
+| Build executor | `jenkins-agent-01` |
+| Pipeline validation | lint, Next.js build, container health smoke test, Trivy |
+| Container registry | private GHCR |
+| Image | `ghcr.io/dgsuma/enhanced-portfolio-site` |
+| Image versioning | 12-character application Git SHA |
+| Tag overwrite protection | Verified; existing Git-SHA tag is not republished |
+| GHCR Jenkins authentication | Ephemeral per-build Docker config; cleaned in `post` |
+| GitOps repository | `dgsuma/dgs-private-cloud`, private |
+| Jenkins GitOps credential | Dedicated repository-scoped SSH write credential |
+| GitOps target | `clusters/beelink-talos/portfolio/kustomization.yaml` |
+| Kubernetes namespace | `portfolio` |
+| Deployment | `enhanced-portfolio`, `2/2` Ready |
+| Service | internal `ClusterIP` |
+| Private ingress | Tailscale Ingress; tailnet-only |
+| Kubernetes GHCR authentication | `portfolio/ghcr-pull` manual Secret |
+| CI/GitOps smoke workload | Retired and pruned after real application validation |
+| Responsibility split | Jenkins changes Git; Flux changes Kubernetes |
+
+The full real-application path was verified by committing a visible content
+change to the private source repository and performing only a normal
+`git push`. Jenkins detected the change automatically, published a new private
+GHCR image, updated the GitOps repository, Flux reconciled the new Git revision,
+Kubernetes completed a rolling update, and the visible change appeared on the
+private Tailscale-hosted site.
+
+No kubeconfig, `talosconfig`, Flux private key, or Kubernetes administrator
+credential is required on the Jenkins build agent for this workflow.
+
+At the final validation checkpoint Trivy reported four HIGH and zero CRITICAL
+findings in Alpine/OpenSSL packages. The CRITICAL gate therefore passed; a
+runtime base-image/package refresh remains a hardening task.
+
+See
+[26-private-portfolio-ci-ghcr-gitops-flux.md](26-private-portfolio-ci-ghcr-gitops-flux.md).
+<!-- END JENKINS PHASE 1H CURRENT STATE -->
 
 ## Recovery baseline
 

@@ -17,7 +17,7 @@ Remaining priorities:
 
 1. SOPS with age and encrypted Secret lifecycle.
 2. Isolated VM restore validation and later Talos DR rehearsal.
-3. Jenkins build agent / CI-to-GitOps work when Phase 2 resumes.
+3. Continue Jenkins/GitOps hardening through branch protection, encrypted Secret management, and base-image refresh.
 <!-- END COMPLETED PLATFORM CHECKPOINT 2026-08-21 -->
 
 
@@ -57,6 +57,48 @@ Target responsibility split remains:
 Jenkins -> CI and Git changes
 Flux    -> GitOps CD and Kubernetes reconciliation
 ```
+<!-- BEGIN JENKINS PHASE 1H NEXT STEPS -->
+## Jenkins Phase 1H — private application delivery completed
+
+**Completed and end-to-end verified on 2026-09-01.**
+
+The previously listed real-application delivery work is now complete:
+
+- [x] selected the real `enhanced-portfolio-site` application repository;
+- [x] added a version-controlled `Jenkinsfile`;
+- [x] built and tested the container on `jenkins-agent-01`;
+- [x] added Trivy vulnerability scanning;
+- [x] published immutable Git-SHA-tagged images to private GHCR;
+- [x] configured private-source checkout with a read-only deploy key;
+- [x] configured private GHCR pulls through `portfolio/ghcr-pull`;
+- [x] updated the GitOps image tag from Jenkins;
+- [x] let Flux perform the Kubernetes deployment;
+- [x] verified automatic SCM polling from a private source repository;
+- [x] verified automatic rolling deployment after a visible source change;
+- [x] prevented re-publishing an existing Git-SHA image tag;
+- [x] replaced persistent Docker login state with ephemeral build-scoped GHCR
+  authentication;
+- [x] retired and pruned the obsolete `ci-gitops-smoke` workload.
+
+Remaining Jenkins/application-delivery hardening:
+
+1. refresh the runtime base image/packages to clear current HIGH OpenSSL
+   findings;
+2. configure SOPS/age and migrate `portfolio/ghcr-pull` and other manual
+   Secrets;
+3. consider branch protection or a pull-request promotion model for automated
+   GitOps updates;
+4. consider digest pinning/signing/attestation if stronger release provenance
+   is later required.
+
+The responsibility split remains:
+
+```text
+Jenkins -> CI, image publication, and Git changes
+Flux    -> GitOps CD and Kubernetes reconciliation
+```
+<!-- END JENKINS PHASE 1H NEXT STEPS -->
+
 ## Completed — Persistent storage
 
 **Prerequisite completed on 2026-08-09.**
