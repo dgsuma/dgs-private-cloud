@@ -8,5 +8,4 @@ resources:
   - ./homepage
   - ./kubelet-serving-cert-approver
   - ./metrics-server
-  - ./ci-gitops-smoke
   - ./portfolio
