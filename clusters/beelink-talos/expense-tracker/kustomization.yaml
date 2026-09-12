@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: expense-tracker
+
+resources:
+  - ./base
+
+images:
+  - name: expense-tracker-api
+    newName: ghcr.io/dgsuma/expense-tracker-api
+    newTag: "bootstrap"
+
+  - name: expense-tracker-web
+    newName: ghcr.io/dgsuma/expense-tracker-web
+    newTag: "bootstrap"
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: ghcr-pull
