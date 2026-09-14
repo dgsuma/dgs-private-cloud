@@ -23,7 +23,14 @@ spec:
           image: expense-tracker-api:latest  # replaced by Kustomize image override
           imagePullPolicy: IfNotPresent
           workingDir: /app/database
-          command: ["alembic", "upgrade", "head"]
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              alembic upgrade head
+              cd /app
+              python database/seeds/seed.py
           envFrom:
             - configMapRef:
                 name: expense-tracker-config
