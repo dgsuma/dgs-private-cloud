@@ -167,6 +167,10 @@ data:
             href: https://nokzeo.com/
             description: Premium strawberry farm
 
+        - Expense Tracker:
+            icon: "mdi-wallet-#80cbc4"
+            href: https://expense-tracker.tail499e7c.ts.net
+            description: Personal expense and income tracker
     - DevOps & GitOps:
         - Jenkins:
             icon: jenkins.png
