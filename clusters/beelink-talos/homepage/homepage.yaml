@@ -433,6 +433,8 @@ spec:
       app.kubernetes.io/name: homepage
   template:
     metadata:
+      annotations:
+        dgs.homepage/config-revision: "2026-09-19-expense-tracker"
       labels:
         app.kubernetes.io/name: homepage
     spec:
