@@ -35,6 +35,17 @@ spec:
           cpu: 500m
           memory: 512Mi
 
+      extraPorts:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+
+        - name: otlp-http
+          port: 4318
+          targetPort: 4318
+          protocol: TCP
+
       configMap:
         create: true
         content: |-
@@ -118,6 +129,30 @@ spec:
           loki.write "local" {
             endpoint {
               url = "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+            }
+          }
+
+          otelcol.receiver.otlp "traces" {
+            grpc {
+              endpoint = "0.0.0.0:4317"
+            }
+
+            http {
+              endpoint = "0.0.0.0:4318"
+            }
+
+            output {
+              traces = [otelcol.exporter.otlp.tempo.input]
+            }
+          }
+
+          otelcol.exporter.otlp "tempo" {
+            client {
+              endpoint = "tempo.monitoring.svc.cluster.local:4317"
+
+              tls {
+                insecure = true
+              }
             }
           }
 
