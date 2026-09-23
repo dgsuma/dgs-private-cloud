@@ -9,11 +9,11 @@ resources:
 images:
   - name: expense-tracker-api
     newName: ghcr.io/dgsuma/expense-tracker-api
-    newTag: "1f6bb6a7-29"
+    newTag: "6ac0042e-30"
 
   - name: expense-tracker-web
     newName: ghcr.io/dgsuma/expense-tracker-web
-    newTag: "1f6bb6a7-29"
+    newTag: "6ac0042e-30"
 
 patches:
   - target:
