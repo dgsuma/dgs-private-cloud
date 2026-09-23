@@ -31,6 +31,9 @@ spec:
     tempo:
       multitenancyEnabled: false
 
+      structuredConfig:
+        stream_over_http_enabled: true
+
       # Keep traces for 7 days.
       retention: 168h
 
