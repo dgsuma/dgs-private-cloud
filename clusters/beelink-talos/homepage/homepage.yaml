@@ -52,13 +52,13 @@ data:
 
       Observability:
         style: row
-        columns: 4
+        columns: 5
       Websites:
         style: row
         columns: 3
       DevOps & GitOps:
         style: row
-        columns: 3
+        columns: 4
 
   services.yaml: |
     - Infrastructure:
@@ -90,11 +90,11 @@ data:
         - Grafana:
             icon: grafana.png
             href: "{{HOMEPAGE_VAR_GRAFANA_URL}}"
-            description: Metrics, logs and alerts
+            description: Dashboards and Explore
 
         - Prometheus:
             icon: prometheus.png
-            description: Metrics collection and PromQL
+            description: Metrics and PromQL
             widget:
               type: prometheus
               url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
@@ -103,9 +103,40 @@ data:
                 - targets_down
                 - targets_total
 
+        - Loki:
+            icon: loki.png
+            description: Logs and LogQL
+            widget:
+              type: prometheusmetric
+              url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+              refreshInterval: 10000
+              metrics:
+                - label: Ingest
+                  query: 'sum(rate(loki_distributor_bytes_received_total[5m])) or vector(0)'
+                  format:
+                    type: byterate
+                - label: Lines
+                  query: 'sum(rate(loki_distributor_lines_received_total[5m])) or vector(0)'
+                  format:
+                    type: number
+                    suffix: "/s"
+                    options:
+                      maximumFractionDigits: 1
+                - label: Missing
+                  query: 'sum(increase(loki_canary_missing_entries_total[5m])) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
+
+        - Tempo:
+            icon: "mdi-chart-timeline-variant-shimmer-#f59e0b"
+            href: "{{HOMEPAGE_VAR_GRAFANA_URL}}/explore"
+            description: Traces and TraceQL
+
         - Alertmanager:
             icon: alertmanager.png
-            description: Alert routing and notifications
+            description: Alerts and routing
             widget:
               type: prometheusmetric
               url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
@@ -130,61 +161,41 @@ data:
                     options:
                       maximumFractionDigits: 0
 
-        - Loki:
-            icon: loki.png
-            description: Centralized log aggregation
-            widget:
-              type: prometheusmetric
-              url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-              refreshInterval: 10000
-              metrics:
-                - label: Ingest
-                  query: 'sum(rate(loki_distributor_bytes_received_total[5m])) or vector(0)'
-                  format:
-                    type: byterate
-                - label: Lines
-                  query: 'sum(rate(loki_distributor_lines_received_total[5m])) or vector(0)'
-                  format:
-                    type: number
-                    suffix: "/s"
-                    options:
-                      maximumFractionDigits: 1
-                - label: Missing
-                  query: 'sum(increase(loki_canary_missing_entries_total[5m])) or vector(0)'
-                  format:
-                    type: number
-                    options:
-                      maximumFractionDigits: 0
-
     - Websites:
-        - Duminda Sumanasinghe:
+        - DS:
             icon: "mdi-account-circle-#38bdf8"
             href: https://dumindas.com/
-            description: Personal portfolio and DevOps profile
+            description: Portfolio and DevOps
 
         - Nokzeo:
             icon: "mdi-fruit-cherries-#fb7185"
             href: https://nokzeo.com/
             description: Premium strawberry farm
 
-        - Expense Tracker:
+        - ET:
             icon: "mdi-wallet-#80cbc4"
             href: https://expense-tracker.tail499e7c.ts.net
-            description: Personal expense and income tracker
+            description: Expense and income tracker
+
     - DevOps & GitOps:
         - Jenkins:
             icon: jenkins.png
             href: "{{HOMEPAGE_VAR_JENKINS_URL}}"
-            description: CI pipelines and automation
+            description: CI/CD automation
 
         - FluxCD:
             icon: flux-cd.png
-            description: Kubernetes GitOps reconciliation
+            description: GitOps reconciliation
 
-        - GitHub:
+        - DGS Repo:
             icon: "si-github-#f8fafc"
             href: https://github.com/dgsuma/dgs-private-cloud
-            description: DGS Private Cloud repository
+            description: Private Cloud GitOps
+
+        - ET Repo:
+            icon: "si-github-#f8fafc"
+            href: https://github.com/dgsuma/expense-tracker-app
+            description: Expense Tracker source
 
   bookmarks.yaml: |
     []
@@ -265,6 +276,7 @@ data:
         background-position: left top !important;
       }
     }
+
     #page_wrapper::before {
       content: "";
       position: fixed;
@@ -351,6 +363,7 @@ data:
         transform: none;
       }
     }
+
   custom.js: ""
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -377,6 +390,7 @@ rules:
     verbs:
       - get
       - list
+
   - apiGroups:
       - metrics.k8s.io
     resources:
@@ -434,7 +448,7 @@ spec:
   template:
     metadata:
       annotations:
-        dgs.homepage/config-revision: "2026-09-19-websites-3-columns"
+        dgs.homepage/config-revision: "2026-09-23-homepage-cleanup-tempo-repos"
       labels:
         app.kubernetes.io/name: homepage
     spec:
@@ -541,33 +555,43 @@ spec:
               mountPath: /app/public/images/background.jpg
               subPath: background.jpg
               readOnly: true
+
             - name: homepage-config
               mountPath: /app/config/custom.js
               subPath: custom.js
+
             - name: homepage-config
               mountPath: /app/config/custom.css
               subPath: custom.css
+
             - name: homepage-config
               mountPath: /app/config/bookmarks.yaml
               subPath: bookmarks.yaml
+
             - name: homepage-config
               mountPath: /app/config/docker.yaml
               subPath: docker.yaml
+
             - name: homepage-config
               mountPath: /app/config/proxmox.yaml
               subPath: proxmox.yaml
+
             - name: homepage-config
               mountPath: /app/config/kubernetes.yaml
               subPath: kubernetes.yaml
+
             - name: homepage-config
               mountPath: /app/config/services.yaml
               subPath: services.yaml
+
             - name: homepage-config
               mountPath: /app/config/settings.yaml
               subPath: settings.yaml
+
             - name: homepage-config
               mountPath: /app/config/widgets.yaml
               subPath: widgets.yaml
+
             - mountPath: /app/config/logs
               name: logs
 
@@ -575,8 +599,10 @@ spec:
         - name: homepage-background
           configMap:
             name: homepage-background
+
         - name: homepage-config
           configMap:
             name: homepage
+
         - name: logs
           emptyDir: {}
