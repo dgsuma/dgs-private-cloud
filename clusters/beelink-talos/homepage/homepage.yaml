@@ -562,8 +562,10 @@ spec:
               value: "none"
             - name: OTEL_NODE_ENABLED_INSTRUMENTATIONS
               value: "http"
+            - name: NODE_PATH
+              value: "/otel/node_modules"
             - name: NODE_OPTIONS
-              value: "--require=/otel/node_modules/@opentelemetry/auto-instrumentations-node/register"
+              value: "--require @opentelemetry/auto-instrumentations-node/register"
 
           ports:
             - name: http
