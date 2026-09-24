@@ -455,6 +455,34 @@ spec:
       serviceAccountName: homepage
       automountServiceAccountToken: true
 
+      securityContext:
+        fsGroup: 1000
+
+      initContainers:
+        - name: otel-node-bootstrap
+          image: node:22-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - >
+              npm install --prefix /otel --no-audit --no-fund
+              @opentelemetry/api@1.9.0
+              @opentelemetry/auto-instrumentations-node@0.80.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: otel-node-modules
+              mountPath: /otel
+
       containers:
         - name: homepage
           image: ghcr.io/gethomepage/homepage:v1.13.2
@@ -519,6 +547,24 @@ spec:
             - name: LOG_TARGETS
               value: stdout
 
+            # OpenTelemetry tracing -> Alloy -> Tempo
+            - name: OTEL_SERVICE_NAME
+              value: homepage
+            - name: OTEL_TRACES_EXPORTER
+              value: otlp
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://alloy.monitoring.svc.cluster.local:4318"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"
+            - name: OTEL_NODE_ENABLED_INSTRUMENTATIONS
+              value: "http"
+            - name: NODE_OPTIONS
+              value: "--require=/otel/node_modules/@opentelemetry/auto-instrumentations-node/register"
+
           ports:
             - name: http
               containerPort: 3000
@@ -551,6 +597,10 @@ spec:
               memory: 512Mi
 
           volumeMounts:
+            - name: otel-node-modules
+              mountPath: /otel
+              readOnly: true
+
             - name: homepage-background
               mountPath: /app/public/images/background.jpg
               subPath: background.jpg
@@ -596,6 +646,9 @@ spec:
               name: logs
 
       volumes:
+        - name: otel-node-modules
+          emptyDir: {}
+
         - name: homepage-background
           configMap:
             name: homepage-background
