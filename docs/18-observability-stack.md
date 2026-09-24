@@ -1,23 +1,27 @@
-# Observability Baseline — Prometheus, Grafana, Alertmanager, Loki and Alloy
+# Observability Stack — Prometheus, Grafana, Alertmanager, Loki, Alloy and Tempo
 
 ## Status
 
-**Completed and verified: 2026-08-10**
+**Phase 1 baseline completed: 2026-08-10**
 
-The Phase 1 observability baseline for the `dgs-homelab` Talos Kubernetes
-cluster is operational and managed through Flux.
+**Distributed tracing extension verified: 2026-09-24**
+
+The observability stack for the `dgs-homelab` Talos Kubernetes cluster is
+operational and managed through Flux.
 
 The implementation now provides:
 
 - Prometheus metrics collection;
 - Grafana dashboards and Explore;
-- Alertmanager;
+- Alertmanager alert routing;
 - Loki log storage and querying;
 - Grafana Alloy Kubernetes log collection;
-- persistent local-path storage for Prometheus, Grafana, Alertmanager, and Loki.
+- OpenTelemetry OTLP trace ingestion through Alloy;
+- Grafana Tempo distributed trace storage and querying;
+- Grafana Tempo datasource integration;
+- persistent local-path storage for Prometheus, Grafana, Alertmanager, Loki, and Tempo.
 
-Homepage, external alert receivers, Grafana Tailscale ingress, Loki retention,
-and storage-capacity alerting remain future work.
+Application tracing has been verified for the Expense Tracker API and Homepage.
 
 ## Deployed versions
 
@@ -26,6 +30,7 @@ and storage-capacity alerting remain future work.
 | kube-prometheus-stack | Helm chart `88.2.0` | `Ready=True` |
 | Loki | Helm chart `18.7.6`; Loki application `3.7.6` | `Ready=True` |
 | Grafana Alloy | Helm chart `1.11.1`; Alloy application `v1.18.1` | `Ready=True` |
+| Tempo | Helm chart `3.0.0` | `Ready=True` |
 | Flux | Existing cluster GitOps controller | Reconciliation succeeded |
 
 ## GitOps layout
@@ -39,15 +44,22 @@ clusters/beelink-talos/monitoring/
 ├── helmrepository-grafana.yaml
 ├── helmrepository-grafana-community.yaml
 ├── kube-prometheus-stack.yaml
+├── alertmanagerconfig-email.yaml
+├── prometheusrule-local-path-storage.yaml
+├── grafana-tailscale-ingress.yaml
 ├── kustomization.yaml
-└── logging/
+├── logging/
+│   ├── kustomization.yaml
+│   ├── loki-helmrelease.yaml
+│   ├── alloy-helmrelease.yaml
+│   └── grafana-loki-datasource.yaml
+└── tempo/
     ├── kustomization.yaml
-    ├── loki-helmrelease.yaml
-    ├── alloy-helmrelease.yaml
-    └── grafana-loki-datasource.yaml
+    ├── tempo-helmrelease.yaml
+    └── grafana-tempo-datasource.yaml
 ```
 
-The parent monitoring Kustomization includes `./logging`.
+The parent monitoring Kustomization includes both `./logging` and `./tempo`.
 
 ## Metrics stack
 
@@ -62,6 +74,7 @@ Alertmanager, kube-state-metrics, the Prometheus Operator, and node-exporter.
 | Grafana | `5Gi` | `local-path` |
 | Alertmanager | `2Gi` | `local-path` |
 | Loki | `20Gi` | `local-path` |
+| Tempo | `20Gi` | `local-path` |
 
 Prometheus is configured with:
 
@@ -70,7 +83,7 @@ retention: 15d
 retentionSize: 40GB
 ```
 
-All four PVCs were verified `Bound`.
+All five PVCs were verified `Bound`, including the `20Gi` Tempo PVC.
 
 ### Node exporter
 
@@ -285,6 +298,141 @@ Loki
 Grafana / Loki datasource / Explore
 ```
 
+## Tempo distributed tracing
+
+Grafana Tempo extends the existing metrics and logging stack with
+OpenTelemetry distributed tracing.
+
+Tempo is Flux-managed using Helm chart `3.0.0` with:
+
+```text
+replicas: 1
+multitenancy: disabled
+trace retention: 168h / 7 days
+StorageClass: local-path
+PVC: 20Gi
+ServiceMonitor: enabled
+```
+
+Tempo accepts OpenTelemetry traces on:
+
+```text
+OTLP/gRPC :4317
+OTLP/HTTP :4318
+```
+
+The Tempo query API is available internally on TCP `3200`.
+
+### OpenTelemetry trace path
+
+The application trace path is:
+
+```text
+Application
+    |
+    | OTLP/HTTP :4318
+    v
+Grafana Alloy
+    |
+    | OTLP/gRPC :4317
+    v
+Grafana Tempo
+    |
+    | Tempo query API :3200
+    v
+Grafana Tempo datasource / Explore
+```
+
+Alloy accepts OTLP traces on ports `4317` and `4318` and forwards them to:
+
+```text
+tempo.monitoring.svc.cluster.local:4317
+```
+
+### Grafana Tempo datasource
+
+Grafana discovers the Tempo datasource from the ConfigMap:
+
+```text
+monitoring/grafana-datasource-tempo
+```
+
+The datasource uses:
+
+```text
+name: Tempo
+uid: tempo
+type: tempo
+url: http://tempo.monitoring.svc.cluster.local:3200
+access: proxy
+default: false
+editable: false
+```
+
+Tempo remains internal to the Kubernetes cluster and is not exposed directly
+to the public internet.
+
+### Verified application tracing
+
+End-to-end tracing has been verified for both the Expense Tracker API and
+Homepage.
+
+#### Expense Tracker API
+
+The API exports traces to Alloy using:
+
+```text
+OTEL_SERVICE_NAME=expense-tracker-api
+OTEL_TRACES_EXPORTER=otlp
+OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy.monitoring.svc.cluster.local:4318
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+OTEL_METRICS_EXPORTER=none
+OTEL_LOGS_EXPORTER=none
+```
+
+Expense Tracker traces were successfully returned by Tempo and displayed in
+Grafana Explore.
+
+#### Homepage
+
+Homepage exports HTTP traces through the same Alloy OTLP endpoint.
+
+The verified runtime configuration includes:
+
+```text
+OTEL_SERVICE_NAME=homepage
+OTEL_TRACES_EXPORTER=otlp
+OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy.monitoring.svc.cluster.local:4318
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+OTEL_METRICS_EXPORTER=none
+OTEL_LOGS_EXPORTER=none
+OTEL_NODE_ENABLED_INSTRUMENTATIONS=http
+NODE_PATH=/otel/node_modules
+NODE_OPTIONS=--require @opentelemetry/auto-instrumentations-node/register
+```
+
+Kubernetes readiness and liveness probes call:
+
+```text
+/api/healthcheck
+```
+
+Tempo returned spans containing both:
+
+```text
+service.name = homepage
+http.target = /api/healthcheck
+```
+
+The verified Grafana TraceQL query is:
+
+```traceql
+{ resource.service.name = "homepage" && span.http.target = "/api/healthcheck" }
+```
+
+Grafana Explore displayed live Homepage `GET` traces with millisecond
+durations on `2026-09-24`.
+
 ## Routine health validation
 
 ```powershell
@@ -296,12 +444,12 @@ kubectl get pods -n monitoring -o wide |
     Select-String "alloy"
 
 kubectl get pods -n monitoring -o wide |
-    Select-String "loki"
+    Select-String "loki|tempo"
 
 kubectl get pvc -n monitoring
 
 kubectl get svc -n monitoring |
-    Select-String "loki"
+    Select-String "loki|tempo"
 ```
 
 Expected HelmRelease state:
@@ -310,6 +458,7 @@ Expected HelmRelease state:
 alloy                   Ready=True
 kube-prometheus-stack   Ready=True
 loki                    Ready=True
+tempo                   Ready=True
 ```
 
 ## Grafana local access
@@ -394,26 +543,32 @@ severity.
 
 ## Security boundary
 
-- Grafana is currently accessed locally through `127.0.0.1:3000` port-forward.
-- Grafana Tailscale ingress is not yet configured.
-- Loki gateway remains internal to Kubernetes.
-- Do not expose Grafana, Loki, Prometheus, Alertmanager, the Kubernetes API, or
+- Grafana is available privately through the Tailscale ingress.
+- Local `127.0.0.1:3000` port-forward access remains available for administration.
+- Loki and Tempo remain internal Kubernetes services.
+- Tempo OTLP ingestion and query endpoints are not directly exposed to the public internet.
+- Do not expose Prometheus, Alertmanager, Loki, Tempo, the Kubernetes API, or
   the Talos API directly to the public internet.
 - Do not commit credentials, Grafana passwords, tokens, kubeconfig,
-  `talosconfig`, or unredacted private screenshots.
+  `talosconfig`, private tailnet hostnames, or unredacted private screenshots.
 
 ## Remaining observability work
 
 1. Define Loki retention suitable for the `20Gi` PVC.
-2. Add PVC/storage-capacity alerts.
-3. Configure useful Alertmanager notification receivers.
-4. Expose Grafana privately through authenticated Tailscale access.
-5. Add a small Kubernetes/logging dashboard if useful.
-6. Continue monitoring resource consumption on the single `pve01` host.
+2. Add a small Kubernetes/logging dashboard if useful.
+3. Continue monitoring resource consumption on the single `pve01` host.
+4. Monitor Tempo storage growth against its `20Gi` PVC and seven-day retention.
 
 ## Completion statement
 
-As of `2026-08-10`, the Phase 1 metrics and Kubernetes logging baseline is
-operational. Prometheus, Grafana, Alertmanager, Loki, and Grafana Alloy are
-Flux-managed, persistent storage is bound, and real logs from monitoring,
-Flux, and Tailscale workloads are queryable in Grafana.
+The Phase 1 metrics and Kubernetes logging baseline was completed on
+`2026-08-10`. Distributed tracing through Grafana Tempo was added and
+verified on `2026-09-24`.
+
+Prometheus, Grafana, Alertmanager, Loki, Grafana Alloy, and Tempo are
+Flux-managed. All five observability PVCs are `Bound`. Kubernetes logs are
+queryable through Loki, and OpenTelemetry traces from the Expense Tracker API
+and Homepage are queryable through Tempo in Grafana Explore.
+
+Grafana private Tailscale access, Alertmanager email notifications, and
+local-path storage-capacity alerting are also operational.

@@ -286,6 +286,61 @@ E:\home-server\dgs-private-cloud
 
 This avoids dependency on the process working directory.
 
+## OpenTelemetry tracing
+
+Homepage HTTP tracing was added and verified on `2026-09-24`.
+
+The trace path is:
+
+```text
+Homepage -> OpenTelemetry -> Grafana Alloy -> Tempo -> Grafana Explore
+```
+
+Because the stock Homepage image does not contain the required Node.js
+OpenTelemetry auto-instrumentation packages, an init container installs:
+
+```text
+@opentelemetry/api@1.9.0
+@opentelemetry/auto-instrumentations-node@0.80.0
+```
+
+The packages are stored in a shared `/otel` `emptyDir` and mounted read-only
+into the Homepage container.
+
+The important runtime settings are:
+
+```text
+OTEL_SERVICE_NAME=homepage
+OTEL_TRACES_EXPORTER=otlp
+OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy.monitoring.svc.cluster.local:4318
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+OTEL_METRICS_EXPORTER=none
+OTEL_LOGS_EXPORTER=none
+OTEL_NODE_ENABLED_INSTRUMENTATIONS=http
+NODE_PATH=/otel/node_modules
+NODE_OPTIONS=--require @opentelemetry/auto-instrumentations-node/register
+```
+
+The Kubernetes readiness and liveness probes call `/api/healthcheck`, so
+those requests generate trace spans automatically.
+
+The verified Grafana TraceQL query is:
+
+```traceql
+{ resource.service.name = "homepage" && span.http.target = "/api/healthcheck" }
+```
+
+Tempo returned matching Homepage health-check spans and Grafana Explore
+displayed live `GET` traces with millisecond durations.
+
+The first instrumented rollout entered `CrashLoopBackOff` because
+`NODE_OPTIONS` used a direct filesystem require path. The working solution
+uses `NODE_PATH=/otel/node_modules` and requires the package by its exported
+module name.
+
+The shared Tempo/Alloy architecture is documented in
+`18-observability-stack.md`.
+
 ## Security boundary
 
 - Homepage remains private through Tailscale.
