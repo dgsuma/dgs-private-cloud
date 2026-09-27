@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: document-portal-config
+  namespace: document-portal
+data:
+  ENV: production
+  LLM_PROVIDER: google
+  UPLOAD_BASE: /app/data
+  FAISS_BASE: /app/data/faiss_index
+  DATA_STORAGE_PATH: /app/data/document_analysis

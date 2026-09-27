@@ -4,3 +4,8 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - rbac.yaml
+  - configmap.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - document-portal-tailscale-ingress.yaml
