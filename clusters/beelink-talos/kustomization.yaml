@@ -9,5 +9,6 @@ resources:
   - ./kubelet-serving-cert-approver
   - ./metrics-server
   - ./portfolio
+  - ./document-portal
 
   - ./expense-tracker
