@@ -27,7 +27,7 @@ spec:
 
       containers:
         - name: document-portal
-          image: ghcr.io/dgsuma/document-portal:d9f14e694330d5a56224f5b4f294601c0d4ec883
+          image: ghcr.io/dgsuma/document-portal:aea20e8f11e47e7748817a3d4b7d85eaa6bed065
           imagePullPolicy: IfNotPresent
 
           ports:
