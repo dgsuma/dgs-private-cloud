@@ -17,6 +17,8 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: document-portal
+      annotations:
+        dgs-private-cloud/restart-trigger: "groq-provider-switch"
 
     spec:
       securityContext:
