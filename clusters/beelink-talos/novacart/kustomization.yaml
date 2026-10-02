@@ -9,3 +9,4 @@ resources:
   - otel-collector.yaml
   - leaf-services.yaml
   - recommendation.yaml
+  - cart-shipping.yaml
