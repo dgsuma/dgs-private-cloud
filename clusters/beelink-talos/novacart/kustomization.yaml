@@ -5,3 +5,4 @@ resources:
   - namespace.yaml
   - valkey.yaml
   - kafka.yaml
+  - flagd.yaml
