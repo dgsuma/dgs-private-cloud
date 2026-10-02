@@ -6,3 +6,4 @@ resources:
   - valkey.yaml
   - kafka.yaml
   - flagd.yaml
+  - otel-collector.yaml
