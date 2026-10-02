@@ -8,3 +8,4 @@ resources:
   - flagd.yaml
   - otel-collector.yaml
   - leaf-services.yaml
+  - recommendation.yaml
