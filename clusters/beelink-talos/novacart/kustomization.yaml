@@ -10,3 +10,4 @@ resources:
   - leaf-services.yaml
   - recommendation.yaml
   - cart-shipping.yaml
+  - checkout.yaml
