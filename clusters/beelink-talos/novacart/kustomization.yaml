@@ -7,3 +7,4 @@ resources:
   - kafka.yaml
   - flagd.yaml
   - otel-collector.yaml
+  - leaf-services.yaml

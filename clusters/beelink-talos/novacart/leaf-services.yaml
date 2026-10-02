@@ -1,0 +1,444 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-catalog
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-catalog
+  template:
+    metadata:
+      labels:
+        app: product-catalog
+    spec:
+      containers:
+        - name: product-catalog
+          image: ghcr.io/open-telemetry/demo:2.1.3-product-catalog
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: grpc
+              containerPort: 3550
+          env:
+            - name: PRODUCT_CATALOG_PORT
+              value: "3550"
+            - name: PRODUCT_CATALOG_RELOAD_INTERVAL
+              value: "10"
+            - name: FLAGD_HOST
+              value: flagd
+            - name: FLAGD_PORT
+              value: "8013"
+            - name: GOMEMLIMIT
+              value: 16MiB
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4317
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: product-catalog
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 150m
+              memory: 48Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-catalog
+  namespace: novacart
+spec:
+  selector:
+    app: product-catalog
+  ports:
+    - name: grpc
+      port: 3550
+      targetPort: grpc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quote
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quote
+  template:
+    metadata:
+      labels:
+        app: quote
+    spec:
+      containers:
+        - name: quote
+          image: ghcr.io/open-telemetry/demo:2.1.3-quote
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8090
+          env:
+            - name: QUOTE_PORT
+              value: "8090"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4318
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_PHP_AUTOLOAD_ENABLED
+              value: "true"
+            - name: OTEL_PHP_INTERNAL_METRICS_ENABLED
+              value: "true"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: quote
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 20Mi
+            limits:
+              cpu: 150m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quote
+  namespace: novacart
+spec:
+  selector:
+    app: quote
+  ports:
+    - name: http
+      port: 8090
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: currency
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: currency
+  template:
+    metadata:
+      labels:
+        app: currency
+    spec:
+      containers:
+        - name: currency
+          image: ghcr.io/open-telemetry/demo:2.1.3-currency
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: grpc
+              containerPort: 7001
+          env:
+            - name: CURRENCY_PORT
+              value: "7001"
+            - name: VERSION
+              value: "2.1.3"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4317
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: currency
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 150m
+              memory: 48Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: currency
+  namespace: novacart
+spec:
+  selector:
+    app: currency
+  ports:
+    - name: grpc
+      port: 7001
+      targetPort: grpc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment
+  template:
+    metadata:
+      labels:
+        app: payment
+    spec:
+      containers:
+        - name: payment
+          image: ghcr.io/open-telemetry/demo:2.1.3-payment
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: grpc
+              containerPort: 50051
+          env:
+            - name: PAYMENT_PORT
+              value: "50051"
+            - name: FLAGD_HOST
+              value: flagd
+            - name: FLAGD_PORT
+              value: "8013"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4317
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: payment
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 20m
+              memory: 48Mi
+            limits:
+              cpu: 200m
+              memory: 160Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment
+  namespace: novacart
+spec:
+  selector:
+    app: payment
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email
+  template:
+    metadata:
+      labels:
+        app: email
+    spec:
+      containers:
+        - name: email
+          image: ghcr.io/open-telemetry/demo:2.1.3-email
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6060
+          env:
+            - name: APP_ENV
+              value: production
+            - name: EMAIL_PORT
+              value: "6060"
+            - name: FLAGD_HOST
+              value: flagd
+            - name: FLAGD_PORT
+              value: "8013"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4318
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: email
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: email
+  namespace: novacart
+spec:
+  selector:
+    app: email
+  ports:
+    - name: http
+      port: 6060
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-provider
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-provider
+  template:
+    metadata:
+      labels:
+        app: image-provider
+    spec:
+      containers:
+        - name: image-provider
+          image: ghcr.io/open-telemetry/demo:2.1.3-image-provider
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8081
+          env:
+            - name: IMAGE_PROVIDER_PORT
+              value: "8081"
+            - name: OTEL_COLLECTOR_HOST
+              value: otel-collector
+            - name: OTEL_COLLECTOR_PORT_GRPC
+              value: "4317"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: image-provider
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 160Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-provider
+  namespace: novacart
+spec:
+  selector:
+    app: image-provider
+  ports:
+    - name: http
+      port: 8081
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ad
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ad
+  template:
+    metadata:
+      labels:
+        app: ad
+    spec:
+      containers:
+        - name: ad
+          image: ghcr.io/open-telemetry/demo:2.1.3-ad
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: grpc
+              containerPort: 9555
+          env:
+            - name: AD_PORT
+              value: "9555"
+            - name: FLAGD_HOST
+              value: flagd
+            - name: FLAGD_PORT
+              value: "8013"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4318
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_LOGS_EXPORTER
+              value: otlp
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: ad
+            - name: _JAVA_OPTIONS
+              value: ""
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 400m
+              memory: 384Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ad
+  namespace: novacart
+spec:
+  selector:
+    app: ad
+  ports:
+    - name: grpc
+      port: 9555
+      targetPort: grpc
