@@ -13,3 +13,7 @@ resources:
   - checkout.yaml
   - frontend-layer.yaml
   - novacart-tailscale-ingress.yaml
+  - product-catalog-products.yaml
+
+patches:
+  - path: product-catalog-products-patch.yaml

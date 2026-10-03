@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-catalog
+  namespace: novacart
+spec:
+  template:
+    spec:
+      containers:
+        - name: product-catalog
+          volumeMounts:
+            - name: product-catalog-products
+              mountPath: /usr/src/app/products
+              readOnly: true
+      volumes:
+        - name: product-catalog-products
+          configMap:
+            name: product-catalog-products
