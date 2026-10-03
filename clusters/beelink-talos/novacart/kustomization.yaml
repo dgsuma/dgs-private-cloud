@@ -11,3 +11,4 @@ resources:
   - recommendation.yaml
   - cart-shipping.yaml
   - checkout.yaml
+  - frontend-layer.yaml
