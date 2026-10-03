@@ -1,0 +1,201 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flagd-config
+  namespace: novacart
+data:
+  demo.flagd.json: |
+    {
+      "$schema": "https://flagd.dev/schema/v0/flags.json",
+      "flags": {
+        "productCatalogFailure": {
+          "description": "Fail product catalog service on a specific product",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "recommendationCacheFailure": {
+          "description": "Fail recommendation service cache",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "adManualGc": {
+          "description": "Triggers full manual garbage collections in the ad service",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "adHighCpu": {
+          "description": "Triggers high cpu load in the ad service",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "adFailure": {
+          "description": "Fail ad service",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "kafkaQueueProblems": {
+          "description": "Overloads Kafka queue while simultaneously introducing a consumer side delay leading to a lag spike",
+          "state": "ENABLED",
+          "variants": {
+            "on": 100,
+            "off": 0
+          },
+          "defaultVariant": "off"
+        },
+        "cartFailure": {
+          "description": "Fail cart service",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "paymentFailure": {
+          "description": "Fail payment service charge requests n%",
+          "state": "ENABLED",
+          "variants": {
+            "100%": 1,
+            "90%": 0.95,
+            "75%": 0.75,
+            "50%": 0.5,
+            "25%": 0.25,
+            "10%": 0.1,
+            "off": 0
+          },
+          "defaultVariant": "off"
+        },
+        "paymentUnreachable": {
+          "description": "Payment service is unavailable",
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "loadGeneratorFloodHomepage": {
+          "description": "Flood the frontend with a large amount of requests.",
+          "state": "ENABLED",
+          "variants": {
+            "on": 100,
+            "off": 0
+          },
+          "defaultVariant": "off"
+        },
+        "imageSlowLoad": {
+          "description": "slow loading images in the frontend",
+          "state": "ENABLED",
+          "variants": {
+            "10sec": 10000,
+            "5sec": 5000,
+            "off": 0
+          },
+          "defaultVariant": "off"
+        },
+        "emailMemoryLeak": {
+          "description": "Memory leak in the email service.",
+          "state": "ENABLED",
+          "variants": {
+            "off": 0,
+            "1x": 1,
+            "10x": 10,
+            "100x": 100,
+            "1000x": 1000,
+            "10000x": 10000
+          },
+          "defaultVariant": "off"
+        }
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flagd
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flagd
+  template:
+    metadata:
+      labels:
+        app: flagd
+    spec:
+      containers:
+        - name: flagd
+          image: ghcr.io/open-feature/flagd:v0.12.8
+          args:
+            - start
+            - --uri
+            - file:./etc/flagd/demo.flagd.json
+          env:
+            - name: FLAGD_METRICS_EXPORTER
+              value: otel
+            - name: FLAGD_OTEL_COLLECTOR_URI
+              value: otel-collector:4317
+            - name: GOMEMLIMIT
+              value: 60MiB
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: flagd
+          ports:
+            - name: flagd
+              containerPort: 8013
+            - name: ofrep
+              containerPort: 8016
+          volumeMounts:
+            - name: config
+              mountPath: /etc/flagd
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 80Mi
+      volumes:
+        - name: config
+          configMap:
+            name: flagd-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flagd
+  namespace: novacart
+spec:
+  selector:
+    app: flagd
+  ports:
+    - name: flagd
+      port: 8013
+      targetPort: flagd
+    - name: ofrep
+      port: 8016
+      targetPort: ofrep

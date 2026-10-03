@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - valkey.yaml
+  - kafka.yaml
+  - flagd.yaml
+  - otel-collector.yaml
+  - leaf-services.yaml
+  - recommendation.yaml
+  - cart-shipping.yaml
+  - checkout.yaml
+  - frontend-layer.yaml
+  - novacart-tailscale-ingress.yaml

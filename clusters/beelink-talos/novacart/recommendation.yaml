@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation
+  namespace: novacart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendation
+  template:
+    metadata:
+      labels:
+        app: recommendation
+    spec:
+      containers:
+        - name: recommendation
+          image: ghcr.io/open-telemetry/demo:2.1.3-recommendation
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: grpc
+              containerPort: 9001
+          env:
+            - name: RECOMMENDATION_PORT
+              value: "9001"
+            - name: PRODUCT_CATALOG_ADDR
+              value: product-catalog:3550
+            - name: FLAGD_HOST
+              value: flagd
+            - name: FLAGD_PORT
+              value: "8013"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4317
+            - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+              value: cumulative
+            - name: OTEL_PYTHON_LOG_CORRELATION
+              value: "true"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=novacart,service.version=2.1.3
+            - name: OTEL_SERVICE_NAME
+              value: recommendation
+            - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+              value: python
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 96Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendation
+  namespace: novacart
+spec:
+  selector:
+    app: recommendation
+  ports:
+    - name: grpc
+      port: 9001
+      targetPort: grpc

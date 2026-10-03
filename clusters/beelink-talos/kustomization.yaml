@@ -12,3 +12,4 @@ resources:
   - ./document-portal
 
   - ./expense-tracker
+  - ./novacart
