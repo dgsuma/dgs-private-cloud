@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: novacart-tailscale
+  namespace: novacart
+  labels:
+    app.kubernetes.io/name: novacart
+spec:
+  ingressClassName: tailscale
+
+  tls:
+    - hosts:
+        - novacart
+
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-proxy
+                port:
+                  number: 8080
