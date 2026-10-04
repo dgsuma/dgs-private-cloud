@@ -206,7 +206,7 @@ spec:
     spec:
       containers:
         - name: payment
-          image: ghcr.io/open-telemetry/demo:2.1.3-payment
+          image: ghcr.io/dgsuma/novacart-payment:38f897555c30bd9207d2e4f300c76f7502382f41
           imagePullPolicy: IfNotPresent
           ports:
             - name: grpc
