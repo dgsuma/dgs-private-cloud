@@ -55,10 +55,10 @@ data:
         columns: 5
       Websites:
         style: row
-        columns: 4
+        columns: 5
       DevOps & GitOps:
         style: row
-        columns: 5
+        columns: 6
 
   services.yaml: |
     - Infrastructure:
@@ -181,6 +181,12 @@ data:
             icon: mdi-file-document-multiple-outline
             href: https://document-portal.tail499e7c.ts.net/
             description: AI-powered document portal and RAG application
+
+        - NC:
+            icon: "mdi-cart-outline-#f59e0b"
+            href: https://novacart.tail499e7c.ts.net/
+            description: Cloud-native e-commerce observability demo
+
     - DevOps & GitOps:
         - Jenkins:
             icon: jenkins.png
@@ -205,6 +211,11 @@ data:
             icon: "si-github-#f8fafc"
             href: https://github.com/dgsuma/document_portal
             description: Document Portal source repository
+
+        - NC Repo:
+            icon: "si-github-#f8fafc"
+            href: https://github.com/dgsuma/NovaCart
+            description: NovaCart source repository
   bookmarks.yaml: |
     []
 
@@ -456,7 +467,7 @@ spec:
   template:
     metadata:
       annotations:
-        dgs.homepage/config-revision: "2026-09-25-document-portal-links"
+        dgs.homepage/config-revision: "2026-10-05-novacart-links"
       labels:
         app.kubernetes.io/name: homepage
     spec:
