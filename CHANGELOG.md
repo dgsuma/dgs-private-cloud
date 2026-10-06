@@ -1,3 +1,39 @@
+<!-- BEGIN CHANGELOG POLYTUNNEL IOT 2026-10-06 -->
+## 2026-10-06 — Polytunnel Raspberry Pi 5 IoT sensor node
+
+### Added
+
+- Added `docs/28-polytunnel-raspberry-pi-iot-sensor-node.md`.
+- Documented the Raspberry Pi 5 polytunnel sensor-node architecture.
+- Documented SHT31 I2C wiring over Cat6 and verified address `0x44`.
+- Documented SEN0602 soil sensor wiring through CH340/CH341 USB-RS485.
+- Recorded the verified SEN0602 Modbus RTU settings and register mapping.
+- Documented automatic SHT31 CSV logging through systemd.
+- Documented the validated manual SEN0602 measurement workflow.
+- Documented daily sensor backups with SHA-256 integrity files.
+- Documented private remote administration through Tailscale and OpenSSH.
+- Documented read-only remote SFTP retrieval for sensor CSV data.
+
+### Verified
+
+- SHT31 unattended logging continued across reboot.
+- SEN0602 communication was verified through `/dev/ttyUSB0`.
+- Wi-Fi autoconnect was enabled for `Polytunnel-IoT`.
+- SSH and Tailscale services were enabled and active.
+- Remote administration succeeded through an independent mobile-data path.
+- Passwordless SSH administration using a dedicated key was verified.
+- Read-only SFTP sensor-data retrieval was verified.
+- Daily backup timer remained active after reboot.
+- A final off-device sensor backup was independently SHA-256 verified.
+
+### Security
+
+- Wi-Fi credentials are not stored in Git.
+- Tailscale authentication material and exact node addressing remain outside Git.
+- SSH private keys and complete `authorized_keys` contents remain outside Git.
+- Sensor backup archives remain outside Git.
+
+<!-- END CHANGELOG POLYTUNNEL IOT 2026-10-06 -->
 <!-- BEGIN CHANGELOG JENKINS PHASE 1G 2026-08-24 -->
 ## 2026-08-24 — Jenkins build agent and CI-to-GitOps baseline
 

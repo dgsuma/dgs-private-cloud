@@ -329,6 +329,8 @@ dgs-private-cloud/
 │   ├── 24-proxmox-ups-nut-graceful-shutdown.md
 │   ├── 25-jenkins-build-agent-ci-gitops.md
 │   ├── 26-private-portfolio-ci-ghcr-gitops-flux.md
+│   ├── 27-document-portal-groq-migration-and-production-validation.md
+│   ├── 28-polytunnel-raspberry-pi-iot-sensor-node.md
 │   ├── decisions/
 │   └── runbooks/
 │       ├── flux-and-tailscale-validation.md
@@ -377,9 +379,11 @@ dgs-private-cloud/
 26. [Proxmox UPS/NUT graceful shutdown](docs/24-proxmox-ups-nut-graceful-shutdown.md)
 27. [Jenkins Build Agent and CI-to-GitOps Workflow](docs/25-jenkins-build-agent-ci-gitops.md)
 28. [Private Portfolio CI, GHCR, GitOps and Flux Delivery](docs/26-private-portfolio-ci-ghcr-gitops-flux.md)
-29. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
-30. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
-31. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
+29. [Document Portal Groq Migration and Production Validation](docs/27-document-portal-groq-migration-and-production-validation.md)
+30. [Polytunnel Raspberry Pi 5 IoT Sensor Node](docs/28-polytunnel-raspberry-pi-iot-sensor-node.md)
+31. [Flux and Tailscale validation runbook](docs/runbooks/flux-and-tailscale-validation.md)
+32. [Talos workers and bootstrap runbook](docs/runbooks/talos-phase1-workers-and-bootstrap.md)
+33. [Talos etcd snapshot runbook](docs/runbooks/talos-etcd-snapshot.md)
 ## Security boundary
 
 Proxmox management, the Talos API, the Kubernetes API, and observability endpoints remain private. Do not expose TCP `8006`, TCP `50000`, TCP `6443`, Jenkins TCP `8080`, SSH, or dashboards directly to the public internet.
