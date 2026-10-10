@@ -152,6 +152,8 @@ spec:
             - start
             - --uri
             - file:./etc/flagd/demo.flagd.json
+            - --port
+            - "8013"
           env:
             - name: FLAGD_METRICS_EXPORTER
               value: otel
