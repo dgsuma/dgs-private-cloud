@@ -206,7 +206,7 @@ spec:
     spec:
       containers:
         - name: payment
-          image: ghcr.io/dgsuma/novacart-payment:2860729dc36ecb290d33362e140505e27bd26a61
+          image: ghcr.io/dgsuma/novacart-payment:c90a0d763c76581d4adf4781c750c447809ed3ca
           imagePullPolicy: IfNotPresent
           ports:
             - name: grpc
