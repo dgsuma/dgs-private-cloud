@@ -183,7 +183,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/dgsuma/novacart-frontend:41902fc4d30b9ff0b711a390334399d622e97e78
+          image: ghcr.io/dgsuma/novacart-frontend:0c935f4566ec6be89fff57cf19a2d7851ed0cc32
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
